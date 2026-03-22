@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eco-sports.local/schemas/athlete.json",
+  "title": "Athlete",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "tenantId",
+    "profile",
+    "sport",
+    "category",
+    "status",
+    "consents",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenantId": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["firstName", "lastName", "birthDate", "gender", "country"],
+      "properties": {
+        "firstName": { "type": "string", "minLength": 1 },
+        "lastName": { "type": "string", "minLength": 1 },
+        "preferredName": { "type": "string" },
+        "birthDate": { "type": "string", "format": "date" },
+        "gender": {
+          "type": "string",
+          "enum": ["female", "male", "non_binary", "prefer_not_to_say", "other"]
+        },
+        "country": { "type": "string" },
+        "state": { "type": "string" },
+        "city": { "type": "string" },
+        "nationality": { "type": "string" },
+        "photoUrl": { "type": "string", "format": "uri" }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "instagram": { "type": "string" },
+        "linkedin": { "type": "string", "format": "uri" }
+      }
+    },
+    "guardians": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "relationship"],
+        "properties": {
+          "name": { "type": "string" },
+          "relationship": { "type": "string" },
+          "phone": { "type": "string" },
+          "email": { "type": "string", "format": "email" }
+        }
+      }
+    },
+    "sport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discipline"],
+      "properties": {
+        "discipline": { "type": "string" },
+        "primaryPosition": { "type": "string" },
+        "secondaryPositions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "dominantSide": {
+          "type": "string",
+          "enum": ["left", "right", "ambidextrous", "not_applicable"]
+        }
+      }
+    },
+    "physicalProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heightCm": { "type": "number", "minimum": 0 },
+        "weightKg": { "type": "number", "minimum": 0 },
+        "wingspanCm": { "type": "number", "minimum": 0 },
+        "bodyFatPct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "notes": { "type": "string" }
+      }
+    },
+    "category": {
+      "type": "string"
+    },
+    "education": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schoolName": { "type": "string" },
+        "gradeLevel": { "type": "string" },
+        "graduationYear": { "type": "integer" },
+        "academicGoals": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "career": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currentClub": { "type": "string" },
+        "currentTeam": { "type": "string" },
+        "coachName": { "type": "string" },
+        "seasonGoals": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "achievements": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "media": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "highlightVideoUrls": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        },
+        "portfolioUrl": { "type": "string", "format": "uri" },
+        "galleryUrls": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["prospect", "active", "inactive", "graduated", "archived"]
+    },
+    "consents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["termsAccepted", "privacyAccepted", "imageUseAccepted"],
+      "properties": {
+        "termsAccepted": { "type": "boolean" },
+        "privacyAccepted": { "type": "boolean" },
+        "imageUseAccepted": { "type": "boolean" },
+        "minorConsentProvided": { "type": "boolean" },
+        "consentVersion": { "type": "string" },
+        "acceptedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

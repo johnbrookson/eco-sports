@@ -1,0 +1,75 @@
+{
+  "name": "servicos",
+  "children": [
+    {
+      "name": "gestao_de_carreira",
+      "children": [
+        {"name": "planejamento_de_carreira"},
+        {"name": "assessoria_a_pais"},
+        {"name": "orientacao_profissional"},
+        {"name": "ferramentas_de_suporte"}
+      ]
+    },
+    {
+      "name": "desenvolvimento_tecnico",
+      "children": [
+        {"name": "avaliacao_tecnica"},
+        {"name": "treinamento_de_fundamentos"},
+        {"name": "tomada_de_decisao"},
+        {"name": "treinamento_fisico_especifico"},
+        {"name": "uso_de_tecnologia"}
+      ]
+    },
+    {
+      "name": "treinamentos_especificos",
+      "children": [
+        {"name": "sessoes_individuais"},
+        {"name": "pequenos_grupos"},
+        {"name": "programas_personalizados"},
+        {"name": "avaliacoes_periodicas"}
+      ]
+    },
+    {
+      "name": "gestao_de_desempenho",
+      "children": [
+        {"name": "acompanhamento_estatistico"},
+        {"name": "analise_em_video"},
+        {"name": "monitoramento_continuo"},
+        {"name": "identificacao_de_pontos_fracos"},
+        {"name": "plano_de_melhoria_individual"},
+        {"name": "intervencoes_e_correcoes"}
+      ]
+    },
+    {
+      "name": "marketing_e_portfolio",
+      "children": [
+        {"name": "portfolio_digital"},
+        {"name": "gestao_de_redes_sociais"},
+        {"name": "producao_de_highlights"},
+        {"name": "divulgacao_para_scouts"}
+      ]
+    },
+    {
+      "name": "suporte_juridico",
+      "children": [
+        {"name": "contratos_e_direitos"},
+        {"name": "negociacoes"},
+        {"name": "protecao_de_imagem"}
+      ]
+    },
+    {
+      "name": "captacao_de_recursos_e_patrocinios",
+      "children": [
+        {"name": "lei_de_incentivo_ao_esporte"},
+        {"name": "parcerias_comerciais"},
+        {"name": "projetos_sociais"}
+      ]
+    },
+    {"name": "assessoria_de_imprensa"},
+    {"name": "suporte_psicologico"},
+    {"name": "planejamento_financeiro"},
+    {"name": "preparacao_fisica"},
+    {"name": "educacao_academica"},
+    {"name": "network_profissional"}
+  ]
+}

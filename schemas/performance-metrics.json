@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eco-sports.local/schemas/performance-metrics.json",
+  "title": "PerformanceMetrics",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "tenantId",
+    "athleteId",
+    "sport",
+    "context",
+    "period",
+    "metrics",
+    "createdAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenantId": {
+      "type": "string"
+    },
+    "athleteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sport": {
+      "type": "string"
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceType"],
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "enum": ["training", "match", "assessment", "video_review", "combined"]
+        },
+        "sessionId": { "type": "string" },
+        "matchId": { "type": "string" },
+        "opponent": { "type": "string" },
+        "competition": { "type": "string" },
+        "location": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startedAt", "endedAt"],
+      "properties": {
+        "startedAt": { "type": "string", "format": "date-time" },
+        "endedAt": { "type": "string", "format": "date-time" },
+        "season": { "type": "string" },
+        "cycle": { "type": "string" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minutesPlayed": { "type": "number", "minimum": 0 },
+        "points": { "type": "number", "minimum": 0 },
+        "assists": { "type": "number", "minimum": 0 },
+        "rebounds": { "type": "number", "minimum": 0 },
+        "steals": { "type": "number", "minimum": 0 },
+        "blocks": { "type": "number", "minimum": 0 },
+        "turnovers": { "type": "number", "minimum": 0 },
+        "fouls": { "type": "number", "minimum": 0 },
+        "fieldGoalAttempts": { "type": "number", "minimum": 0 },
+        "fieldGoalsMade": { "type": "number", "minimum": 0 },
+        "threePointAttempts": { "type": "number", "minimum": 0 },
+        "threePointsMade": { "type": "number", "minimum": 0 },
+        "freeThrowAttempts": { "type": "number", "minimum": 0 },
+        "freeThrowsMade": { "type": "number", "minimum": 0 },
+        "fieldGoalPct": { "type": "number", "minimum": 0, "maximum": 1 },
+        "threePointPct": { "type": "number", "minimum": 0, "maximum": 1 },
+        "freeThrowPct": { "type": "number", "minimum": 0, "maximum": 1 },
+        "sprintSpeedMps": { "type": "number", "minimum": 0 },
+        "verticalJumpCm": { "type": "number", "minimum": 0 },
+        "agilitySeconds": { "type": "number", "minimum": 0 },
+        "enduranceScore": { "type": "number", "minimum": 0 },
+        "coachRating": { "type": "number", "minimum": 0, "maximum": 10 },
+        "technicalNotes": { "type": "string" },
+        "videoTags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "benchmarks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "positionAverage": { "type": "object" },
+        "teamAverage": { "type": "object" },
+        "seasonTrend": {
+          "type": "string",
+          "enum": ["up", "down", "stable", "unknown"]
+        }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "url"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["video", "image", "report", "spreadsheet", "other"]
+          },
+          "url": { "type": "string", "format": "uri" },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
