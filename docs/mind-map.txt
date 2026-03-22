@@ -1,0 +1,190 @@
+SERVIÇOS
+
+├── 1. Gestão de Carreira
+│
+│   ├── Planejamento de Carreira
+│   │   ├── Avaliação Inicial
+│   │   │   ├── Análise de perfil do atleta (habilidades técnicas, físicas e comportamentais)
+│   │   │   └── Revisão de conquistas e histórico esportivo
+│   │   │
+│   │   ├── Definição de Metas
+│   │   │   ├── Objetivos por temporada
+│   │   │   └── Metas complementares (exposição digital, habilidades extracurriculares)
+│   │   │
+│   │   ├── Roteiro de Progresso
+│   │   │   ├── Cronograma de treinos e competições
+│   │   │   ├── Networking com clubes e agentes
+│   │   │   └── Revisões periódicas do planejamento
+│   │   │
+│   │   └── Ferramentas
+│   │       ├── Planilhas de planejamento
+│   │       └── Relatórios trimestrais
+│   │
+│   ├── Assessoria a Pais
+│   │   ├── Workshops e cursos
+│   │   ├── Consultorias individuais
+│   │   ├── Guia educacional para pais
+│   │   └── Comunidade de suporte
+│   │
+│   ├── Orientação Profissional
+│   │   ├── Mapeamento de possibilidades de carreira
+│   │   ├── Mentoria com profissionais do esporte
+│   │   ├── Preparação para transições de categoria
+│   │   └── Banco de dados de clubes e universidades
+│   │
+│   └── Ferramentas de Suporte
+│       ├── Plataforma digital
+│       ├── Aplicativo mobile
+│       └── Conteúdo educacional
+│
+│
+├── 2. Desenvolvimento Técnico
+│
+│   ├── Avaliação Técnica
+│   │   ├── Diagnóstico de habilidades
+│   │   ├── Identificação de pontos fortes
+│   │   └── Identificação de pontos fracos
+│   │
+│   ├── Treinamento de Fundamentos
+│   │   ├── Arremessos
+│   │   ├── Dribles
+│   │   ├── Passes
+│   │   └── Posicionamento defensivo
+│   │
+│   ├── Treinamento de Tomada de Decisão
+│   │   └── Simulações de jogo
+│   │
+│   ├── Treinamento Físico Específico
+│   │   ├── Explosão muscular
+│   │   ├── Resistência
+│   │   ├── Agilidade
+│   │   └── Coordenação
+│   │
+│   └── Uso de Tecnologia
+│       ├── Análise de vídeo
+│       └── Apps de monitoramento de desempenho
+│
+│
+├── 3. Treinamentos Específicos
+│
+│   ├── Sessões Individuais
+│   ├── Treinos em Pequenos Grupos
+│   ├── Programas Personalizados
+│   └── Avaliações Técnicas Periódicas
+│
+│
+├── 4. Gestão de Desempenho
+│
+│   ├── Acompanhamento Estatístico
+│   │   ├── Pontos
+│   │   ├── Assistências
+│   │   ├── Rebotes
+│   │   ├── Roubos de bola
+│   │   └── Minutos jogados
+│   │
+│   ├── Análise em Vídeo
+│   │   ├── Revisão de jogos
+│   │   ├── Revisão de treinos
+│   │   └── Feedback visual
+│   │
+│   ├── Monitoramento Contínuo
+│   │   ├── Coleta periódica de dados
+│   │   ├── Comparação com metas
+│   │   └── Evolução ao longo da temporada
+│   │
+│   ├── Identificação de Pontos Fracos
+│   │   ├── Diagnóstico técnico
+│   │   └── Comparação com atletas da mesma posição
+│   │
+│   └── Plano de Melhoria Individual
+│       ├── Definição de metas técnicas
+│       ├── Planejamento de treinos
+│       └── Acompanhamento de progresso
+│
+│
+├── 5. Marketing e Portfólio
+│
+│   ├── Portfólio Digital
+│   │   ├── Perfil do atleta
+│   │   ├── Histórico esportivo
+│   │   └── Estatísticas
+│   │
+│   ├── Gestão de Redes Sociais
+│   │   ├── Estratégia de conteúdo
+│   │   ├── Análise de engajamento
+│   │   └── Desenvolvimento de marca pessoal
+│   │
+│   ├── Produção de Highlights
+│   │   ├── Vídeos de melhores jogadas
+│   │   └── Edição profissional
+│   │
+│   └── Divulgação para Scouts
+│       ├── Envio de material para clubes
+│       └── Apresentações para recrutadores
+│
+│
+├── 6. Suporte Jurídico
+│
+│   ├── Contratos e Direitos
+│   │   ├── Revisão de contratos
+│   │   ├── Direitos trabalhistas
+│   │   └── Direitos de imagem
+│   │
+│   ├── Negociações
+│   │   ├── Negociação com clubes
+│   │   └── Negociação com patrocinadores
+│   │
+│   └── Proteção de Imagem
+│       ├── Monitoramento de uso da imagem
+│       └── Estratégias de posicionamento
+│
+│
+├── 7. Captação de Recursos e Patrocínios
+│
+│   ├── Lei de Incentivo ao Esporte
+│   │   ├── Elaboração de projetos
+│   │   ├── Captação de empresas
+│   │   └── Gestão de recursos
+│   │
+│   ├── Parcerias Comerciais
+│   │   ├── Prospecção de patrocinadores
+│   │   ├── Propostas de visibilidade
+│   │   └── Gestão de contratos
+│   │
+│   └── Projetos Sociais
+│       ├── Programas esportivos comunitários
+│       ├── Parcerias com ONGs
+│       └── Campanhas de doação
+│
+│
+├── 8. Assessoria de Imprensa
+│   ├── Produção de releases
+│   ├── Gestão de entrevistas
+│   └── Relação com mídia
+│
+├── 9. Suporte Psicológico
+│   ├── Preparação mental
+│   ├── Gestão de pressão competitiva
+│   └── Desenvolvimento de foco
+│
+├── 10. Planejamento Financeiro
+│   ├── Educação financeira
+│   ├── Planejamento de investimentos
+│   └── Gestão de receitas esportivas
+│
+├── 11. Preparação Física
+│   ├── Avaliação física
+│   ├── Treinamento de força
+│   ├── Prevenção de lesões
+│   └── Nutrição esportiva
+│
+├── 12. Educação Acadêmica
+│   ├── Planejamento educacional
+│   ├── Conciliação estudo e esporte
+│   └── Preparação para carreira pós-esporte
+│
+└── 13. Network Profissional
+    ├── Conexão com clubes
+    ├── Conexão com treinadores
+    ├── Conexão com recrutadores
+    └── Participação em eventos esportivos
