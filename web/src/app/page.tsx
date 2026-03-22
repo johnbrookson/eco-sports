@@ -1,0 +1,392 @@
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ScrollReveal } from "@/components/scroll-reveal";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { SiteFooter } from "@/components/site-footer";
+import {
+  ArrowRight,
+  ChartBar,
+  Target,
+  VideoCamera,
+  Briefcase,
+  Scales,
+  CurrencyDollar,
+  TrendUp,
+  Play,
+} from "@phosphor-icons/react/dist/ssr";
+
+export default function Home() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      {/* Nav */}
+      <nav className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 lg:px-16">
+        <span className="text-2xl font-black text-white tracking-tight">
+          Eco-Sports
+        </span>
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
+          <Link href="/ferramentas" className="hover:text-white transition-colors">
+            Ferramentas
+          </Link>
+          <Link href="/blog" className="hover:text-white transition-colors">
+            Blog
+          </Link>
+          <Link href="/ecossistema" className="hover:text-white transition-colors">
+            Ecossistema
+          </Link>
+          <a href="#audience" className="hover:text-white transition-colors">
+            Para quem
+          </a>
+          <a href="#pricing" className="hover:text-white transition-colors">
+            Planos
+          </a>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <ThemeSwitcher variant="inline" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white/90 hover:text-white hover:bg-white/10 font-medium text-xs sm:text-sm"
+          >
+            Entrar
+          </Button>
+          <Button
+            size="sm"
+            className="bg-white text-primary font-bold hover:bg-white/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm"
+          >
+            Cadastrar
+          </Button>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="relative flex items-center min-h-[60vh] bg-gradient-to-br from-hero-start to-hero-end overflow-hidden">
+        <div className="relative z-[1] mx-auto w-full max-w-[1400px] px-8 lg:px-20">
+          <div className="grid lg:grid-cols-[1fr_1.1fr] gap-8 items-center min-h-[60vh] pt-24 pb-16">
+            {/* Left — text */}
+            <div>
+              <h1 className="text-4xl font-black leading-[1.1] tracking-tight text-white sm:text-5xl xl:text-6xl">
+                A plataforma
+                <br />
+                completa para atletas
+                <br />
+                <span className="animate-shimmer bg-gradient-to-r from-hero-accent via-white to-hero-accent bg-clip-text text-transparent">
+                  de categorias de base.
+                </span>
+              </h1>
+              <p className="mt-8 max-w-lg text-xl leading-relaxed text-white/65 font-light">
+                Gestão de carreira, análise de desempenho, portfólio
+                profissional e captação de recursos — tudo em um só lugar.
+              </p>
+              <div className="mt-12 flex flex-col gap-4 sm:flex-row">
+                <Button
+                  size="lg"
+                  className="btn-glow bg-white text-primary font-bold hover:bg-white/90 text-base px-10 h-14 rounded-full shadow-xl shadow-black/25 transition-transform hover:scale-105"
+                >
+                  Começar agora
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-white/50 text-white font-bold hover:bg-white/15 hover:border-white/70 text-base px-10 h-14 rounded-full bg-white/10 backdrop-blur-sm"
+                >
+                  Conhecer a plataforma
+                </Button>
+              </div>
+            </div>
+
+            {/* Right — floating cards composition */}
+            <div className="hidden lg:flex items-center justify-center relative">
+              <div className="relative w-full h-[600px]">
+                {/* Main dashboard card — tilted */}
+                <div className="absolute top-6 left-4 w-80 rounded-3xl bg-white border border-gray-200 shadow-2xl shadow-black/30 p-7 z-[3] animate-float-slow">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-11 w-11 rounded-xl bg-primary flex items-center justify-center">
+                        <ChartBar weight="duotone"className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">
+                          Performance
+                        </p>
+                        <p className="text-xs text-gray-400">Última semana</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded-full">
+                      <TrendUp weight="duotone"className="h-3 w-3" />
+                      +12.5%
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5 items-end h-24">
+                    {[35, 55, 40, 70, 50, 85, 65, 90, 60, 75, 95, 80].map(
+                      (h, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 rounded-md bg-gradient-to-t from-primary to-accent"
+                          style={{ height: `${h}%` }}
+                        />
+                      )
+                    )}
+                  </div>
+                  <div className="mt-5 flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-gray-900">
+                      87.3
+                    </span>
+                    <span className="text-sm text-gray-400 font-medium">
+                      / 100
+                    </span>
+                  </div>
+                </div>
+
+                {/* Athlete profile card — tilted opposite */}
+                <div className="absolute top-0 right-0 w-64 rounded-3xl bg-white border border-gray-200 shadow-2xl shadow-black/25 p-6 z-[4] animate-float-medium">
+                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-accent to-primary mx-auto mb-4 ring-4 ring-primary/15" />
+                  <p className="text-center text-base font-bold text-gray-900">
+                    Lucas Ferreira
+                  </p>
+                  <p className="text-center text-sm text-gray-400 font-medium">
+                    Atacante · Sub-20
+                  </p>
+                  <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+                    <div className="bg-gray-50 rounded-xl py-3">
+                      <p className="text-lg font-black text-gray-900">24</p>
+                      <p className="text-[11px] text-gray-400 font-medium">
+                        Gols
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl py-3">
+                      <p className="text-lg font-black text-gray-900">18</p>
+                      <p className="text-[11px] text-gray-400 font-medium">
+                        Assists
+                      </p>
+                    </div>
+                    <div className="bg-primary/10 rounded-xl py-3">
+                      <p className="text-lg font-black text-primary">9.2</p>
+                      <p className="text-[11px] text-primary/70 font-medium">
+                        Rating
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Video analysis card */}
+                <div className="absolute bottom-12 left-8 w-72 rounded-3xl bg-white border border-gray-200 shadow-2xl shadow-black/25 p-6 z-[5] animate-float-fast">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-11 w-11 rounded-xl bg-accent flex items-center justify-center">
+                      <VideoCamera weight="duotone"className="h-5 w-5 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">
+                        Análise de Vídeo
+                      </p>
+                      <p className="text-xs text-gray-400">3 novos clipes</p>
+                    </div>
+                  </div>
+                  <div className="h-28 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 to-transparent" />
+                    <div className="h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center z-[1]">
+                      <Play weight="duotone"className="h-5 w-5 text-accent ml-0.5" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating notification badges */}
+                <div className="absolute bottom-4 right-4 rounded-2xl bg-primary text-primary-foreground px-5 py-3 text-sm font-bold shadow-xl shadow-primary/30 z-[6] animate-pulse-badge">
+                  ⚡ Scout interessado!
+                </div>
+
+                <div className="absolute top-[45%] right-16 rounded-2xl bg-amber-400 text-amber-950 px-4 py-2.5 text-xs font-bold shadow-xl shadow-amber-400/30 z-[6] animate-pulse-badge-alt">
+                  🏆 Top 5 do mês
+                </div>
+
+                {/* Decorative elements */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-72 w-72 rounded-full border-2 border-white/[0.06]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[420px] w-[420px] rounded-full border-2 border-white/[0.03]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Background glows */}
+        <div className="absolute right-1/4 top-1/4 h-[600px] w-[600px] rounded-full bg-primary/15 blur-[150px]" />
+        <div className="absolute -left-20 bottom-1/4 h-[400px] w-[400px] rounded-full bg-accent/10 blur-[120px]" />
+        <div className="absolute right-0 bottom-0 h-[300px] w-[300px] rounded-full bg-primary/10 blur-[100px]" />
+
+        {/* Diagonal cut */}
+        <div className="absolute -bottom-px left-0 right-0">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-[80px] sm:h-[120px] block"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 120L1440 120L1440 0L0 108Z"
+              className="fill-background"
+            />
+          </svg>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-28 px-8 lg:px-16 bg-primary/[0.06]">
+        <div className="mx-auto max-w-7xl">
+          <ScrollReveal>
+            <h2 className="text-center text-3xl font-extrabold tracking-tight sm:text-5xl">
+              Tudo que o atleta precisa
+              <br />
+              <span className="text-primary">para evoluir</span>
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-center text-muted-foreground text-lg">
+              Ferramentas integradas para cada etapa da carreira esportiva.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={100} className="mt-20 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="group rounded-2xl border bg-card p-8 shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
+              >
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  {f.icon}
+                </div>
+                <h3 className="text-xl font-bold">{f.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {f.description}
+                </p>
+                <Link
+                  href={`/ferramentas#${f.anchor}`}
+                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline transition-colors"
+                >
+                  Saiba mais…
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            ))}
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Audience */}
+      <section id="audience" className="py-28 px-8 lg:px-16 bg-muted/50">
+        <div className="mx-auto max-w-7xl">
+          <ScrollReveal>
+            <h2 className="text-center text-3xl font-extrabold tracking-tight sm:text-5xl">
+              Para quem é o{" "}
+              <span className="text-primary">Eco-Sports</span>?
+            </h2>
+          </ScrollReveal>
+          <ScrollReveal delay={100} className="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
+            {audiences.map((a) => (
+              <div
+                key={a.label}
+                className="flex flex-col items-center rounded-2xl border bg-card p-10 text-center shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
+              >
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  {a.iconEl}
+                </div>
+                <h3 className="mt-5 text-lg font-bold">{a.label}</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  {a.desc}
+                </p>
+              </div>
+            ))}
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-28 px-8 lg:px-16 bg-gradient-to-br from-hero-start to-hero-end text-white">
+        <ScrollReveal className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl leading-tight">
+            Pronto para transformar
+            <br />
+            sua carreira esportiva?
+          </h2>
+          <p className="mt-6 text-lg text-white/70">
+            Junte-se a atletas, treinadores e clubes que já estão usando a
+            plataforma.
+          </p>
+          <Button
+            size="lg"
+            className="mt-10 btn-glow bg-white text-primary font-bold hover:bg-white/90 text-base px-10 h-14 rounded-full shadow-xl shadow-black/25 transition-transform hover:scale-105"
+          >
+            Criar conta gratuita
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </ScrollReveal>
+      </section>
+
+      <SiteFooter />
+    </div>
+  );
+}
+
+const features = [
+  {
+    icon: <ChartBar weight="duotone"className="h-6 w-6" />,
+    title: "Análise de Desempenho",
+    description:
+      "Métricas de treino, jogo e avaliação centralizadas com dashboards inteligentes.",
+    anchor: "analise-desempenho",
+  },
+  {
+    icon: <Target weight="duotone"className="h-6 w-6" />,
+    title: "Gestão de Carreira",
+    description:
+      "Planejamento de metas, transições e oportunidades ao longo de toda a trajetória.",
+    anchor: "gestao-carreira",
+  },
+  {
+    icon: <VideoCamera weight="duotone"className="h-6 w-6" />,
+    title: "Análise de Vídeo",
+    description:
+      "Upload, recorte e anotação de vídeos para evolução técnica e tática.",
+    anchor: "analise-video",
+  },
+  {
+    icon: <Briefcase weight="duotone"className="h-6 w-6" />,
+    title: "Portfólio Profissional",
+    description:
+      "Perfil público compartilhável com highlights, estatísticas e histórico.",
+    anchor: "portfolio",
+  },
+  {
+    icon: <Scales weight="duotone"className="h-6 w-6" />,
+    title: "Suporte Jurídico",
+    description:
+      "Revisão de contratos, gestão de consentimentos e conformidade com LGPD.",
+    anchor: "juridico",
+  },
+  {
+    icon: <CurrencyDollar weight="duotone"className="h-6 w-6" />,
+    title: "Patrocínios e Captação",
+    description:
+      "Conexão com patrocinadores, Lei de Incentivo ao Esporte e projetos de captação.",
+    anchor: "patrocinios",
+  },
+];
+
+const audiences = [
+  {
+    iconEl: <Target weight="duotone"className="h-7 w-7" />,
+    label: "Atletas",
+    desc: "Em formação ou profissionais buscando gestão integral da carreira.",
+  },
+  {
+    iconEl: <ChartBar weight="duotone"className="h-7 w-7" />,
+    label: "Treinadores",
+    desc: "Planejamento de treinos, métricas e acompanhamento de atletas.",
+  },
+  {
+    iconEl: <Briefcase weight="duotone"className="h-7 w-7" />,
+    label: "Clubes e Academias",
+    desc: "Gestão de elenco, scouting e desenvolvimento de talentos.",
+  },
+  {
+    iconEl: <CurrencyDollar weight="duotone"className="h-7 w-7" />,
+    label: "Patrocinadores",
+    desc: "Encontre e apoie atletas alinhados com a sua marca.",
+  },
+];
