@@ -798,9 +798,9 @@ const basketballValues: Record<string, string> = {
   "--border": "oklch(0.91 0.01 70)",
   "--ring": "oklch(0.65 0.22 45)",
   "--radius": "0.625rem",
-  "--hero-start": "oklch(0.60 0.20 45) — laranja",
-  "--hero-end": "oklch(0.20 0.04 250) — navy escuro",
-  "--hero-accent": "oklch(0.78 0.18 45) — laranja claro",
+  "--hero-start": "oklch(0.78 0.16 55) — laranja claro",
+  "--hero-end": "oklch(0.78 0.16 55) — laranja claro",
+  "--hero-accent": "oklch(0.85 0.12 55) — laranja suave",
 };
 
 const tokenReferenceIndigo = tokenBase.map((t) => ({
