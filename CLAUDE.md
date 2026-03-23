@@ -9,7 +9,7 @@ Eco-Sports é uma plataforma para **gestão completa de carreira e desenvolvimen
 ## Estrutura do repositório
 
 - `web/` — aplicação Next.js (frontend)
-  - `src/app/` — rotas da aplicação (landing page, design system)
+  - `src/app/` — rotas da aplicação (landing page, design system, ferramentas, ecossistema, blog, para-quem)
   - `src/components/ui/` — componentes shadcn/ui customizados
   - `src/components/` — componentes do projeto (theme-switcher)
   - `src/lib/` — utilitários
