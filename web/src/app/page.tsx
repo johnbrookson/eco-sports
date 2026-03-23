@@ -2,16 +2,25 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { MobileNav } from "@/components/mobile-nav";
+import { AutoCarousel } from "@/components/auto-carousel";
 import { SiteFooter } from "@/components/site-footer";
 import {
   ArrowRight,
+  Basketball,
+  Binoculars,
+  Buildings,
   ChartBar,
   Target,
   VideoCamera,
   Briefcase,
   Scales,
   CurrencyDollar,
+  Handshake,
+  HeartHalf,
+  Stethoscope,
   TrendUp,
+  Users,
   Play,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -33,9 +42,9 @@ export default function Home() {
           <Link href="/ecossistema" className="hover:text-white transition-colors">
             Ecossistema
           </Link>
-          <a href="#audience" className="hover:text-white transition-colors">
+          <Link href="/para-quem" className="hover:text-white transition-colors">
             Para quem
-          </a>
+          </Link>
           <a href="#pricing" className="hover:text-white transition-colors">
             Planos
           </a>
@@ -45,16 +54,17 @@ export default function Home() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-white/90 hover:text-white hover:bg-white/10 font-medium text-xs sm:text-sm"
+            className="hidden sm:inline-flex text-white/90 hover:text-white hover:bg-white/10 font-medium text-xs sm:text-sm"
           >
             Entrar
           </Button>
           <Button
             size="sm"
-            className="bg-white text-primary font-bold hover:bg-white/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm"
+            className="hidden sm:inline-flex bg-white text-primary font-bold hover:bg-white/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm"
           >
             Cadastrar
           </Button>
+          <MobileNav variant="hero" />
         </div>
       </nav>
 
@@ -69,7 +79,7 @@ export default function Home() {
                 <br />
                 completa para atletas
                 <br />
-                <span className="animate-shimmer bg-gradient-to-r from-hero-accent via-white to-hero-accent bg-clip-text text-transparent">
+                <span className="animate-shimmer bg-gradient-to-r from-white via-primary to-white bg-clip-text text-transparent">
                   de categorias de base.
                 </span>
               </h1>
@@ -99,11 +109,11 @@ export default function Home() {
             <div className="hidden lg:flex items-center justify-center relative">
               <div className="relative w-full h-[600px]">
                 {/* Main dashboard card — tilted */}
-                <div className="absolute top-6 left-4 w-80 rounded-3xl bg-white border border-gray-200 shadow-2xl shadow-black/30 p-7 z-[3] animate-float-slow">
+                <div className="absolute top-6 left-4 w-80 rounded-3xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl shadow-black/10 p-7 z-[3] animate-float-slow">
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-xl bg-primary flex items-center justify-center">
-                        <ChartBar weight="duotone"className="h-5 w-5 text-white" />
+                      <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <ChartBar weight="duotone" className="h-5 w-5 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm font-bold text-gray-900">
@@ -112,8 +122,8 @@ export default function Home() {
                         <p className="text-xs text-gray-400">Última semana</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded-full">
-                      <TrendUp weight="duotone"className="h-3 w-3" />
+                    <div className="flex items-center gap-1 text-primary text-xs font-bold bg-primary/10 px-2.5 py-1 rounded-full">
+                      <TrendUp weight="duotone" className="h-3 w-3" />
                       +12.5%
                     </div>
                   </div>
@@ -122,7 +132,7 @@ export default function Home() {
                       (h, i) => (
                         <div
                           key={i}
-                          className="flex-1 rounded-md bg-gradient-to-t from-primary to-accent"
+                          className="flex-1 rounded-md bg-gradient-to-t from-primary/80 to-primary/30"
                           style={{ height: `${h}%` }}
                         />
                       )
@@ -139,30 +149,30 @@ export default function Home() {
                 </div>
 
                 {/* Athlete profile card — tilted opposite */}
-                <div className="absolute top-0 right-0 w-64 rounded-3xl bg-white border border-gray-200 shadow-2xl shadow-black/25 p-6 z-[4] animate-float-medium">
-                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-accent to-primary mx-auto mb-4 ring-4 ring-primary/15" />
+                <div className="absolute top-0 right-0 w-64 rounded-3xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl shadow-black/10 p-6 z-[4] animate-float-medium">
+                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 mx-auto mb-4 ring-2 ring-primary/10" />
                   <p className="text-center text-base font-bold text-gray-900">
                     Lucas Ferreira
                   </p>
                   <p className="text-center text-sm text-gray-400 font-medium">
-                    Atacante · Sub-20
+                    Armador · Sub-16
                   </p>
-                  <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-                    <div className="bg-gray-50 rounded-xl py-3">
+                  <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-gray-50/80 rounded-xl py-3">
                       <p className="text-lg font-black text-gray-900">24</p>
                       <p className="text-[11px] text-gray-400 font-medium">
-                        Gols
+                        Points
                       </p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl py-3">
+                    <div className="bg-gray-50/80 rounded-xl py-3">
                       <p className="text-lg font-black text-gray-900">18</p>
                       <p className="text-[11px] text-gray-400 font-medium">
                         Assists
                       </p>
                     </div>
-                    <div className="bg-primary/10 rounded-xl py-3">
+                    <div className="bg-primary/8 rounded-xl py-3">
                       <p className="text-lg font-black text-primary">9.2</p>
-                      <p className="text-[11px] text-primary/70 font-medium">
+                      <p className="text-[11px] text-primary/60 font-medium">
                         Rating
                       </p>
                     </div>
@@ -170,10 +180,10 @@ export default function Home() {
                 </div>
 
                 {/* Video analysis card */}
-                <div className="absolute bottom-12 left-8 w-72 rounded-3xl bg-white border border-gray-200 shadow-2xl shadow-black/25 p-6 z-[5] animate-float-fast">
+                <div className="absolute bottom-12 left-8 w-72 rounded-3xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl shadow-black/10 p-6 z-[5] animate-float-fast">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="h-11 w-11 rounded-xl bg-accent flex items-center justify-center">
-                      <VideoCamera weight="duotone"className="h-5 w-5 text-accent-foreground" />
+                    <div className="h-11 w-11 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <VideoCamera weight="duotone" className="h-5 w-5 text-accent" />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-900">
@@ -182,21 +192,21 @@ export default function Home() {
                       <p className="text-xs text-gray-400">3 novos clipes</p>
                     </div>
                   </div>
-                  <div className="h-28 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 to-transparent" />
-                    <div className="h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center z-[1]">
-                      <Play weight="duotone"className="h-5 w-5 text-accent ml-0.5" />
+                  <div className="h-28 rounded-2xl bg-gray-50/60 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent" />
+                    <div className="h-12 w-12 rounded-full bg-white/90 shadow-md flex items-center justify-center z-[1]">
+                      <Play weight="duotone" className="h-5 w-5 text-accent ml-0.5" />
                     </div>
                   </div>
                 </div>
 
                 {/* Floating notification badges */}
-                <div className="absolute bottom-4 right-4 rounded-2xl bg-primary text-primary-foreground px-5 py-3 text-sm font-bold shadow-xl shadow-primary/30 z-[6] animate-pulse-badge">
-                  ⚡ Scout interessado!
+                <div className="absolute bottom-4 right-4 rounded-2xl bg-primary text-white px-5 py-3 text-sm font-bold shadow-xl shadow-primary/30 z-[6] animate-pulse-badge">
+                  Scout interessado
                 </div>
 
-                <div className="absolute top-[45%] right-16 rounded-2xl bg-amber-400 text-amber-950 px-4 py-2.5 text-xs font-bold shadow-xl shadow-amber-400/30 z-[6] animate-pulse-badge-alt">
-                  🏆 Top 5 do mês
+                <div className="absolute top-[45%] right-16 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/40 text-gray-900 px-4 py-2.5 text-xs font-bold shadow-xl shadow-black/10 z-[6] animate-pulse-badge-alt">
+                  <span className="text-amber-500 mr-1">●</span> Top 5 do mês
                 </div>
 
                 {/* Decorative elements */}
@@ -269,31 +279,38 @@ export default function Home() {
       </section>
 
       {/* Audience */}
-      <section id="audience" className="py-28 px-8 lg:px-16 bg-muted/50">
-        <div className="mx-auto max-w-7xl">
+      <section id="audience" className="py-16 sm:py-28 bg-muted/50">
+        <div className="mx-auto max-w-7xl px-8 lg:px-16">
           <ScrollReveal>
             <h2 className="text-center text-3xl font-extrabold tracking-tight sm:text-5xl">
               Para quem é o{" "}
               <span className="text-primary">Eco-Sports</span>?
             </h2>
           </ScrollReveal>
-          <ScrollReveal delay={100} className="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
+        </div>
+        <ScrollReveal delay={100}>
+          <AutoCarousel
+            interval={3000}
+            className="mt-10 sm:mt-20 flex lg:justify-center gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
+          >
+            <div className="shrink-0 w-3 lg:hidden" aria-hidden="true" />
             {audiences.map((a) => (
               <div
                 key={a.label}
-                className="flex flex-col items-center rounded-2xl border bg-card p-10 text-center shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
+                data-carousel-item
+                className="flex flex-col items-center rounded-2xl border bg-card p-8 text-center shadow-md transition-all hover:shadow-xl hover:-translate-y-1 snap-start shrink-0 w-64 sm:w-56"
               >
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   {a.iconEl}
                 </div>
-                <h3 className="mt-5 text-lg font-bold">{a.label}</h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                <h3 className="mt-4 text-base font-bold">{a.label}</h3>
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
                   {a.desc}
                 </p>
               </div>
             ))}
-          </ScrollReveal>
-        </div>
+          </AutoCarousel>
+        </ScrollReveal>
       </section>
 
       {/* CTA */}
@@ -370,23 +387,53 @@ const features = [
 
 const audiences = [
   {
-    iconEl: <Target weight="duotone"className="h-7 w-7" />,
-    label: "Atletas",
-    desc: "Em formação ou profissionais buscando gestão integral da carreira.",
+    iconEl: <Basketball weight="duotone" className="h-7 w-7" />,
+    label: "Atletas de Base",
+    desc: "Visibilidade, portfólio digital e gestão de carreira desde a formação.",
   },
   {
-    iconEl: <ChartBar weight="duotone"className="h-7 w-7" />,
+    iconEl: <Users weight="duotone" className="h-7 w-7" />,
+    label: "Pais e Responsáveis",
+    desc: "Transparência sobre a evolução, segurança jurídica e orientação.",
+  },
+  {
+    iconEl: <Target weight="duotone" className="h-7 w-7" />,
     label: "Treinadores",
     desc: "Planejamento de treinos, métricas e acompanhamento de atletas.",
   },
   {
-    iconEl: <Briefcase weight="duotone"className="h-7 w-7" />,
+    iconEl: <Buildings weight="duotone" className="h-7 w-7" />,
     label: "Clubes e Academias",
-    desc: "Gestão de elenco, scouting e desenvolvimento de talentos.",
+    desc: "Gestão de elenco, seletivas estruturadas e desenvolvimento de talentos.",
   },
   {
-    iconEl: <CurrencyDollar weight="duotone"className="h-7 w-7" />,
+    iconEl: <Binoculars weight="duotone" className="h-7 w-7" />,
+    label: "Scouts",
+    desc: "Base de atletas com filtros, highlights e estatísticas verificadas.",
+  },
+  {
+    iconEl: <CurrencyDollar weight="duotone" className="h-7 w-7" />,
     label: "Patrocinadores",
-    desc: "Encontre e apoie atletas alinhados com a sua marca.",
+    desc: "Investimento com impacto real, visibilidade e relatórios de retorno.",
+  },
+  {
+    iconEl: <Stethoscope weight="duotone" className="h-7 w-7" />,
+    label: "Profissionais",
+    desc: "Marketplace com perfil, agendamento e pagamento integrados.",
+  },
+  {
+    iconEl: <HeartHalf weight="duotone" className="h-7 w-7" />,
+    label: "Psicólogos Esportivos",
+    desc: "Suporte emocional integrado ao perfil e dados de performance.",
+  },
+  {
+    iconEl: <Scales weight="duotone" className="h-7 w-7" />,
+    label: "Advogados Esportivos",
+    desc: "Revisão de contratos e proteção jurídica para atletas de base.",
+  },
+  {
+    iconEl: <Handshake weight="duotone" className="h-7 w-7" />,
+    label: "Projetos Sociais",
+    desc: "Gestão digital, relatórios de impacto e captação de recursos.",
   },
 ];
