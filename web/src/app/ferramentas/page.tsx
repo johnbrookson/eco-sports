@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { ScrollLink } from "@/components/scroll-link";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { MobileNav } from "@/components/mobile-nav";
 import { SiteFooter } from "@/components/site-footer";
 import {
   ArrowLeft,
@@ -397,7 +398,7 @@ export default function FerramentasPage() {
           <Link href="/ecossistema" className="hover:text-primary-foreground transition-colors">
             Ecossistema
           </Link>
-          <Link href="/#audience" className="hover:text-primary-foreground transition-colors">
+          <Link href="/para-quem" className="hover:text-primary-foreground transition-colors">
             Para quem
           </Link>
           <Link href="/#pricing" className="hover:text-primary-foreground transition-colors">
@@ -409,16 +410,17 @@ export default function FerramentasPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 font-medium text-xs sm:text-sm"
+            className="hidden sm:inline-flex text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 font-medium text-xs sm:text-sm"
           >
             Entrar
           </Button>
           <Button
             size="sm"
-            className="bg-primary-foreground text-primary font-bold hover:bg-primary-foreground/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm"
+            className="hidden sm:inline-flex bg-primary-foreground text-primary font-bold hover:bg-primary-foreground/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm"
           >
             Cadastrar
           </Button>
+          <MobileNav />
         </div>
       </nav>
 

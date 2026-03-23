@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { MobileNav } from "@/components/mobile-nav";
 import { SiteFooter } from "@/components/site-footer";
 import {
   Target,
@@ -184,17 +185,18 @@ export default function EcossistemaPage() {
           <Link href="/ferramentas" className="hover:text-primary-foreground transition-colors">Ferramentas</Link>
           <Link href="/blog" className="hover:text-primary-foreground transition-colors">Blog</Link>
           <Link href="/ecossistema" className="text-primary-foreground font-semibold">Ecossistema</Link>
-          <Link href="/#audience" className="hover:text-primary-foreground transition-colors">Para quem</Link>
+          <Link href="/para-quem" className="hover:text-primary-foreground transition-colors">Para quem</Link>
           <Link href="/#pricing" className="hover:text-primary-foreground transition-colors">Planos</Link>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           <ThemeSwitcher variant="inline" />
-          <Button variant="ghost" size="sm" className="text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 font-medium text-xs sm:text-sm">
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 font-medium text-xs sm:text-sm">
             Entrar
           </Button>
-          <Button size="sm" className="bg-primary-foreground text-primary font-bold hover:bg-primary-foreground/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm">
+          <Button size="sm" className="hidden sm:inline-flex bg-primary-foreground text-primary font-bold hover:bg-primary-foreground/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm">
             Cadastrar
           </Button>
+          <MobileNav />
         </div>
       </nav>
 
