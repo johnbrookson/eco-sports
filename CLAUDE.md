@@ -11,11 +11,20 @@ Eco-Sports é uma plataforma para **gestão completa de carreira e desenvolvimen
 - `web/` — aplicação Next.js (frontend)
   - `src/app/` — rotas da aplicação
     - Marketing público (flat, sem route group ainda): `/`, `/para-quem`, `/ferramentas`, `/ecossistema`, `/blog`, `/design-system`
+    - Vitrine pública de atletas: `/atletas` (Server Component com busca + filtros; lista apenas atletas com `visibility.discoverable`)
     - Perfil público do atleta no route group `(profile)`: `/atleta/[slug]` (sport-magazine style, respeita `visibility` do schema; `not-found.tsx` customizado)
+    - Autenticação no route group `(auth)`: `/login` (Server Actions stub contra mock users, JWT via jose)
+    - SaaS autenticado no route group `(app)`: `/app` (dashboard), `/app/perfil` (editor do atleta), `/app/performance` (histórico de partidas e avaliações com gráficos recharts), `/app/em-construcao` (placeholder das personas não implementadas)
+    - `proxy.ts` (`src/proxy.ts`) protege `/app/*` com redirect pra `/login`; autorização autoritativa acontece no DAL dentro de cada Server Component/Action
   - `src/components/ui/` — componentes shadcn/ui customizados
-  - `src/components/` — componentes do projeto (theme-switcher)
-  - `src/lib/` — utilitários (`utils.ts`, `blog-data.ts`, `mock/` fixtures de atletas)
-  - `src/types/` — types TypeScript alinhados aos JSON Schemas de `schemas/`
+  - `src/components/` — componentes do projeto (theme-switcher, site-nav compartilhado com 3 variantes, athlete-directory-card)
+  - `src/lib/` — utilitários e infra
+    - `auth/` — session (jose), mock-users, DAL (`verifySession`, `getCurrentAthlete`), Server Actions de login/logout
+    - `mock/` — fixtures de atletas e performance com helpers memoizados via React `cache()`
+    - `profile/actions.ts` — `saveProfile` Server Action
+    - `performance/actions.ts` — `addPerformanceEvent` Server Action (Zod discriminated union por tipo de evento)
+    - `utils.ts`, `blog-data.ts`
+  - `src/types/` — types TypeScript alinhados aos JSON Schemas de `schemas/` (`athlete.ts`, `performance.ts`)
 - `docs/` — documentação de arquitetura, modelo de negócio, roadmap e framework operacional
   - Arquivos `01-` a `04-` são versões expandidas e detalhadas
   - `arquitetura.md`, `modelo-negocio.md`, `roadmap.md` são versões resumidas
@@ -37,9 +46,12 @@ Identity & Access | Athlete Profile | Career Management | Performance & Analytic
 ### Stack técnica
 
 - **Frontend (web)**: Next.js 16 + TypeScript + Tailwind CSS v4 + shadcn/ui
-- **Design System**: Dois temas configuráveis via `data-theme` (indigo e basketball)
+- **Design System**: Dois temas configuráveis via `data-theme` (indigo e basketball), com token `--profile-surface` para a superfície editorial escura usada na vitrine/perfil público
+- **Auth (stub)**: `jose` para JWT HS256 + cookie HttpOnly; payload formato OIDC-like (trocável por Keycloak/Auth.js/Clerk/Auth0 sem mexer em UI)
+- **Validação de forms**: `zod` em todas as Server Actions (login, saveProfile, addPerformanceEvent)
+- **Gráficos**: `recharts` (usado em `/app/performance`); strokes usam CSS custom properties dos tokens de tema
 - **Fonte**: Inter (Google Fonts)
-- **Ícones**: Lucide React
+- **Ícones**: Lucide React (+ Phosphor Icons SSR em páginas de marketing legadas)
 - **Mobile** (futuro): React Native ou Flutter
 - **Backend** (futuro): Go ou Node.js (monólito modular inicialmente)
 - **Banco** (futuro): PostgreSQL + S3-compatible (storage) + Redis (cache/filas)

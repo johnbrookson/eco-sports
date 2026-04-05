@@ -119,29 +119,61 @@ Na **topbar**, um **persona switcher mockado** permitirá alternar para visões 
 
 ## Estado atual (2026-04-05)
 
-**Em implementação ativa.** A ordem de construção foi deliberadamente **trocada** em relação ao plano original: em vez de começar pelos root layouts, `proxy.ts` e stub de auth, fomos direto pelo **perfil público do atleta** (`/atleta/[slug]`). Motivo: o perfil público é vitrine/canal de aquisição orgânica, não depende de auth, e sua estética (sport-magazine, editorial) é muito diferente da do SaaS — começar por ele define o tom visual e o ponto de entrada externo da plataforma antes de investirmos na complexidade da área autenticada.
+**Persona `athlete` v1 completa.** A ordem de construção foi deliberadamente **trocada** em relação ao plano original: começamos pelo **perfil público do atleta** (`/atleta/[slug]`) em vez dos layouts + `proxy.ts` + auth, porque o perfil público é vitrine/canal de aquisição orgânica e não depende de auth. Na sequência construímos a vitrine pública `/atletas`, o stub de auth, o perfil editável e o histórico de performance — fechando as três telas centrais da persona atleta previstas no plano (dashboard, perfil, performance).
 
-### Já construído
+### Público / marketing
 
-- **Schema `athlete.json`** ganhou os campos `slug` (pattern `^[a-z0-9][a-z0-9-]{2,59}$`, único por tenant, editável pelo atleta) e o bloco required `visibility` com master switch `publicProfileEnabled` + 8 flags granulares (`showPhoto`, `showAge`, `showCity`, `showPhysicalProfile`, `showHighlightVideos`, `showAchievements`, `showCurrentClub`, `showContact`). Defaults restritivos — o atleta opta por expor.
-- **Types TypeScript** em `web/src/types/athlete.ts` alinhados ao JSON Schema (com comentário `// fonte: schemas/athlete.json`). Futuro: gerar via `json-schema-to-typescript`.
-- **Mocks** em `web/src/lib/mock/athletes.ts` — dois atletas completos de basquete de base (armador sub-17 em São Paulo, ala-pivô sub-18 no Rio) com bios editoriais separadas em `mockAthleteBios`. Helper `getAthleteBySlug` memoizado com React `cache()` em `web/src/lib/mock/get-athlete.ts`, respeitando `publicProfileEnabled` (retorna `null` e dispara 404 se desabilitado).
-- **Route group `(profile)`** com layout próprio minimalista: header absoluto sobre o hero (logo + CTA "Criar meu perfil") + footer discreto com link pra plataforma. Não herda nav institucional nem chrome de SaaS.
-- **Página `/atleta/[slug]`** em estilo sport-magazine — seções condicionais guiadas por `visibility`: hero full-bleed com gradient duplo e nome em duas linhas (primeiro branco, sobrenome em `--primary`), bio editorial, highlight video embed (YouTube, parser interno), ficha física em grid com números gigantes, conquistas numeradas estilo pauta, bloco de contato com até 4 canais.
-- **`generateMetadata`** dinâmica — `title`, `description`, OpenGraph `type: profile` com a foto do atleta, Twitter card. Compartilhar o link gera preview rico.
-- **`generateStaticParams`** gerando SSG dos slugs conhecidos (`joao-silva-2008`, `mariana-costa-2007`). `dynamicParams` default = true, então slugs desconhecidos caem no 404 customizado via renderização on-demand.
-- **`not-found.tsx` customizado** escopado em `(profile)/atleta/[slug]/not-found.tsx`, mesmo visual do perfil real (hero escuro, badges, duas linhas na headline "Atleta / fora de quadra", 2 CTAs). Cobre tanto slug inexistente quanto `publicProfileEnabled=false` — do ponto de vista do visitante é indistinguível, o que é a privacidade correta.
-- **`next.config.ts`** com `images.remotePatterns` para `images.unsplash.com` (fotos mock). Substituir por bucket S3-compatible quando upload real existir.
+- **Schema `athlete.json`** ganhou `slug`, `profile.bio`, e o bloco required `visibility` com dois controles independentes:
+  - `publicProfileEnabled` — habilita o link direto em `/atleta/[slug]`
+  - `discoverable` — habilita listagem na vitrine pública `/atletas` (opt-in separado, especialmente importante para atletas menores de idade)
+  - Flags granulares: `showPhoto`, `showAge`, `showCity`, `showPhysicalProfile`, `showHighlightVideos`, `showAchievements`, `showCurrentClub`, `showContact`. Defaults restritivos.
+- **Types TypeScript** em `web/src/types/athlete.ts` e `web/src/types/performance.ts` alinhados aos JSON Schemas (comentário `// fonte:` no topo). Futuro: gerar via `json-schema-to-typescript`.
+- **Mocks** em `web/src/lib/mock/`:
+  - `athletes.ts` — dois atletas completos (João, armador sub-17, Paulistano; Mariana, ala-pivô sub-18, Fluminense) com bio inline, visibility diferenciada (João não é `discoverable`, Mariana é)
+  - `performance.ts` — ~26 eventos históricos (13 por atleta) cobrindo uma temporada completa, misturando `match` e `assessment`, com narrativa de evolução visível no gráfico
+  - `get-athlete.ts` e `get-performance.ts` com helpers memoizados via React `cache()`
+- **Route group `(profile)`** — layout minimalista, página `/atleta/[slug]` sport-magazine (hero + bio + video YouTube + ficha física + conquistas + contato, tudo guiado por flags), `generateMetadata` com OpenGraph `type: profile`, `not-found.tsx` escopado com o mesmo visual editorial.
+- **Vitrine `/atletas`** — Server Component puro com busca por nome + filtros (posição + categoria) via GET form/searchParams, componente `AthleteDirectoryCard` minimalista (foto + nome + posição + categoria + clube), dois empty states (sem resultados com fallback "em destaque", e vitrine vazia), `listDirectoryFacets` derivando opções de filtro apenas do subset discoverable.
+- **`SiteNav` compartilhado** em `web/src/components/site-nav.tsx` com 3 variantes (`hero` sobre gradiente laranja, `primary` sticky laranja para páginas institucionais, `dark` sticky profile-surface para a vitrine). Usado pelas 7 páginas de marketing. Extraído após duplicação inline chegar a 6 arquivos.
+- **Design system** — novo token `--profile-surface` (oklch por tema, basketball `0.12 0.02 260`, indigo `0.13 0.03 275`) substituindo `#0b0f1a` hardcoded em 11 ocorrências. Consistente em light/dark mode dentro de cada tema — decisão editorial.
+
+### Autenticação e SaaS
+
+- **Auth stub** (`web/src/lib/auth/`) com shape OIDC-like, trocável por provider real (Keycloak, Auth.js, Clerk, Auth0) sem mexer em UI:
+  - `session.ts` — JWT HS256 via `jose`, cookie HttpOnly `eco-sports-session`, payload com claims `sub`, `email`, `name`, `roles[]`, `specialties[]`, `tenants[]`
+  - `mock-users.ts` — dois usuários demo (joao@, mariana@) sem hash, com mapping user → athleteId separado do JWT (claims puras)
+  - `dal.ts` — Data Access Layer com `verifySession`, `getCurrentUser`, `getCurrentAthlete`, `getOptionalSession`, todos memoizados via `cache()`. Autorização autoritativa.
+  - `actions.ts` — Server Actions `signIn` e `signOut` com validação Zod
+  - `.env.local` com `SESSION_SECRET` (gitignored)
+- **`proxy.ts`** (`web/src/proxy.ts`, ex-middleware) — optimistic check do cookie, redireciona `/app/*` pra `/login?next=...` quando sem sessão e usuário logado em `/login` pra `/app/perfil`.
+- **Route group `(auth)`** — layout minimalista centrado + `/login` com form client (`useActionState`) e hint de credenciais demo.
+- **Route group `(app)`** — shell autenticado com sidebar + topbar + persona switcher cosmético (6 personas, só `athlete` funcional; as outras vão pra `/app/em-construcao`), sign-out via Server Action.
+- **`/app`** — dashboard stub com saudação e link pro perfil.
+- **`/app/perfil`** — editor completo do atleta (identidade, esporte, ficha física, carreira, mídia, contato, privacidade granular) com master switch `publicProfileEnabled` + toggle separado `discoverable` + toggles por seção. Server Action `saveProfile` com validação Zod, mutação in-place e `revalidatePath` para `/atleta/[slug]` e `/atletas`.
+- **`/app/performance`** — histórico com tabs `Partidas` / `Avaliações`. Cada tab tem 4 stat cards (médias das últimas 5 / última medição), gráfico de linha em recharts (pontos/assistências/rebotes para partidas; impulsão vertical para avaliações — strokes em CSS custom properties dos tokens de tema), e lista cronológica completa com stats inline por evento. Server Action `addPerformanceEvent` com Zod discriminated union por `sourceType`, mesmo padrão de mutação in-place + revalidation.
+- **`/app/em-construcao`** — placeholder condicional que lê `?persona=` e mostra o nome amigável da persona pedida.
+
+### Convenções já estabelecidas pelo trabalho até aqui
+
+- **Mutação in-memory** é o padrão para todos os Server Actions enquanto não há backend real. Sobrevive dentro do processo do dev server, reseta no restart. Trivialmente substituível por `DB write` quando o backend existir.
+- **`revalidatePath`** sempre chamado após mutação para invalidar páginas dependentes (ex: `saveProfile` invalida `/atleta/[slug]` antigo e novo + `/atletas`; `addPerformanceEvent` invalida `/app/performance`).
+- **React `cache()`** em todo fetcher — garante que a mesma request não duplique trabalho entre `generateMetadata`, Server Components e Server Actions.
+- **Zod discriminated unions** para formulários que têm variantes (ex: `CreateEventSchema` com `match | assessment` — mesma Server Action valida ambos).
+- **DAL autoritativa** em cada Server Component/Action que toca dado sensível — `proxy.ts` é só a primeira camada, não é suficiente.
+- **Tokens semânticos** no design system — nenhuma cor hardcoded nova deve ser aceita; se precisar de uma cor novea, criar token.
 
 ### Próximos passos
 
-1. **Perfil editável interno** — `(app)/perfil` (ou rota equivalente) com forms para todos os campos do schema e os toggles de visibilidade. Vai forçar as decisões de `(app)` + auth stub + `proxy.ts` que estavam no plano original.
-2. **Stub de auth agnóstico** (Server Actions, cookie assinado, payload OIDC-like) — conforme decisão 2 do plano original, preservada.
-3. **Dashboard e `/app/performance`** do atleta (decisão 3 original: persona `athlete` completa).
-4. **Persona switcher mockado** na topbar e placeholders para outras personas.
-5. **Eventualmente**: migração das páginas de marketing para dentro de um grupo `(marketing)` — hoje elas estão flat em `src/app/`, não urgente.
+1. **Segunda persona — `parent_guardian`**. Destrava o persona switcher, força decisões de multi-user-per-athlete e workflows de aprovação, e é legalmente necessária para atletas menores (fluxo de consentimento + aprovação de `discoverable`/`publicProfileEnabled` quando o atleta é menor).
+2. **Consent flow LGPD** — usar o schema `consent.json` que já existe em `schemas/` (atualmente untracked no Grupo C). Tela dedicada em `/app/consentimentos` com versionamento e aprovação de responsável.
+3. **Signup** — criar um atleta do zero, não só editar. Mesma infra de Server Action + Zod do login.
+4. **Unicidade de slug** — hoje `saveProfile` não checa colisão. Adicionar check + mensagem de erro.
+5. **Upload de foto** — compromisso inicial (base64 inline, URL data:) enquanto não há storage.
+6. **Mais atletas mock** — a vitrine está com apenas 1 atleta visível (Mariana). 5-8 atletas variados deixariam os filtros mais úteis.
+7. **Eventualmente**: migração das páginas de marketing para dentro de um grupo `(marketing)` — hoje estão flat em `src/app/`, não urgente.
 
 ### Ao continuar a implementação
 
 - Reler este doc e [actors-permissoes.md](actors-permissoes.md).
 - Reler os docs do Next.js 16 em `web/node_modules/next/dist/docs/01-app/` (especialmente `authentication.md`, `data-security.md`, `multi-tenant.md`, `route-groups.md`, `proxy.md`) antes de escrever qualquer código — essa versão tem mudanças em relação ao que modelos de linguagem conhecem como Next.js.
+- Seguir as convenções estabelecidas acima (mutação in-memory, revalidatePath, `cache()`, Zod, DAL, tokens) para não quebrar consistência.
