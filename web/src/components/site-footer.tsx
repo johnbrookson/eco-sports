@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const platformLinks = [
+  { label: "Atletas", href: "/atletas" },
   { label: "Ferramentas", href: "/ferramentas" },
   { label: "Blog", href: "/blog" },
   { label: "Planos", href: "/#pricing" },

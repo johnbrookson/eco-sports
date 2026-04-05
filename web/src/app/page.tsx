@@ -33,6 +33,9 @@ export default function Home() {
           Eco-Sports
         </span>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
+          <Link href="/atletas" className="hover:text-white transition-colors">
+            Atletas
+          </Link>
           <Link href="/ferramentas" className="hover:text-white transition-colors">
             Ferramentas
           </Link>
@@ -311,6 +314,63 @@ export default function Home() {
             ))}
           </AutoCarousel>
         </ScrollReveal>
+      </section>
+
+      {/* Vitrine — teaser para o diretório público de atletas */}
+      <section className="py-20 sm:py-28 px-8 lg:px-16 bg-background">
+        <div className="mx-auto max-w-5xl">
+          <ScrollReveal>
+            <div className="rounded-3xl border border-border bg-card overflow-hidden">
+              <div className="grid md:grid-cols-[1.2fr_1fr] gap-0">
+                <div className="p-10 sm:p-14 flex flex-col justify-center">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary mb-3">
+                    Vitrine pública
+                  </p>
+                  <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                    Descubra atletas
+                    <br />
+                    de categorias de base.
+                  </h2>
+                  <p className="mt-5 text-base text-muted-foreground leading-relaxed max-w-md">
+                    Perfis públicos com bio, ficha física, highlights e
+                    conquistas. Apenas atletas que optaram por aparecer na
+                    busca pública — o resto permanece acessível só por
+                    link direto.
+                  </p>
+                  <div className="mt-8">
+                    <Link
+                      href="/atletas"
+                      className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 h-12 text-sm font-bold hover:bg-primary/90 transition-colors"
+                    >
+                      Explorar vitrine
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
+                <div
+                  className="relative min-h-[240px] md:min-h-0 bg-[#0b0f1a]"
+                  aria-hidden
+                >
+                  <div
+                    className="absolute inset-0 opacity-[0.12]"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(135deg, rgba(255,255,255,0.35) 0, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 14px)",
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-transparent" />
+                  <div className="absolute inset-0 flex items-center justify-center p-10">
+                    <p className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter uppercase text-white/90 leading-[0.85] text-center">
+                      Atletas
+                      <br />
+                      <span className="text-primary">em ação</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
       </section>
 
       {/* CTA */}
