@@ -46,7 +46,12 @@
         "state": { "type": "string" },
         "city": { "type": "string" },
         "nationality": { "type": "string" },
-        "photoUrl": { "type": "string", "format": "uri" }
+        "photoUrl": { "type": "string", "format": "uri" },
+        "bio": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Biografia editorial escrita pelo próprio atleta, exibida no perfil público quando visibility.publicProfileEnabled é true. Limite curto para manter tom press-kit."
+        }
       }
     },
     "contact": {

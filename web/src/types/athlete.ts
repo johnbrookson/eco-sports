@@ -29,6 +29,7 @@ export interface AthleteProfile {
   city?: string;
   nationality?: string;
   photoUrl?: string;
+  bio?: string;
 }
 
 export interface AthleteContact {
