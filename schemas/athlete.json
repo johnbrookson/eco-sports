@@ -194,7 +194,17 @@
         "showHighlightVideos": { "type": "boolean", "default": false },
         "showAchievements": { "type": "boolean", "default": false },
         "showCurrentClub": { "type": "boolean", "default": false },
-        "showContact": { "type": "boolean", "default": false }
+        "showContact": { "type": "boolean", "default": false },
+        "showMatchStats": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, exposes match performance statistics (averages of recent games) on the public profile. For minor athletes, should only be enabled with explicit guardian consent."
+        },
+        "showAssessmentStats": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, exposes physical assessment metrics (latest measurements) on the public profile. For minor athletes, should only be enabled with explicit guardian consent."
+        }
       }
     },
     "tags": {

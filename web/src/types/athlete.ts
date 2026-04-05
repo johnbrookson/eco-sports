@@ -102,6 +102,8 @@ export interface AthleteVisibility {
   showAchievements?: boolean;
   showCurrentClub?: boolean;
   showContact?: boolean;
+  showMatchStats?: boolean;
+  showAssessmentStats?: boolean;
 }
 
 export interface Athlete {
