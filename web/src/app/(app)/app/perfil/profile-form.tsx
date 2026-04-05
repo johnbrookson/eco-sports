@@ -334,7 +334,7 @@ export function ProfileForm({ athlete }: { athlete: Athlete }) {
       {/* Seção: Visibilidade extra (granular, campos que não cabem em seções) */}
       <Section
         title="Privacidade granular"
-        description="Controle fino sobre o que aparece no hero do perfil público."
+        description="Controle fino sobre o que aparece no perfil público."
       >
         <InlineToggle
           name="showPhoto"
@@ -350,6 +350,16 @@ export function ProfileForm({ athlete }: { athlete: Athlete }) {
           name="showCity"
           defaultChecked={v.showCity}
           label="Mostrar cidade e estado"
+        />
+        <InlineToggle
+          name="showMatchStats"
+          defaultChecked={v.showMatchStats}
+          label="Exibir estatísticas de partidas no perfil público"
+        />
+        <InlineToggle
+          name="showAssessmentStats"
+          defaultChecked={v.showAssessmentStats}
+          label="Exibir avaliações físicas no perfil público"
         />
       </Section>
 

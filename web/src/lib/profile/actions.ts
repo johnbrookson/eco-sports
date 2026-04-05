@@ -100,6 +100,8 @@ const ProfileFormSchema = z.object({
   showAchievements: z.literal("on").optional(),
   showCurrentClub: z.literal("on").optional(),
   showContact: z.literal("on").optional(),
+  showMatchStats: z.literal("on").optional(),
+  showAssessmentStats: z.literal("on").optional(),
 });
 
 export type ProfileFormState =
@@ -217,6 +219,8 @@ export async function saveProfile(
         showAchievements: toBool(data.showAchievements),
         showCurrentClub: toBool(data.showCurrentClub),
         showContact: toBool(data.showContact),
+        showMatchStats: toBool(data.showMatchStats),
+        showAssessmentStats: toBool(data.showAssessmentStats),
       },
     };
   });
