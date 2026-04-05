@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { MobileNav } from "@/components/mobile-nav";
+import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { posts } from "@/lib/blog-data";
 import {
@@ -18,52 +16,7 @@ export default function BlogPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Nav */}
-      <nav className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 lg:px-16 bg-primary/[0.85] backdrop-blur-lg border-b border-primary/90">
-        <Link
-          href="/"
-          className="text-2xl font-black tracking-tight text-primary-foreground"
-        >
-          Eco-Sports
-        </Link>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-primary-foreground/70">
-          <Link href="/atletas" className="hover:text-primary-foreground transition-colors">
-            Atletas
-          </Link>
-          <Link href="/ferramentas" className="hover:text-primary-foreground transition-colors">
-            Ferramentas
-          </Link>
-          <Link href="/blog" className="text-primary-foreground font-semibold">
-            Blog
-          </Link>
-          <Link href="/ecossistema" className="hover:text-primary-foreground transition-colors">
-            Ecossistema
-          </Link>
-          <Link href="/para-quem" className="hover:text-primary-foreground transition-colors">
-            Para quem
-          </Link>
-          <Link href="/#pricing" className="hover:text-primary-foreground transition-colors">
-            Planos
-          </Link>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeSwitcher variant="inline" />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden sm:inline-flex text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 font-medium text-xs sm:text-sm"
-          >
-            Entrar
-          </Button>
-          <Button
-            size="sm"
-            className="hidden sm:inline-flex bg-primary-foreground text-primary font-bold hover:bg-primary-foreground/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm"
-          >
-            Cadastrar
-          </Button>
-          <MobileNav />
-        </div>
-      </nav>
+      <SiteNav variant="primary" active="blog" />
 
       {/* Hero */}
       <section className="relative py-16 sm:py-20 px-4 sm:px-8 lg:px-16 bg-gradient-to-br from-hero-start to-hero-end overflow-hidden">

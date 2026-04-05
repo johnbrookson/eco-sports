@@ -4,8 +4,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { MobileNav } from "@/components/mobile-nav";
+import { SiteNav } from "@/components/site-nav";
 import { AthleteDirectoryCard } from "@/components/athlete-directory-card";
 import {
   searchDiscoverableAthletes,
@@ -61,66 +60,7 @@ export default async function AtletasPage({
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Nav — variante escura alinhada com a estética editorial da vitrine */}
-      <nav className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 lg:px-16 bg-[#0b0f1a]/90 backdrop-blur-lg border-b border-white/10">
-        <Link
-          href="/"
-          className="text-2xl font-black tracking-tight text-white"
-        >
-          Eco-Sports
-        </Link>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-          <Link href="/atletas" className="text-white font-semibold">
-            Atletas
-          </Link>
-          <Link
-            href="/ferramentas"
-            className="hover:text-white transition-colors"
-          >
-            Ferramentas
-          </Link>
-          <Link
-            href="/blog"
-            className="hover:text-white transition-colors"
-          >
-            Blog
-          </Link>
-          <Link
-            href="/ecossistema"
-            className="hover:text-white transition-colors"
-          >
-            Ecossistema
-          </Link>
-          <Link
-            href="/para-quem"
-            className="hover:text-white transition-colors"
-          >
-            Para quem
-          </Link>
-          <Link
-            href="/#pricing"
-            className="hover:text-white transition-colors"
-          >
-            Planos
-          </Link>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeSwitcher variant="inline" />
-          <Link
-            href="/login"
-            className="hidden sm:inline-flex items-center h-9 px-3 rounded-md text-white/90 hover:text-white hover:bg-white/10 font-medium text-xs sm:text-sm transition-colors"
-          >
-            Entrar
-          </Link>
-          <Button
-            size="sm"
-            className="hidden sm:inline-flex bg-white text-[#0b0f1a] font-bold hover:bg-white/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm"
-          >
-            Cadastrar
-          </Button>
-          <MobileNav variant="hero" />
-        </div>
-      </nav>
+      <SiteNav variant="dark" active="atletas" />
 
       <section className="relative isolate border-b border-border bg-[#0b0f1a] text-white overflow-hidden">
         <div

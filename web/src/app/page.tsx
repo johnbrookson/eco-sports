@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { MobileNav } from "@/components/mobile-nav";
+import { SiteNav } from "@/components/site-nav";
 import { AutoCarousel } from "@/components/auto-carousel";
 import { SiteFooter } from "@/components/site-footer";
 import {
@@ -27,49 +26,7 @@ import {
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Nav */}
-      <nav className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 lg:px-16">
-        <span className="text-2xl font-black text-white tracking-tight">
-          Eco-Sports
-        </span>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
-          <Link href="/atletas" className="hover:text-white transition-colors">
-            Atletas
-          </Link>
-          <Link href="/ferramentas" className="hover:text-white transition-colors">
-            Ferramentas
-          </Link>
-          <Link href="/blog" className="hover:text-white transition-colors">
-            Blog
-          </Link>
-          <Link href="/ecossistema" className="hover:text-white transition-colors">
-            Ecossistema
-          </Link>
-          <Link href="/para-quem" className="hover:text-white transition-colors">
-            Para quem
-          </Link>
-          <a href="#pricing" className="hover:text-white transition-colors">
-            Planos
-          </a>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeSwitcher variant="inline" />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden sm:inline-flex text-white/90 hover:text-white hover:bg-white/10 font-medium text-xs sm:text-sm"
-          >
-            Entrar
-          </Button>
-          <Button
-            size="sm"
-            className="hidden sm:inline-flex bg-white text-primary font-bold hover:bg-white/90 rounded-full px-4 sm:px-6 text-xs sm:text-sm"
-          >
-            Cadastrar
-          </Button>
-          <MobileNav variant="hero" />
-        </div>
-      </nav>
+      <SiteNav variant="hero" />
 
       {/* Hero */}
       <section className="relative flex items-center min-h-[60vh] bg-gradient-to-br from-hero-start to-hero-end overflow-hidden">
