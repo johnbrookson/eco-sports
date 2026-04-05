@@ -12,6 +12,7 @@
     "category",
     "status",
     "consents",
+    "visibility",
     "createdAt",
     "updatedAt"
   ],
@@ -22,6 +23,11 @@
     },
     "tenantId": {
       "type": "string"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,59}$",
+      "description": "URL-friendly identifier chosen by the athlete, unique per tenant. Used in /atleta/[slug] public profile route. Lowercase, digits and hyphens only."
     },
     "profile": {
       "type": "object",
@@ -158,6 +164,27 @@
         "minorConsentProvided": { "type": "boolean" },
         "consentVersion": { "type": "string" },
         "acceptedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "visibility": {
+      "type": "object",
+      "description": "Per-field toggles that control what is exposed on the public profile at /atleta/[slug]. Defaults are restrictive — the athlete opts in. Guardians, contracts, consents and internal notes are never exposed regardless of these flags.",
+      "additionalProperties": false,
+      "required": ["publicProfileEnabled"],
+      "properties": {
+        "publicProfileEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Master switch. When false, /atleta/[slug] returns 404 even if slug exists."
+        },
+        "showPhoto": { "type": "boolean", "default": false },
+        "showAge": { "type": "boolean", "default": false },
+        "showCity": { "type": "boolean", "default": false },
+        "showPhysicalProfile": { "type": "boolean", "default": false },
+        "showHighlightVideos": { "type": "boolean", "default": false },
+        "showAchievements": { "type": "boolean", "default": false },
+        "showCurrentClub": { "type": "boolean", "default": false },
+        "showContact": { "type": "boolean", "default": false }
       }
     },
     "tags": {
