@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
   MapPin,
-  Instagram,
-  Linkedin,
+  InstagramIcon,
+  LinkedinIcon,
   Mail,
   Phone,
   PlayCircle,
@@ -350,14 +350,14 @@ function ContactSection({
     });
   if (contact.instagram)
     items.push({
-      icon: Instagram,
+      icon: InstagramIcon,
       label: "Instagram",
       value: contact.instagram,
       href: `https://instagram.com/${contact.instagram.replace(/^@/, "")}`,
     });
   if (contact.linkedin)
     items.push({
-      icon: Linkedin,
+      icon: LinkedinIcon,
       label: "LinkedIn",
       value: contact.linkedin.replace(/^https?:\/\//, ""),
       href: contact.linkedin,
