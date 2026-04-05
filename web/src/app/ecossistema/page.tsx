@@ -182,6 +182,7 @@ export default function EcossistemaPage() {
           Eco-Sports
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-primary-foreground/70">
+          <Link href="/atletas" className="hover:text-primary-foreground transition-colors">Atletas</Link>
           <Link href="/ferramentas" className="hover:text-primary-foreground transition-colors">Ferramentas</Link>
           <Link href="/blog" className="hover:text-primary-foreground transition-colors">Blog</Link>
           <Link href="/ecossistema" className="text-primary-foreground font-semibold">Ecossistema</Link>
