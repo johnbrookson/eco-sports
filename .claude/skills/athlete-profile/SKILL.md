@@ -53,6 +53,8 @@ Flags granulares (aplicam só no perfil individual, **não** no card da vitrine)
 | `showAchievements` | Lista numerada de conquistas |
 | `showCurrentClub` | Badge de clube no hero, nome do clube no card da vitrine |
 | `showContact` | Seção de contato (email, phone, instagram, linkedin) |
+| `showMatchStats` | Seção "Performance" — stat cards de partidas (médias últimas 5) com delta e trend badge |
+| `showAssessmentStats` | Seção "Performance" — stat cards de avaliações físicas (última medição) com delta |
 
 **Defaults restritivos**: todas começam `false`. O atleta opta por expor.
 
@@ -133,6 +135,7 @@ Houve um refactor histórico (commit `1cc0af2`) que moveu a bio de um mapa separ
 - Versionamento de consentimento (`consentVersion`, fluxo de re-consent quando version muda)
 - Schema `consent.json` (está untracked no Grupo C, usar quando for implementar)
 - Schema `guardian-relationship.json` (idem)
+- **Aprovação do guardian para `showMatchStats`/`showAssessmentStats`** — as flags já existem e funcionam (implementadas em 2026-04-05), mas hoje a proteção para menores é só copy de aviso no editor. Na fase `parent_guardian`, entram na lista de flags que exigem aprovação do responsável quando `minorConsentProvided === true`.
 
 ### Card da vitrine — subset DO QUE aparece
 

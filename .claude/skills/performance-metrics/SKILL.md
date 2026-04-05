@@ -3,7 +3,7 @@ name: performance-metrics
 description: Use when working on the performance history domain — the `performance-metrics.json` schema, the `/app/performance` dashboard with charts and event creation, the Zod discriminated union for match vs assessment events, or recharts styling with theme tokens. Covers how performance events relate to the athlete physical profile and why they are complementary, not competing.
 ---
 
-> **Manutenção desta skill**: última revisão refletindo o estado até `9372ff2` (v1 com match + assessment). Se você adicionou um tipo de evento novo (training, video_review, combined), mudou o schema de métricas, ou alterou o gráfico/formulário, atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/performance-metrics/` para histórico.
+> **Manutenção desta skill**: última revisão refletindo exposição de performance no perfil público (flags `showMatchStats`/`showAssessmentStats`, stat cards com delta + trend badge, revalidação em `addPerformanceEvent`). Se você adicionou um tipo de evento novo (training, video_review, combined), mudou o schema de métricas, ou alterou o gráfico/formulário, atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/performance-metrics/` para histórico.
 
 # Performance metrics — histórico de eventos do atleta
 
@@ -209,6 +209,42 @@ Dois campos distintos no form de match:
 - **Não implemente "editar evento"** sem pensar no fluxo completo (versionamento? audit log? soft delete? quem pode editar — atleta ou só coach?). É escopo futuro.
 - **Não adicione benchmarks (posição/time) sem dados reais**. O schema tem o campo, mas calcular isso no stub é inventar números — fica confuso e diminui a confiança no dashboard.
 - **Não coloque lógica de cálculo no client se ela já tem que rodar no server** (ex: médias). O render client já faz isso.
+
+## Exposição no perfil público (implementado)
+
+Implementado em 2026-04-05. Atletas expõem performance no perfil público `/atleta/[slug]` controlado por duas flags granulares em `athlete.visibility`, defaults `false`:
+
+- `showMatchStats` — stat cards de partidas (médias das últimas 5) com delta vs partidas anteriores
+- `showAssessmentStats` — stat cards de avaliações físicas (última medição) com delta vs penúltima
+
+Flags **independentes** porque atendem públicos diferentes: um sub-17 pode querer expor avaliações físicas pra scout mas não estatísticas de jogo (que variam demais com minutagem e adversário). Mesmo princípio que levou a separar `publicProfileEnabled` de `discoverable`.
+
+**LGPD — proteção provisória**: para menores, a proteção hoje é só copy de aviso no editor (mesmo padrão de `discoverable`). Na fase `parent_guardian`, essas flags entram na lista que exige aprovação do responsável quando `minorConsentProvided === true`.
+
+**Sem recharts no perfil público.** O perfil público é Server Component zero-JS no core. Evolução comunicada em duas camadas (formato A + C do planejamento; formato B — sparkline SVG inline — descartado pro v1):
+
+- **Delta nos stat cards**: `12,4 pts/jogo · ↑ 2,1 · últimas 5`. Match: avg(últimas 5) vs avg(anteriores). Assessment: última vs penúltima medição. Se dados insuficientes (< 2 partidas anteriores ou < 2 avaliações), delta omitido.
+- **Badge narrativo de tendência**: `Em evolução · pontos e assistências em alta, rebotes estáveis`. Classificação por limiar de 5%: |delta/baseline| > 5% → em alta/queda, senão → estável. Maioria up → "Em evolução" (verde), maioria down → "Em queda" (vermelho), misto → "Desempenho estável" (muted). Dados insuficientes → contagem simples ("8 partidas · 5 avaliações na temporada").
+
+**Trend computado no render**, não lido de campo mockado. O anti-pattern "não inventar benchmarks nos mocks" continua valendo — a evolução é computada inline no Server Component de `/atleta/[slug]/page.tsx` a partir do array de eventos.
+
+### Arquivos envolvidos
+
+- [schemas/athlete.json](../../../schemas/athlete.json) — flags `showMatchStats`, `showAssessmentStats` em `visibility`
+- [web/src/types/athlete.ts](../../../web/src/types/athlete.ts) — adicionadas ao `AthleteVisibility`
+- [web/src/app/(profile)/atleta/[slug]/page.tsx](../../../web/src/app/(profile)/atleta/[slug]/page.tsx) — `PerformanceSection`, `PerfStatsGrid`, `PerfStatCard`, `perfTrendDetail`, `formatNum`. Busca eventos via `getPerformanceEventsForAthlete` existente (sem helper novo — simplificado vs plano original).
+- [web/src/lib/profile/actions.ts](../../../web/src/lib/profile/actions.ts) — Zod + `toBool` para as novas flags no `saveProfile`
+- [web/src/app/(app)/app/perfil/profile-form.tsx](../../../web/src/app/(app)/app/perfil/profile-form.tsx) — `InlineToggle` na seção "Privacidade granular"
+- [web/src/lib/performance/actions.ts](../../../web/src/lib/performance/actions.ts) — `addPerformanceEvent` agora revalida `/atleta/<slug>` quando pelo menos uma flag está ligada
+- [web/src/lib/mock/athletes.ts](../../../web/src/lib/mock/athletes.ts) — João false/false (menor, conservador), Mariana true/true (maior, aberta)
+
+### Desvios do plano original
+
+- **Sem helper `getPublicPerformanceForAthlete`**: o `getPerformanceEventsForAthlete` existente (já memoizado via `cache()`) é chamado direto pelo page component. Filtro por flags acontece no JSX (mesmo padrão das outras flags de visibility).
+- **`saveProfile` já revalida `/atleta/<slug>`**: não precisou de mudança adicional — o `revalidatePath` existente já cobre.
+- **Janela de delta**: "últimas 5 vs anteriores" (todas antes das últimas 5), não "primeiras 5". Mais robusto quando o atleta tem > 10 partidas.
+
+Ver skill `athlete-profile` pro contexto do modelo de visibility e as outras flags granulares.
 
 ## Próximos candidatos de evolução
 
