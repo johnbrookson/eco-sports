@@ -173,14 +173,19 @@
     },
     "visibility": {
       "type": "object",
-      "description": "Per-field toggles that control what is exposed on the public profile at /atleta/[slug]. Defaults are restrictive — the athlete opts in. Guardians, contracts, consents and internal notes are never exposed regardless of these flags.",
+      "description": "Per-field toggles that control what is exposed on the public profile at /atleta/[slug] and whether the athlete appears in the public directory at /atletas. Defaults are restrictive — the athlete opts in. Guardians, contracts, consents and internal notes are never exposed regardless of these flags. For minor athletes, the `discoverable` flag should only be enabled with explicit guardian consent, since it is a materially higher exposure than a direct profile link.",
       "additionalProperties": false,
       "required": ["publicProfileEnabled"],
       "properties": {
         "publicProfileEnabled": {
           "type": "boolean",
           "default": false,
-          "description": "Master switch. When false, /atleta/[slug] returns 404 even if slug exists."
+          "description": "Master switch for direct-link visibility. When false, /atleta/[slug] returns 404 even if slug exists. Controls the direct-link channel only — does NOT automatically list the athlete in the public directory."
+        },
+        "discoverable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Controls the discovery channel. When true, the athlete shows up in the public directory /atletas (search + filters). Requires publicProfileEnabled = true to take effect. Defaults to false so that a public profile shared privately by direct link is not automatically pushed into a searchable list."
         },
         "showPhoto": { "type": "boolean", "default": false },
         "showAge": { "type": "boolean", "default": false },

@@ -48,9 +48,10 @@ export function ProfileForm({ athlete }: { athlete: Athlete }) {
         </div>
       )}
 
-      {/* Master switch — visibilidade do perfil público */}
-      <MasterVisibilityToggle
-        defaultChecked={v.publicProfileEnabled}
+      {/* Master: controles de exposição pública do perfil */}
+      <PublicVisibilityCard
+        publicProfileEnabled={v.publicProfileEnabled}
+        discoverable={v.discoverable ?? false}
         slug={athlete.slug}
       />
 
@@ -500,41 +501,89 @@ function InlineToggle({
   );
 }
 
-function MasterVisibilityToggle({
-  defaultChecked,
+function PublicVisibilityCard({
+  publicProfileEnabled,
+  discoverable,
   slug,
 }: {
-  defaultChecked: boolean;
+  publicProfileEnabled: boolean;
+  discoverable: boolean;
   slug?: string;
 }) {
   return (
     <section className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-6 md:p-8">
-      <div className="flex items-start justify-between gap-6">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2">
-            Perfil público
-          </p>
-          <h2 className="text-xl font-black tracking-tight mb-1">
-            Publicar perfil em /atleta/{slug ?? "[seu-slug]"}
-          </h2>
-          <p className="text-sm text-muted-foreground max-w-xl">
-            Enquanto este botão estiver desligado, o link do seu perfil público
-            retorna 404 para qualquer visitante — mesmo que os toggles
-            individuais estejam ligados.
-          </p>
-        </div>
-        <label className="flex items-center cursor-pointer shrink-0">
-          <input
-            type="checkbox"
-            name="publicProfileEnabled"
-            defaultChecked={defaultChecked}
-            className="peer sr-only"
-          />
-          <span className="relative inline-flex h-7 w-12 shrink-0 rounded-full bg-muted transition-colors peer-checked:bg-primary">
-            <span className="absolute left-1 top-1 h-5 w-5 rounded-full bg-background shadow transition-transform peer-checked:translate-x-5" />
-          </span>
-        </label>
+      <div className="mb-6">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2">
+          Exposição pública
+        </p>
+        <h2 className="text-xl font-black tracking-tight">
+          Onde seu perfil aparece
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+          Dois canais independentes: link direto (você controla quem recebe) e
+          vitrine pública (qualquer pessoa pode te encontrar por busca).
+          Ative apenas o que fizer sentido para você.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <ToggleRow
+          name="publicProfileEnabled"
+          defaultChecked={publicProfileEnabled}
+          title={`Publicar perfil em /atleta/${slug ?? "[seu-slug]"}`}
+          description="Quando desligado, o link retorna 404 mesmo que os toggles individuais estejam ligados. Use quando quiser compartilhar o link manualmente com scouts, clubes ou patrocinadores."
+        />
+        <div className="border-t border-primary/20" />
+        <ToggleRow
+          name="discoverable"
+          defaultChecked={discoverable}
+          title="Aparecer na vitrine pública em /atletas"
+          description="Quando ligado, qualquer visitante pode te encontrar através da busca pública. Requer que o perfil acima esteja publicado. Para atletas menores de idade, recomendamos manter desligado e compartilhar o link manualmente — é um nível de exposição materialmente maior."
+          subtle
+        />
       </div>
     </section>
+  );
+}
+
+function ToggleRow({
+  name,
+  defaultChecked,
+  title,
+  description,
+  subtle,
+}: {
+  name: string;
+  defaultChecked: boolean;
+  title: string;
+  description: string;
+  subtle?: boolean;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-6">
+      <div className="min-w-0">
+        <p
+          className={`font-black tracking-tight ${
+            subtle ? "text-base" : "text-lg"
+          }`}
+        >
+          {title}
+        </p>
+        <p className="mt-1 text-xs md:text-sm text-muted-foreground leading-relaxed max-w-2xl">
+          {description}
+        </p>
+      </div>
+      <label className="flex items-center cursor-pointer shrink-0 mt-1">
+        <input
+          type="checkbox"
+          name={name}
+          defaultChecked={defaultChecked}
+          className="peer sr-only"
+        />
+        <span className="relative inline-flex h-7 w-12 shrink-0 rounded-full bg-muted transition-colors peer-checked:bg-primary">
+          <span className="absolute left-1 top-1 h-5 w-5 rounded-full bg-background shadow transition-transform peer-checked:translate-x-5" />
+        </span>
+      </label>
+    </div>
   );
 }

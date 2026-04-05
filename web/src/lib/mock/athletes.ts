@@ -83,6 +83,7 @@ export const mockAthletes: Athlete[] = [
     },
     visibility: {
       publicProfileEnabled: true,
+      discoverable: false,
       showPhoto: true,
       showAge: true,
       showCity: true,
@@ -160,6 +161,7 @@ export const mockAthletes: Athlete[] = [
     },
     visibility: {
       publicProfileEnabled: true,
+      discoverable: true,
       showPhoto: true,
       showAge: true,
       showCity: true,

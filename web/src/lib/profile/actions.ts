@@ -88,6 +88,7 @@ const ProfileFormSchema = z.object({
 
   // visibilidade
   publicProfileEnabled: z.literal("on").optional(),
+  discoverable: z.literal("on").optional(),
   showPhoto: z.literal("on").optional(),
   showAge: z.literal("on").optional(),
   showCity: z.literal("on").optional(),
@@ -187,6 +188,7 @@ export async function saveProfile(
       },
       visibility: {
         publicProfileEnabled: toBool(data.publicProfileEnabled),
+        discoverable: toBool(data.discoverable),
         showPhoto: toBool(data.showPhoto),
         showAge: toBool(data.showAge),
         showCity: toBool(data.showCity),
@@ -206,12 +208,14 @@ export async function saveProfile(
     };
   }
 
-  // Invalida o cache do perfil público (antigo e novo slug, caso mudem).
+  // Invalida o cache do perfil público (antigo e novo slug, caso mudem)
+  // e da vitrine /atletas, já que a flag discoverable pode ter mudado.
   if (previousSlug) revalidatePath(`/atleta/${previousSlug}`);
   if (updated.slug && updated.slug !== previousSlug) {
     revalidatePath(`/atleta/${updated.slug}`);
   }
   revalidatePath("/app/perfil");
+  revalidatePath("/atletas");
 
   return { ok: true, message: "Perfil atualizado." };
 }

@@ -93,6 +93,7 @@ export interface AthleteConsents {
 
 export interface AthleteVisibility {
   publicProfileEnabled: boolean;
+  discoverable?: boolean;
   showPhoto?: boolean;
   showAge?: boolean;
   showCity?: boolean;
