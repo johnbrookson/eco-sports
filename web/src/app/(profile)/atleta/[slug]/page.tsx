@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 import {
-  getAthleteBySlug,
+  getPublicAthleteBySlug,
   listPublicAthleteSlugs,
 } from "@/lib/mock/get-athlete";
 import type { Athlete } from "@/types/athlete";
@@ -29,12 +29,11 @@ export async function generateMetadata(
   props: PageProps<"/atleta/[slug]">,
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const view = await getAthleteBySlug(slug);
-  if (!view) {
+  const athlete = await getPublicAthleteBySlug(slug);
+  if (!athlete) {
     return { title: "Perfil não encontrado — Eco-Sports" };
   }
 
-  const { athlete, bio } = view;
   const name = formatFullName(athlete);
   const position = formatPosition(athlete.sport.primaryPosition);
   const club = athlete.visibility.showCurrentClub
@@ -45,7 +44,7 @@ export async function generateMetadata(
     ? `${name} — ${position} · ${club}`
     : `${name} — ${position}`;
   const description =
-    bio ??
+    athlete.profile.bio ??
     `Perfil de ${name}, ${position.toLowerCase()} da categoria ${athlete.category} em ${athlete.sport.discipline}.`;
 
   const photo = athlete.visibility.showPhoto
@@ -74,10 +73,10 @@ export default async function AthleteProfilePage(
   props: PageProps<"/atleta/[slug]">,
 ) {
   const { slug } = await props.params;
-  const view = await getAthleteBySlug(slug);
-  if (!view) notFound();
+  const athlete = await getPublicAthleteBySlug(slug);
+  if (!athlete) notFound();
 
-  const { athlete, bio } = view;
+  const bio = athlete.profile.bio;
   const v = athlete.visibility;
 
   const fullName = formatFullName(athlete);

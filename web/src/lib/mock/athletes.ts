@@ -1,15 +1,9 @@
 import type { Athlete } from "@/types/athlete";
 
-// Mock fixtures para desenvolvimento do perfil público.
-// Quando o backend existir, trocar por fetch real mantendo o shape.
-// Observação: bio de marketing fica em `bios` (campo UI-only, não pertence ao schema).
-
-export const mockAthleteBios: Record<string, string> = {
-  "joao-silva-2008":
-    "Armador com visão de jogo acima da média para a idade, leitura rápida de pick-and-roll e mão boa em transição. Começou no basquete aos sete anos em projeto social da Zona Leste de São Paulo, passou pela peneira do clube aos onze e hoje lidera a categoria sub-17 nas competições estaduais. Fora da quadra, é aluno de escola pública integral com meta declarada de cursar Engenharia pela USP.",
-  "mariana-costa-2007":
-    "Ala-pivô de dupla nacionalidade (Brasil/Angola) formada nas categorias de base do clube desde os doze anos. Combina tamanho acima da média para a posição com agilidade de exterior — capaz de correr o contra-ataque, proteger o garrafão e finalizar de meia distância. Convocada para seletivas da seleção brasileira sub-17 em 2025. Estuda com bolsa integral em colégio particular e pretende seguir carreira universitária nos Estados Unidos.",
-};
+// Mock fixtures para desenvolvimento do perfil público e editor interno.
+// O array é mutado in-place pelo saveProfile Server Action durante o stub —
+// sobrevive dentro do processo do dev server, reset ao restart.
+// Quando o backend existir, trocar por fetch/persistência real mantendo o shape.
 
 export const mockAthletes: Athlete[] = [
   {
@@ -28,6 +22,7 @@ export const mockAthletes: Athlete[] = [
       nationality: "Brasileiro",
       photoUrl:
         "https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=1600&q=80&auto=format&fit=crop",
+      bio: "Armador com visão de jogo acima da média para a idade, leitura rápida de pick-and-roll e mão boa em transição. Começou no basquete aos sete anos em projeto social da Zona Leste de São Paulo, passou pela peneira do clube aos onze e hoje lidera a categoria sub-17 nas competições estaduais. Fora da quadra, é aluno de escola pública integral com meta declarada de cursar Engenharia pela USP.",
     },
     contact: {
       email: "joao.silva@exemplo.com",
@@ -116,6 +111,7 @@ export const mockAthletes: Athlete[] = [
       nationality: "Brasileira / Angolana",
       photoUrl:
         "https://images.unsplash.com/photo-1519766304817-4f37bda74a26?w=1600&q=80&auto=format&fit=crop",
+      bio: "Ala-pivô de dupla nacionalidade (Brasil/Angola) formada nas categorias de base do clube desde os doze anos. Combina tamanho acima da média para a posição com agilidade de exterior — capaz de correr o contra-ataque, proteger o garrafão e finalizar de meia distância. Convocada para seletivas da seleção brasileira sub-17 em 2025. Estuda com bolsa integral em colégio particular e pretende seguir carreira universitária nos Estados Unidos.",
     },
     contact: {
       email: "mari.costa@exemplo.com",
