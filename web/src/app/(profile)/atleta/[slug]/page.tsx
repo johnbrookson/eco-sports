@@ -141,7 +141,7 @@ function HeroSection({
   const showPhoto = athlete.visibility.showPhoto && athlete.profile.photoUrl;
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#0b0f1a] text-white">
+    <section className="relative isolate overflow-hidden bg-profile-surface text-white">
       {showPhoto && (
         <div className="absolute inset-0 -z-10">
           <Image
@@ -152,8 +152,8 @@ function HeroSection({
             sizes="100vw"
             className="object-cover object-center opacity-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-[#0b0f1a]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0b0f1a] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-profile-surface" />
+          <div className="absolute inset-0 bg-gradient-to-r from-profile-surface via-transparent to-transparent" />
         </div>
       )}
 

@@ -305,7 +305,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div
-                  className="relative min-h-[240px] md:min-h-0 bg-[#0b0f1a]"
+                  className="relative min-h-[240px] md:min-h-0 bg-profile-surface"
                   aria-hidden
                 >
                   <div

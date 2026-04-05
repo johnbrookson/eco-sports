@@ -34,7 +34,7 @@ export function AthleteDirectoryCard({ athlete }: { athlete: Athlete }) {
       href={`/atleta/${athlete.slug}`}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card hover:border-primary transition-colors"
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#0b0f1a]">
+      <div className="relative aspect-[4/5] overflow-hidden bg-profile-surface">
         {showPhoto ? (
           <Image
             src={athlete.profile.photoUrl!}

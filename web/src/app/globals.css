@@ -90,6 +90,12 @@ html[data-theme="indigo"] {
   --hero-end: oklch(0.55 0.24 262);
   --hero-accent: oklch(0.75 0.20 270);
   --section-tint: oklch(0.93 0.04 270);
+  /* Profile surface: dark editorial background for the athlete experience
+     (directory /atletas, individual profiles /atleta/[slug], related hero
+     and card fallbacks). Deliberately the same value in light and dark
+     modes within each theme — it's an editorial "spotlight" surface, not
+     a response to user light/dark preference. */
+  --profile-surface: oklch(0.13 0.03 275);
 }
 
 html[data-theme="indigo"].dark {
@@ -127,6 +133,7 @@ html[data-theme="indigo"].dark {
   --hero-start: oklch(0.22 0.10 265);
   --hero-end: oklch(0.35 0.18 262);
   --section-tint: oklch(0.25 0.04 270);
+  --profile-surface: oklch(0.13 0.03 275);
 }
 
 /* ===== THEME: Basketball ===== */
@@ -166,6 +173,10 @@ html[data-theme="basketball"] {
   --hero-end: oklch(0.78 0.16 55);
   --hero-accent: oklch(0.85 0.12 55);
   --section-tint: oklch(0.90 0.06 30);
+  /* Profile surface: navy charcoal alinhado com o navy do accent do tema
+     basketball. Mantido igual em light e dark mode — ver comentário no
+     tema indigo. */
+  --profile-surface: oklch(0.12 0.02 260);
 }
 
 html[data-theme="basketball"].dark {
@@ -203,6 +214,7 @@ html[data-theme="basketball"].dark {
   --hero-start: oklch(0.15 0.04 250);
   --hero-end: oklch(0.45 0.18 45);
   --section-tint: oklch(0.25 0.04 30);
+  --profile-surface: oklch(0.12 0.02 260);
 }
 
 @theme inline {
@@ -210,6 +222,7 @@ html[data-theme="basketball"].dark {
   --color-hero-end: var(--hero-end);
   --color-hero-accent: var(--hero-accent);
   --color-section-tint: var(--section-tint);
+  --color-profile-surface: var(--profile-surface);
 }
 
 @layer base {

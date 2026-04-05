@@ -62,7 +62,7 @@ export default async function AtletasPage({
     <div className="bg-background min-h-screen">
       <SiteNav variant="dark" active="atletas" />
 
-      <section className="relative isolate border-b border-border bg-[#0b0f1a] text-white overflow-hidden">
+      <section className="relative isolate border-b border-border bg-profile-surface text-white overflow-hidden">
         <div
           className="absolute inset-0 -z-10 opacity-[0.08]"
           style={{
@@ -71,7 +71,7 @@ export default async function AtletasPage({
           }}
           aria-hidden
         />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-[#0b0f1a]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-profile-surface" />
 
         <div className="mx-auto max-w-6xl px-6 pt-24 pb-16 md:pt-28 md:pb-20">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3">

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default function AthleteNotFound() {
   return (
     <article className="bg-background">
-      <section className="relative isolate overflow-hidden bg-[#0b0f1a] text-white">
+      <section className="relative isolate overflow-hidden bg-profile-surface text-white">
         <div
           className="absolute inset-0 -z-10 opacity-[0.08]"
           style={{
@@ -26,7 +26,7 @@ export default function AthleteNotFound() {
           }}
           aria-hidden
         />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-[#0b0f1a]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-profile-surface" />
 
         <div className="mx-auto max-w-6xl px-6 pt-32 pb-24 md:pt-40 md:pb-32">
           <div className="flex flex-col gap-6 max-w-3xl">
