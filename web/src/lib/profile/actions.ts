@@ -4,7 +4,10 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
 import { getCurrentAthlete } from "@/lib/auth/dal";
-import { updateAthleteById } from "@/lib/mock/get-athlete";
+import {
+  isSlugAvailableForAthlete,
+  updateAthleteById,
+} from "@/lib/mock/get-athlete";
 import type { Athlete } from "@/types/athlete";
 
 // Server Action que persiste edições do perfil do atleta.
@@ -140,6 +143,23 @@ export async function saveProfile(
 
   const data = parsed.data;
   const previousSlug = current.slug;
+
+  // Unicidade de slug escopada por tenant. A função exclui o próprio
+  // atleta, então manter o slug atual nunca dispara erro.
+  const slugAvailable = await isSlugAvailableForAthlete(
+    data.slug,
+    current.tenantId,
+    current.id,
+  );
+  if (!slugAvailable) {
+    return {
+      ok: false,
+      errors: {
+        slug: ["Este slug já está em uso por outro atleta. Escolha outro."],
+      },
+      message: "Revise os campos marcados.",
+    };
+  }
 
   const updated = updateAthleteById(current.id, (existing): Athlete => {
     return {

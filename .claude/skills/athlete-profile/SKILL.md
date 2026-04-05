@@ -3,7 +3,7 @@ name: athlete-profile
 description: Use when modifying anything related to the athlete profile domain — the schema `athlete.json`, the visibility model (publicProfileEnabled, discoverable, granular flags), the editable profile at /app/perfil, the public profile at /atleta/[slug], the public directory at /atletas, or the not-found fallback. Covers LGPD considerations for minor athletes and the dual-channel visibility pattern (direct link vs searchable directory).
 ---
 
-> **Manutenção desta skill**: última revisão refletindo o estado até `9372ff2` (persona atleta v1 completa). Se você está lendo isto e acabou de fazer mudanças no domínio athlete (schema, editor, perfil público, vitrine, visibility), atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/athlete-profile/` para histórico.
+> **Manutenção desta skill**: última revisão refletindo o estado da persona atleta v1 + validação de unicidade de slug no `saveProfile`. Se você está lendo isto e acabou de fazer mudanças no domínio athlete (schema, editor, perfil público, vitrine, visibility, helpers de mock), atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/athlete-profile/` para histórico com hashes.
 
 # Athlete profile — visibility, editor, perfil público e vitrine
 
@@ -14,7 +14,7 @@ Domínio central da plataforma: o atleta é o ator gravitacional. Toda persona f
 - **Leia a skill `conventions` primeiro** se ainda não leu nesta conversa.
 - **Visibility tem DOIS switches independentes**: `publicProfileEnabled` (link direto em `/atleta/[slug]`) e `discoverable` (listagem pública em `/atletas`). Nunca ligue um automaticamente quando o outro muda. **Não são sinônimos.**
 - **Para atletas menores de idade (`minorConsentProvided`), `discoverable` deve ser opt-in explícito do responsável.** Essa é a regra de LGPD mais importante do domínio. O editor hoje já alerta via copy, mas a validação rigorosa (bloquear até guardian aprovar) só vem na fase `parent_guardian`.
-- **`slug` é editável pelo atleta e único por tenant.** Hoje `saveProfile` **não** checa colisão (bug conhecido). Se você está mexendo em slug, considere adicionar o check.
+- **`slug` é editável pelo atleta e único por tenant.** `saveProfile` valida unicidade via `isSlugAvailableForAthlete(slug, tenantId, currentAthleteId)` antes de mutar — a função exclui o próprio atleta, então manter o slug atual não dispara erro. Colisão retorna field error em `slug` com mensagem amigável em pt-BR.
 - **`profile.bio` vive dentro de `athlete.profile`, NÃO num mapa separado.** Houve um refactor histórico que moveu `mockAthleteBios` pra `athlete.profile.bio` — não reverte isso criando outro mapa.
 - **Ao mutar o atleta, invalide 3-4 paths**: `/atleta/<slugAntigo>`, `/atleta/<slugNovo>` (se mudou), `/atletas`, `/app/perfil`. O `saveProfile` já faz isso — siga o padrão ao criar novas mutações.
 - **Card da vitrine é deliberadamente minimalista**: foto (se `showPhoto`), nome, posição, categoria, clube (se `showCurrentClub`). **Não expanda.** Idade, cidade, bio, contato e métricas só aparecem no perfil individual, onde as flags granulares aplicam.
@@ -72,6 +72,7 @@ Flags granulares (aplicam só no perfil individual, **não** no card da vitrine)
 - [web/src/lib/mock/get-athlete.ts](../../../web/src/lib/mock/get-athlete.ts) — helpers:
   - `getPublicAthleteBySlug(slug)` — respeita `publicProfileEnabled`, retorna `null` se desabilitado (dispara 404)
   - `getAthleteById(id)` — busca interna, não filtra visibility
+  - `isSlugAvailableForAthlete(slug, tenantId, currentAthleteId)` — check de unicidade escopado por tenant, exclui o próprio atleta. Memoizado via `cache()`. Quando o backend real existir, vira query com UNIQUE constraint no banco — assinatura mantida.
   - `listPublicAthleteSlugs()` — usado em `generateStaticParams`
   - `updateAthleteById(id, updater)` — mutação in-place, atualiza `updatedAt`
 - [web/src/lib/mock/search-athletes.ts](../../../web/src/lib/mock/search-athletes.ts) — vitrine:
@@ -83,9 +84,9 @@ Flags granulares (aplicam só no perfil individual, **não** no card da vitrine)
 - [web/src/lib/profile/actions.ts](../../../web/src/lib/profile/actions.ts) — `saveProfile`:
   - Autorização via `getCurrentAthlete()` (DAL)
   - Schema Zod cobrindo 26+ campos (identidade, sport, físico, carreira, mídia, contato, visibility)
+  - **Check de unicidade de slug** via `isSlugAvailableForAthlete` antes da mutação. Colisão → early return com field error em `slug`.
   - Mutação via `updateAthleteById`
   - `revalidatePath` em `/atleta/<antigo>`, `/atleta/<novo>` (se mudou), `/atletas`, `/app/perfil`
-  - **Lacuna conhecida**: não checa unicidade de slug. Adicionar quando for relevante.
 
 ### Páginas
 
@@ -105,11 +106,15 @@ O `PublicVisibilityCard` no topo do form é **deliberadamente visualmente destac
 
 **Anti-pattern**: uma "aba de Privacidade" com todos os toggles juntos. Testado mentalmente e rejeitado — vira tela esquecida.
 
-### Slug — regex e validação
+### Slug — regex, validação e unicidade
 
 Pattern canônico no schema e no Zod: `^[a-z0-9][a-z0-9-]{2,59}$`
 
 Letras minúsculas, dígitos e hífens. Min 3, max 60, começa com alfanumérico. Decisão: bloqueia acentos e maiúsculas intencionalmente (URLs limpas e portáveis). O editor hoje aceita o usuário digitar diretamente — **futuro**: transliteração automática do nome ("João Silva 2008" → "joao-silva-2008") como helper.
+
+**Unicidade** é escopada por `tenantId` (por convenção do schema). O check vive em `isSlugAvailableForAthlete(slug, tenantId, currentAthleteId)` em `lib/mock/get-athlete.ts`, memoizado via `cache()`. Quando o backend real existir, a função vira uma query com UNIQUE constraint composto `(tenantId, slug)` no banco — a assinatura em código permanece igual.
+
+O check é feito no `saveProfile` **depois** do Zod parse (que valida formato) e **antes** da mutação (que grava). A ordem importa: Zod garante que o slug é sintaticamente válido; a unicidade é semântica e depende do estado global do tenant. `excludeAthleteId = current.id` garante que manter o slug atual não dispara erro — decisão importante porque senão o atleta editaria outros campos e seria bloqueado por colidir consigo mesmo.
 
 ### Bio no schema, não em mapa externo
 

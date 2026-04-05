@@ -21,6 +21,25 @@ async function fetchAthleteById(id: string): Promise<Athlete | null> {
 export const getPublicAthleteBySlug = cache(fetchPublicAthleteBySlug);
 export const getAthleteById = cache(fetchAthleteById);
 
+// Unicidade de slug é escopada por tenant (por convenção do schema).
+// Exclui o próprio atleta para que manter o slug atual nunca colida.
+// Quando o backend real existir, esta função vira uma query com UNIQUE
+// constraint no banco; a semântica e assinatura permanecem.
+async function checkSlugAvailable(
+  slug: string,
+  tenantId: string,
+  currentAthleteId: string,
+): Promise<boolean> {
+  return !mockAthletes.some(
+    (a) =>
+      a.slug === slug &&
+      a.tenantId === tenantId &&
+      a.id !== currentAthleteId,
+  );
+}
+
+export const isSlugAvailableForAthlete = cache(checkSlugAvailable);
+
 export async function listPublicAthleteSlugs(): Promise<string[]> {
   return mockAthletes
     .filter((a) => a.visibility.publicProfileEnabled && a.slug)
