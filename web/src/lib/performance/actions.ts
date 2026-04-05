@@ -158,6 +158,12 @@ export async function addPerformanceEvent(
   pushPerformanceEvent(event);
   revalidatePath("/app/performance");
 
+  // Se o perfil público expõe performance, revalidar a página do atleta.
+  const v = athlete.visibility;
+  if ((v.showMatchStats || v.showAssessmentStats) && athlete.slug) {
+    revalidatePath(`/atleta/${athlete.slug}`);
+  }
+
   return {
     ok: true,
     message:

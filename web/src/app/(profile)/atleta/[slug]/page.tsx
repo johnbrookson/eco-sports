@@ -10,13 +10,16 @@ import {
   Phone,
   PlayCircle,
   Trophy,
+  TrendingUp,
 } from "lucide-react";
 
 import {
   getPublicAthleteBySlug,
   listPublicAthleteSlugs,
 } from "@/lib/mock/get-athlete";
+import { getPerformanceEventsForAthlete } from "@/lib/mock/get-performance";
 import type { Athlete } from "@/types/athlete";
+import type { PerformanceEvent } from "@/types/performance";
 
 // Força geração estática com base nos slugs conhecidos.
 // Quando o backend existir, trocar por ISR (revalidate) ou fetch dinâmico.
@@ -89,6 +92,11 @@ export default async function AthleteProfilePage(
       ? athlete.media.highlightVideoUrls[0]
       : undefined;
 
+  const showPerformance = v.showMatchStats || v.showAssessmentStats;
+  const perfEvents = showPerformance
+    ? await getPerformanceEventsForAthlete(athlete.id)
+    : [];
+
   return (
     <article className="bg-background">
       <HeroSection
@@ -110,6 +118,14 @@ export default async function AthleteProfilePage(
 
       {v.showAchievements && athlete.career?.achievements && athlete.career.achievements.length > 0 && (
         <AchievementsSection achievements={athlete.career.achievements} />
+      )}
+
+      {showPerformance && perfEvents.length > 0 && (
+        <PerformanceSection
+          events={perfEvents}
+          showMatchStats={!!v.showMatchStats}
+          showAssessmentStats={!!v.showAssessmentStats}
+        />
       )}
 
       {v.showContact && athlete.contact && (
@@ -326,6 +342,268 @@ function AchievementsSection({ achievements }: { achievements: string[] }) {
   );
 }
 
+// ---- Performance (public profile) ----
+
+type PerfCardData = {
+  label: string;
+  value: string;
+  delta: number | null;
+  baseline: number;
+  hint: string;
+  lowerIsBetter?: boolean;
+  trendName: string;
+  digits: number;
+};
+
+function PerformanceSection({
+  events,
+  showMatchStats,
+  showAssessmentStats,
+}: {
+  events: PerformanceEvent[];
+  showMatchStats: boolean;
+  showAssessmentStats: boolean;
+}) {
+  const matches = showMatchStats
+    ? events.filter((e) => e.context.sourceType === "match")
+    : [];
+  const assessments = showAssessmentStats
+    ? events.filter((e) => e.context.sourceType === "assessment")
+    : [];
+
+  if (matches.length === 0 && assessments.length === 0) return null;
+
+  // Match stats — avg of last 5 vs preceding
+  const matchChrono = [...matches].reverse(); // oldest first
+  const recentM = matchChrono.slice(-5);
+  const precedingM = matchChrono.slice(0, Math.max(0, matchChrono.length - 5));
+  const hasMatchDelta = precedingM.length >= 2;
+
+  const avgOf = (
+    evts: PerformanceEvent[],
+    get: (e: PerformanceEvent) => number | undefined,
+  ) => {
+    const vals = evts.map(get).filter((v): v is number => v != null);
+    return vals.length === 0 ? 0 : vals.reduce((a, b) => a + b, 0) / vals.length;
+  };
+
+  const matchCards: PerfCardData[] =
+    matches.length > 0
+      ? (
+          [
+            { label: "Pontos / jogo", trendName: "pontos", get: (e: PerformanceEvent) => e.metrics.points, digits: 1 },
+            { label: "Assistências", trendName: "assistências", get: (e: PerformanceEvent) => e.metrics.assists, digits: 1 },
+            { label: "Rebotes", trendName: "rebotes", get: (e: PerformanceEvent) => e.metrics.rebounds, digits: 1 },
+            { label: "Minutos", trendName: "minutos", get: (e: PerformanceEvent) => e.metrics.minutesPlayed, digits: 0 },
+          ] as const
+        ).map(({ get, digits, ...rest }) => {
+          const recentAvg = avgOf(recentM, get);
+          const precedingAvg = hasMatchDelta ? avgOf(precedingM, get) : 0;
+          return {
+            ...rest,
+            value: formatNum(recentAvg, digits),
+            delta: hasMatchDelta ? recentAvg - precedingAvg : null,
+            baseline: precedingAvg,
+            hint: "últimas 5",
+            digits,
+          };
+        })
+      : [];
+
+  // Assessment stats — latest vs previous
+  const assessChrono = [...assessments].reverse();
+  const latestA = assessChrono.at(-1);
+  const prevA = assessChrono.length >= 2 ? assessChrono.at(-2)! : null;
+
+  const assessMetrics: {
+    label: string;
+    trendName: string;
+    get: (e: PerformanceEvent) => number | undefined;
+    unit: string;
+    digits: number;
+    lowerIsBetter?: boolean;
+  }[] = [
+    { label: "Impulsão vertical", trendName: "impulsão", get: (e) => e.metrics.verticalJumpCm, unit: " cm", digits: 0 },
+    { label: "Sprint", trendName: "sprint", get: (e) => e.metrics.sprintSpeedMps, unit: " m/s", digits: 2 },
+    { label: "Agilidade", trendName: "agilidade", get: (e) => e.metrics.agilitySeconds, unit: "s", digits: 2, lowerIsBetter: true },
+    { label: "Coach rating", trendName: "nota do coach", get: (e) => e.metrics.coachRating, unit: "/10", digits: 1 },
+  ];
+
+  const assessmentCards: PerfCardData[] =
+    assessments.length > 0 && latestA
+      ? assessMetrics
+          .map((m): PerfCardData | null => {
+            const latestVal = m.get(latestA) ?? null;
+            const prevVal = prevA ? (m.get(prevA) ?? null) : null;
+            if (latestVal == null) return null;
+            return {
+              label: m.label,
+              trendName: m.trendName,
+              value: `${formatNum(latestVal, m.digits)}${m.unit}`,
+              delta: prevVal != null ? latestVal - prevVal : null,
+              baseline: prevVal ?? 0,
+              hint: "última avaliação",
+              lowerIsBetter: m.lowerIsBetter,
+              digits: m.digits,
+            };
+          })
+          .filter((c): c is PerfCardData => c != null)
+      : [];
+
+  // Trend badge — classify each metric's delta
+  const allCards = [...matchCards, ...assessmentCards];
+  const deltas = allCards
+    .filter((c) => c.delta != null && c.trendName !== "minutos")
+    .map((c) => {
+      const pct = c.baseline !== 0 ? c.delta! / c.baseline : 0;
+      const adjusted = c.lowerIsBetter ? -pct : pct;
+      const dir: "up" | "down" | "stable" =
+        adjusted > 0.05 ? "up" : adjusted < -0.05 ? "down" : "stable";
+      return { name: c.trendName, dir };
+    });
+
+  const ups = deltas.filter((d) => d.dir === "up");
+  const downs = deltas.filter((d) => d.dir === "down");
+  const stables = deltas.filter((d) => d.dir === "stable");
+
+  let trendLabel: string;
+  let trendColor: string;
+  let trendDetail: string | null = null;
+
+  if (deltas.length === 0) {
+    const parts: string[] = [];
+    if (matches.length > 0)
+      parts.push(`${matches.length} ${matches.length === 1 ? "partida" : "partidas"}`);
+    if (assessments.length > 0)
+      parts.push(`${assessments.length} ${assessments.length === 1 ? "avaliação" : "avaliações"}`);
+    trendLabel = `${parts.join(" · ")} na temporada`;
+    trendColor = "text-muted-foreground";
+  } else if (ups.length > downs.length) {
+    trendLabel = "Em evolução";
+    trendColor = "text-emerald-500";
+    trendDetail = perfTrendDetail(ups, stables, downs);
+  } else if (downs.length > ups.length) {
+    trendLabel = "Em queda";
+    trendColor = "text-red-400";
+    trendDetail = perfTrendDetail(ups, stables, downs);
+  } else {
+    trendLabel = "Desempenho estável";
+    trendColor = "text-muted-foreground";
+    trendDetail = perfTrendDetail(ups, stables, downs);
+  }
+
+  const bothTypes = matchCards.length > 0 && assessmentCards.length > 0;
+
+  return (
+    <section className="bg-background">
+      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
+        <div className="flex items-center gap-3 mb-6">
+          <TrendingUp className="h-5 w-5 text-primary" />
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            Performance
+          </p>
+        </div>
+
+        <div className="mb-10 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-semibold">
+          <span className={trendColor}>{trendLabel}</span>
+          {trendDetail && (
+            <span className="text-muted-foreground font-normal">
+              · {trendDetail}
+            </span>
+          )}
+        </div>
+
+        {matchCards.length > 0 && (
+          <>
+            {bothTypes && (
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+                Partidas
+              </p>
+            )}
+            <PerfStatsGrid cards={matchCards} />
+          </>
+        )}
+
+        {assessmentCards.length > 0 && (
+          <div className={matchCards.length > 0 ? "mt-10" : ""}>
+            {bothTypes && (
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+                Avaliações Físicas
+              </p>
+            )}
+            <PerfStatsGrid cards={assessmentCards} />
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function PerfStatsGrid({ cards }: { cards: PerfCardData[] }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden ring-1 ring-border">
+      {cards.map((card) => (
+        <PerfStatCard key={card.label} card={card} />
+      ))}
+    </div>
+  );
+}
+
+function PerfStatCard({ card }: { card: PerfCardData }) {
+  const { label, value, delta, baseline, hint, lowerIsBetter, digits } = card;
+
+  let deltaStr: string | null = null;
+  let colorClass = "text-muted-foreground";
+
+  if (delta != null) {
+    const pct = baseline !== 0 ? delta / baseline : 0;
+    const adjusted = lowerIsBetter ? -pct : pct;
+
+    if (delta === 0) {
+      deltaStr = "→";
+    } else {
+      const arrow = delta > 0 ? "↑" : "↓";
+      deltaStr = `${arrow}\u00A0${formatNum(Math.abs(delta), digits)}`;
+    }
+
+    if (adjusted > 0.05) colorClass = "text-emerald-500";
+    else if (adjusted < -0.05) colorClass = "text-red-400";
+  }
+
+  return (
+    <div className="bg-card px-6 py-10">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+        {label}
+      </p>
+      <p className="text-4xl md:text-5xl font-black tracking-tight text-foreground tabular-nums">
+        {value}
+      </p>
+      <p className="text-sm mt-2 text-muted-foreground">
+        {deltaStr && <span className={colorClass}>{deltaStr}</span>}
+        {deltaStr && " · "}
+        <span>{hint}</span>
+      </p>
+    </div>
+  );
+}
+
+function perfTrendDetail(
+  ups: { name: string }[],
+  stables: { name: string }[],
+  downs: { name: string }[],
+): string | null {
+  const parts: string[] = [];
+  if (ups.length > 0)
+    parts.push(`${ups.map((u) => u.name).join(" e ")} em alta`);
+  if (stables.length > 0) {
+    const names = stables.map((s) => s.name).join(" e ");
+    parts.push(`${names} ${stables.length === 1 ? "estável" : "estáveis"}`);
+  }
+  if (downs.length > 0)
+    parts.push(`${downs.map((d) => d.name).join(" e ")} em queda`);
+  return parts.length > 0 ? parts.join(", ") : null;
+}
+
 function ContactSection({
   contact,
   name,
@@ -436,6 +714,11 @@ function formatLocation(athlete: Athlete): string | undefined {
   const parts = [city, state].filter(Boolean);
   if (parts.length === 0) return country;
   return parts.join(", ");
+}
+
+function formatNum(n: number, digits: number): string {
+  if (Number.isNaN(n)) return "—";
+  return n.toFixed(digits).replace(".", ",");
 }
 
 function formatHeight(heightCm: number): string {
