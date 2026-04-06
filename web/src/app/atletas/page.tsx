@@ -5,6 +5,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteNav } from "@/components/site-nav";
+import { SiteFooter } from "@/components/site-footer";
 import { AthleteDirectoryCard } from "@/components/athlete-directory-card";
 import {
   searchDiscoverableAthletes,
@@ -179,6 +180,8 @@ export default async function AtletasPage({
           <EmptyStateNoAthletes />
         )}
       </section>
+
+      <SiteFooter />
     </div>
   );
 }
