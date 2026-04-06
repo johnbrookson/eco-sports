@@ -45,7 +45,7 @@ Um programa de base completo não se limita ao treinamento técnico. Inclui acom
 
 O investimento em categorias de base não é apenas sobre esporte — é sobre transformar vidas através do desenvolvimento integral.
     `.trim(),
-    coverImage: "",
+    coverImage: "/images/youth-street-01.jpg",
     category: "Desenvolvimento",
     tags: ["categorias de base", "formação", "desenvolvimento integral", "basketball"],
     author: {
@@ -81,7 +81,7 @@ Um dos maiores benefícios é a possibilidade de compartilhar clipes e highlight
 
 A democratização da análise de vídeo está nivelando o campo de jogo para atletas de todas as origens.
     `.trim(),
-    coverImage: "",
+    coverImage: "/images/game-indoor-01.jpg",
     category: "Tecnologia",
     tags: ["análise de vídeo", "tática", "highlights", "scouts", "tecnologia"],
     author: {
@@ -117,7 +117,7 @@ Construir um portfólio profissional desde as categorias de base garante que, qu
 
 A carreira esportiva é curta. Planejá-la desde o início não é apenas inteligente — é essencial.
     `.trim(),
-    coverImage: "",
+    coverImage: "/images/player-shooting-02.jpg",
     category: "Carreira",
     tags: ["gestão de carreira", "planejamento", "transições", "portfólio", "família"],
     author: {
@@ -153,7 +153,7 @@ Ter acesso a psicólogos especializados em esporte não é luxo — é necessida
 
 O atleta que cuida da mente performa melhor, por mais tempo e com mais satisfação.
     `.trim(),
-    coverImage: "",
+    coverImage: "/images/youth-gymnasium-01.jpg",
     category: "Bem-estar",
     tags: ["saúde mental", "psicologia", "pressão", "bem-estar", "jovens atletas"],
     author: {
@@ -189,7 +189,7 @@ Projetos aprovados exigem gestão rigorosa de recursos, relatórios periódicos 
 
 A Lei de Incentivo é uma ponte entre o potencial esportivo e os recursos necessários para desenvolvê-lo.
     `.trim(),
-    coverImage: "",
+    coverImage: "/images/arena-fans-01.jpg",
     category: "Captação",
     tags: ["lei de incentivo", "patrocínio", "captação", "projetos sociais", "financiamento"],
     author: {
@@ -225,7 +225,7 @@ O diferencial de um marketplace integrado a uma plataforma de gestão é que os 
 
 O marketplace esportivo não é apenas uma conveniência — é uma revolução no acesso ao desenvolvimento profissional.
     `.trim(),
-    coverImage: "",
+    coverImage: "/images/training-shooting-01.jpg",
     category: "Marketplace",
     tags: ["marketplace", "profissionais", "agendamento", "nutricionista", "treinador"],
     author: {

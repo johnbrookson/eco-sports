@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
@@ -41,6 +42,20 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
             <ArrowLeft className="h-4 w-4" />
             Voltar ao blog
           </Link>
+
+          {/* Cover image */}
+          {post.coverImage && (
+            <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl mb-8">
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 768px"
+              />
+            </div>
+          )}
 
           {/* Header */}
           <header>

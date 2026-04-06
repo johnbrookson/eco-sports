@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
@@ -54,8 +55,20 @@ export default function BlogPage() {
           <ScrollReveal>
             <Link
               href={`/blog/${featured.slug}`}
-              className="group block rounded-2xl border bg-card p-6 sm:p-10 shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
+              className="group block rounded-2xl border bg-card overflow-hidden shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
             >
+              {featured.coverImage && (
+                <div className="relative aspect-[21/9] w-full overflow-hidden">
+                  <Image
+                    src={featured.coverImage}
+                    alt={featured.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 1024px) 100vw, 1024px"
+                  />
+                </div>
+              )}
+              <div className="p-6 sm:p-10">
               <div className="flex items-center gap-3 mb-4">
                 <span className="inline-block rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-bold uppercase tracking-wider">
                   {featured.category}
@@ -100,6 +113,7 @@ export default function BlogPage() {
                 Ler artigo
                 <ArrowRight weight="bold"className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </span>
+              </div>
             </Link>
           </ScrollReveal>
         </div>
@@ -113,8 +127,20 @@ export default function BlogPage() {
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
-                className="group flex flex-col rounded-2xl border bg-card p-6 shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
+                className="group flex flex-col rounded-2xl border bg-card overflow-hidden shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
               >
+                {post.coverImage && (
+                  <div className="relative aspect-[16/9] w-full overflow-hidden">
+                    <Image
+                      src={post.coverImage}
+                      alt={post.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-col flex-1 p-6">
                 <span className="inline-block self-start rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-bold uppercase tracking-wider mb-4">
                   {post.category}
                 </span>
@@ -151,6 +177,7 @@ export default function BlogPage() {
                   Ler mais
                   <ArrowRight weight="bold"className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </span>
+                </div>
               </Link>
             ))}
           </ScrollReveal>
