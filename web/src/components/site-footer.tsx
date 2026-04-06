@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const platformLinks = [
   { label: "Atletas", href: "/atletas" },
@@ -161,6 +162,7 @@ export function SiteFooter() {
             &copy; {new Date().getFullYear()} Ceronify. Todos os direitos
             reservados.
           </p>
+          <ThemeSwitcher variant="inline" />
           <p className="text-xs text-background/30">
             Feito com dedicação para o esporte brasileiro.
           </p>

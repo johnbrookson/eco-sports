@@ -30,12 +30,12 @@ export function ThemeSwitcher({ variant = "floating" }: { variant?: "floating" |
 
   if (variant === "inline") {
     return (
-      <div className="hidden md:flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5">
         {themes.map((t) => (
           <button
             key={t.id}
             onClick={() => switchTheme(t.id)}
-            className={`h-5 w-5 rounded-full ${t.color} transition-all ${
+            className={`h-3.5 w-3.5 rounded-full ${t.color} transition-all ${
               current === t.id
                 ? "ring-2 ring-offset-1 ring-current scale-110"
                 : "opacity-40 hover:opacity-70"
