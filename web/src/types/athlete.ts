@@ -106,6 +106,12 @@ export interface AthleteVisibility {
   showAssessmentStats?: boolean;
 }
 
+export interface PendingVisibilityChange {
+  changes: Partial<AthleteVisibility>;
+  requestedAt: string;
+  requestedBy: string; // userId que solicitou a mudança
+}
+
 export interface Athlete {
   id: string;
   tenantId: string;
@@ -122,6 +128,7 @@ export interface Athlete {
   status: AthleteStatus;
   consents: AthleteConsents;
   visibility: AthleteVisibility;
+  pendingVisibility?: PendingVisibilityChange;
   tags?: string[];
   createdAt: string;
   updatedAt: string;

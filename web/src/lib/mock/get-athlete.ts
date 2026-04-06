@@ -46,6 +46,25 @@ export async function listPublicAthleteSlugs(): Promise<string[]> {
     .map((a) => a.slug as string);
 }
 
+async function fetchAthletesByIds(ids: string[]): Promise<Athlete[]> {
+  return mockAthletes.filter((a) => ids.includes(a.id));
+}
+
+export const getAthletesByIds = cache(fetchAthletesByIds);
+
+// Derivado de birthDate. Usado para determinar se mudanças de visibilidade
+// requerem aprovação do guardian.
+export function isMinorAthlete(athlete: Athlete): boolean {
+  const birth = new Date(athlete.profile.birthDate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age < 18;
+}
+
 // Mutação in-place para o stub. Retorna o atleta atualizado.
 // Não é memoizado — cada chamada deve reexecutar para refletir a última edição.
 export function updateAthleteById(

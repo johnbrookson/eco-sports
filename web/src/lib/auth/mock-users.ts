@@ -15,6 +15,7 @@ export interface MockUser {
   specialties: string[];
   tenants: string[];
   athleteId?: string;
+  managedAthleteIds?: string[]; // mapping domain para parent_guardian
 }
 
 export const mockUsers: MockUser[] = [
@@ -47,6 +48,16 @@ export const mockUsers: MockUser[] = [
     specialties: [],
     tenants: ["tenant-demo-individual"],
     athleteId: "c9d6e7f0-3a4b-6c5d-1e0f-2a3b4c5d6e7f",
+  },
+  {
+    id: "usr-rodrigo",
+    email: "rodrigo@demo.ecosports.app",
+    password: "rodrigo123",
+    name: "Rodrigo Ceron",
+    roles: ["parent_guardian"],
+    specialties: [],
+    tenants: ["tenant-demo-individual"],
+    managedAthleteIds: ["c9d6e7f0-3a4b-6c5d-1e0f-2a3b4c5d6e7f"], // Enrico
   },
 ];
 
