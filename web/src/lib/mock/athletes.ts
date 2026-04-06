@@ -20,8 +20,7 @@ export const mockAthletes: Athlete[] = [
       state: "SP",
       city: "São Paulo",
       nationality: "Brasileiro",
-      photoUrl:
-        "https://images.unsplash.com/photo-1519766304817-4f37bda74a26?w=1600&q=80&auto=format&fit=crop",
+      photoUrl: "/images/player-portrait-01.jpg",
       bio: "Armador com visão de jogo acima da média para a idade, leitura rápida de pick-and-roll e mão boa em transição. Começou no basquete aos sete anos em projeto social da Zona Leste de São Paulo, passou pela peneira do clube aos onze e hoje lidera a categoria sub-17 nas competições estaduais. Fora da quadra, é aluno de escola pública integral com meta declarada de cursar Engenharia pela USP.",
     },
     contact: {
@@ -112,8 +111,7 @@ export const mockAthletes: Athlete[] = [
       state: "RJ",
       city: "Niterói",
       nationality: "Brasileira / Angolana",
-      photoUrl:        
-        "https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=1600&q=80&auto=format&fit=crop",
+      photoUrl: "/images/player-portrait-02.jpg",
       bio: "Ala-pivô de dupla nacionalidade (Brasil/Angola) formada nas categorias de base do clube desde os doze anos. Combina tamanho acima da média para a posição com agilidade de exterior — capaz de correr o contra-ataque, proteger o garrafão e finalizar de meia distância. Convocada para seletivas da seleção brasileira sub-17 em 2025. Estuda com bolsa integral em colégio particular e pretende seguir carreira universitária nos Estados Unidos.",
     },
     contact: {
@@ -192,8 +190,7 @@ export const mockAthletes: Athlete[] = [
       state: "SP",
       city: "São Paulo",
       nationality: "Brasileiro",
-      photoUrl:
-        "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1600&q=80&auto=format&fit=crop",
+      photoUrl: "/images/player-portrait-04.jpg",
       bio: "Ala versátil com físico acima da média para a categoria sub-15 — 185 cm e envergadura de 195 cm aos quatorze anos. Formado na base do Monte-Líbano, onde aprendeu fundamentos e leitura de jogo, passou duas temporadas no Paulistano refinando arremesso de meia distância e jogo sem bola, e agora integra o Basket Base do São Paulo FC. Joga bem dos dois lados da quadra: pontua no perímetro, protege o aro com envergadura privilegiada e já aparece nas estatísticas de tocos e rebotes da categoria. Fora da quadra, estuda em período integral e tem como meta conciliar a formação esportiva com o ensino médio em escola de referência.",
     },
     contact: {
