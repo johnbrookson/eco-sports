@@ -3,12 +3,13 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
-import { getCurrentAthlete } from "@/lib/auth/dal";
+import { getCurrentAthlete, verifySession } from "@/lib/auth/dal";
 import {
   isSlugAvailableForAthlete,
+  isMinorAthlete,
   updateAthleteById,
 } from "@/lib/mock/get-athlete";
-import type { Athlete } from "@/types/athlete";
+import type { Athlete, AthleteVisibility } from "@/types/athlete";
 
 // Server Action que persiste edições do perfil do atleta.
 // Durante o stub, grava in-place no mock (mockAthletes). Troca por DB write
@@ -163,6 +164,53 @@ export async function saveProfile(
     };
   }
 
+  // Flags que requerem aprovação do guardian quando o atleta é menor.
+  const GUARDIAN_APPROVAL_FLAGS: (keyof AthleteVisibility)[] = [
+    "publicProfileEnabled",
+    "discoverable",
+    "showMatchStats",
+    "showAssessmentStats",
+  ];
+
+  const desiredVisibility: AthleteVisibility = {
+    publicProfileEnabled: toBool(data.publicProfileEnabled),
+    discoverable: toBool(data.discoverable),
+    showPhoto: toBool(data.showPhoto),
+    showAge: toBool(data.showAge),
+    showCity: toBool(data.showCity),
+    showPhysicalProfile: toBool(data.showPhysicalProfile),
+    showHighlightVideos: toBool(data.showHighlightVideos),
+    showAchievements: toBool(data.showAchievements),
+    showCurrentClub: toBool(data.showCurrentClub),
+    showContact: toBool(data.showContact),
+    showMatchStats: toBool(data.showMatchStats),
+    showAssessmentStats: toBool(data.showAssessmentStats),
+  };
+
+  // Para atletas menores, flags críticas vão pra pendingVisibility
+  // em vez de aplicar direto. O guardian aprova em /app/aprovacoes.
+  const minor = isMinorAthlete(current);
+  let effectiveVisibility = { ...desiredVisibility };
+  let pendingChanges: Partial<AthleteVisibility> | null = null;
+  let hasPendingMessage = false;
+
+  if (minor) {
+    const changes: Partial<AthleteVisibility> = {};
+    for (const flag of GUARDIAN_APPROVAL_FLAGS) {
+      if (desiredVisibility[flag] !== current.visibility[flag]) {
+        changes[flag] = desiredVisibility[flag];
+        // Mantém o valor atual — não aplica até o guardian aprovar
+        effectiveVisibility[flag] = current.visibility[flag]!;
+      }
+    }
+    if (Object.keys(changes).length > 0) {
+      pendingChanges = changes;
+      hasPendingMessage = true;
+    }
+  }
+
+  const session = await verifySession();
+
   const updated = updateAthleteById(current.id, (existing): Athlete => {
     return {
       ...existing,
@@ -208,20 +256,14 @@ export async function saveProfile(
         instagram: data.instagram || undefined,
         linkedin: data.linkedin,
       },
-      visibility: {
-        publicProfileEnabled: toBool(data.publicProfileEnabled),
-        discoverable: toBool(data.discoverable),
-        showPhoto: toBool(data.showPhoto),
-        showAge: toBool(data.showAge),
-        showCity: toBool(data.showCity),
-        showPhysicalProfile: toBool(data.showPhysicalProfile),
-        showHighlightVideos: toBool(data.showHighlightVideos),
-        showAchievements: toBool(data.showAchievements),
-        showCurrentClub: toBool(data.showCurrentClub),
-        showContact: toBool(data.showContact),
-        showMatchStats: toBool(data.showMatchStats),
-        showAssessmentStats: toBool(data.showAssessmentStats),
-      },
+      visibility: effectiveVisibility,
+      pendingVisibility: pendingChanges
+        ? {
+            changes: pendingChanges,
+            requestedAt: new Date().toISOString(),
+            requestedBy: session.sub,
+          }
+        : undefined,
     };
   });
 
@@ -240,6 +282,14 @@ export async function saveProfile(
   }
   revalidatePath("/app/perfil");
   revalidatePath("/atletas");
+
+  if (hasPendingMessage) {
+    return {
+      ok: true,
+      message:
+        "Perfil atualizado. Algumas alterações de visibilidade foram enviadas para aprovação do responsável.",
+    };
+  }
 
   return { ok: true, message: "Perfil atualizado." };
 }
