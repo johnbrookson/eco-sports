@@ -76,3 +76,14 @@ export function findMockUserByCredentials(
 export function findMockUserById(id: string): MockUser | null {
   return mockUsers.find((u) => u.id === id) ?? null;
 }
+
+export function findMockUserByEmail(email: string): MockUser | null {
+  return (
+    mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase()) ??
+    null
+  );
+}
+
+export function addMockUser(user: MockUser): void {
+  mockUsers.push(user);
+}

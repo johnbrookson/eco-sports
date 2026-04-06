@@ -48,3 +48,10 @@ export const getGuardianRelationshipsForUser = cache(
 export const getGuardianRelationshipForAthlete = cache(
   fetchRelationshipForAthlete,
 );
+
+// Push de relacionamento novo no array mock (mutação in-memory para o stub).
+export function addGuardianRelationship(
+  relationship: GuardianRelationship,
+): void {
+  mockGuardianRelationships.push(relationship);
+}

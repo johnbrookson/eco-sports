@@ -3,7 +3,7 @@ name: auth-stub
 description: Use when working on authentication, authorization, session management, the login flow, the protected /app/* routes, the proxy.ts (ex-middleware), the Data Access Layer, or anything that touches the JWT cookie. Also invoke when planning to swap the stub for a real auth provider (Keycloak, Auth.js, Clerk, Auth0, Supabase) — the skill covers the invariants that make the swap trivial.
 ---
 
-> **Manutenção desta skill**: última revisão refletindo o estado até a implementação da persona `parent_guardian` (cookie de persona, DAL de guardian, relacionamento responsável → atleta menor). Se você mudou algo em `lib/auth/`, `lib/guardian/`, `proxy.ts`, `(auth)/`, ou trocou o provider de auth, atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/auth-stub/` para histórico.
+> **Manutenção desta skill**: última revisão refletindo o estado até a implementação do **signup** (criação de conta para atleta e guardian, Server Action `signUp` com Zod discriminated union, geração de Athlete skeleton + GuardianRelationship in-memory). Se você mudou algo em `lib/auth/`, `lib/guardian/`, `proxy.ts`, `(auth)/`, ou trocou o provider de auth, atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/auth-stub/` para histórico.
 
 # Auth stub — session, DAL, proxy, login
 
@@ -50,6 +50,7 @@ Autenticação e autorização no Eco-Sports. Intencionalmente um stub durante o
 │     - mockUsers array com email + password plain + role +    │
 │       tenants + athleteId (mapping, não vai pro JWT)         │
 │     - findMockUserByCredentials() / findMockUserById()       │
+│     - findMockUserByEmail() / addMockUser() (signup)         │
 │     - Substituído por query em banco no futuro real          │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -81,11 +82,13 @@ interface SessionPayload {
 - [web/src/lib/auth/session.ts](../../../web/src/lib/auth/session.ts) — crypto, cookie IO. Se trocar provider, este arquivo muda bastante. `"server-only"` no topo.
 - [web/src/lib/auth/mock-users.ts](../../../web/src/lib/auth/mock-users.ts) — fixture de usuários. Cada um tem `password` plain text (stub explícito), `roles[]`, `specialties[]`, `tenants[]`, e `athleteId` opcional como mapping domain. `"server-only"` no topo.
 - [web/src/lib/auth/dal.ts](../../../web/src/lib/auth/dal.ts) — **o arquivo mais importante do módulo**. Camada autoritativa. Cada função memoizada via `cache()`. Se uma função aqui redireciona, ela chama `redirect()` do `next/navigation` — nunca retorna null pra chamador tratar (decisão: força o caller a assumir que sessão é válida depois da chamada).
-- [web/src/lib/auth/actions.ts](../../../web/src/lib/auth/actions.ts) — Server Actions `signIn` e `signOut`. `signIn` tem Zod validation, retorna `SignInFormState` com erros por campo + mensagem de form. Usa `useActionState` no client. Em caso de sucesso, chama `createSession` + `redirect("/app/perfil")`.
-- [web/src/proxy.ts](../../../web/src/proxy.ts) — proxy Next.js 16. Exporta `proxy` (não `middleware`). Matcher exclui `_next/static`, `_next/image`, `favicon.ico` e arquivos com extensão. Protege `/app/*`, redireciona `/login` logado.
+- [web/src/lib/auth/actions.ts](../../../web/src/lib/auth/actions.ts) — Server Actions `signIn`, `signOut` e `signUp`. `signIn` tem Zod validation, retorna `SignInFormState` com erros por campo + mensagem de form. `signUp` usa dois Zod schemas (atleta vs guardian) selecionados por role, cria MockUser + Athlete skeleton (atleta) ou MockUser + GuardianRelationship (guardian) in-memory, depois chama `createSession` + redirect. Usa `useActionState` no client.
+- [web/src/proxy.ts](../../../web/src/proxy.ts) — proxy Next.js 16. Exporta `proxy` (não `middleware`). Matcher exclui `_next/static`, `_next/image`, `favicon.ico` e arquivos com extensão. Protege `/app/*`, redireciona `/login` e `/signup` se logado.
 - [web/src/app/(auth)/layout.tsx](../../../web/src/app/(auth)/layout.tsx) — layout minimalista centrado do grupo auth.
 - [web/src/app/(auth)/login/page.tsx](../../../web/src/app/(auth)/login/page.tsx) — página de login Server Component.
 - [web/src/app/(auth)/login/login-form.tsx](../../../web/src/app/(auth)/login/login-form.tsx) — form client com `useActionState`, exibe erros inline.
+- [web/src/app/(auth)/signup/page.tsx](../../../web/src/app/(auth)/signup/page.tsx) — página de signup Server Component com link cruzado pra login.
+- [web/src/app/(auth)/signup/signup-form.tsx](../../../web/src/app/(auth)/signup/signup-form.tsx) — form client com `useActionState` e seletor de role (athlete/guardian). Campos condicionais: birthDate (atleta) e athleteEmail (guardian).
 - [web/src/lib/guardian/actions.ts](../../../web/src/lib/guardian/actions.ts) — Server Action `resolveVisibilityApproval` para aprovar/rejeitar mudanças de visibilidade pendentes de atletas menores. Autorizada via `requireGuardianOf`.
 - [web/src/lib/mock/guardian-relationships.ts](../../../web/src/lib/mock/guardian-relationships.ts) — mock de `GuardianRelationship` + helpers `getGuardianRelationshipsForUser` e `getGuardianRelationshipForAthlete`, memoizados via `cache()`.
 
@@ -159,9 +162,25 @@ const session = await getOptionalSession();
 const isOwner = session?.sub === athlete.ownerUserId;
 ```
 
+### Signup — `signUp` Server Action
+
+Fluxo de criação de conta em `/signup`, rota única com seletor de role (athlete / parent_guardian). Mesma infra do `signIn`: Server Action + Zod + `useActionState` + `createSession` + redirect.
+
+**Fluxo atleta:** campos comuns (nome, email, senha, confirmação) + `birthDate` → cria `MockUser` com `roles: ["athlete"]` + `Athlete` skeleton in-memory (slug auto-gerado, categoria derivada da idade, visibility toda fechada) → `createSession` → redirect `/app/perfil` pra completar o perfil.
+
+**Fluxo guardian:** campos comuns + `athleteEmail` (email da conta do atleta) → busca o `MockUser` do atleta por email → cria `MockUser` com `roles: ["parent_guardian"]` + `managedAthleteIds` + `GuardianRelationship` in-memory → `createSession` → redirect `/app` (dashboard).
+
+**Validações Zod:** dois schemas selecionados por role (não discriminated union — `.refine()` não é compatível com `z.discriminatedUnion`). Email único entre `mockUsers`. Senha min 6 chars. Confirmação de senha. BirthDate entre 8-30 anos (atleta). AthleteEmail deve apontar pra user existente com `athleteId` (guardian).
+
+**TenantId:** hardcoded `tenant-demo-individual` para todos os novos users no stub.
+
+**Slug gerado:** `generateAthleteSlug(firstName, lastName, birthDate, tenantId)` em `get-athlete.ts`. Transliteração simples (remove acentos, lowercase, hífens). Sufixo numérico se colidir.
+
+**Categoria derivada:** `deriveCategoryFromBirthDate(birthDate)` em `get-athlete.ts`. Retorna sub-13 a adulto.
+
 ### Redirect loops — cuidados
 
-O `proxy.ts` redireciona `/app/*` sem sessão → `/login`, e `/login` com sessão → `/app/perfil`. Se as duas regras ativassem simultaneamente, haveria loop. A proteção: cada regra checa exclusivamente seu próprio conjunto de paths. **Não adicione regras que cruzem esses limites** sem testar manualmente em browser.
+O `proxy.ts` redireciona `/app/*` sem sessão → `/login`, e auth routes (`/login`, `/signup`) com sessão → `/app/perfil`. Se as duas regras ativassem simultaneamente, haveria loop. A proteção: cada regra checa exclusivamente seu próprio conjunto de paths. **Não adicione regras que cruzem esses limites** sem testar manualmente em browser.
 
 ### `SESSION_SECRET`
 

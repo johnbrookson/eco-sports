@@ -28,8 +28,9 @@ export const getCurrentUser = cache(async (): Promise<MockUser> => {
   const session = await verifySession();
   const user = findMockUserById(session.sub);
   if (!user) {
-    // Sessão válida mas aponta pra usuário inexistente — caso raro (ex:
-    // usuário deletado após login). Trata como sessão inválida.
+    // Sessão válida mas aponta pra usuário inexistente (ex: dev server
+    // reiniciou e perdeu users criados via signup in-memory).
+    // O proxy limpa o cookie stale pra evitar redirect loop.
     redirect("/login");
   }
   return user;

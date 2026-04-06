@@ -65,6 +65,54 @@ export function isMinorAthlete(athlete: Athlete): boolean {
   return age < 18;
 }
 
+// Gera slug a partir do nome + ano de nascimento.
+// Transliteração simples: remove acentos, lowercase, troca espaços por hífens.
+// Se colidir com slug existente no tenant, appenda sufixo numérico.
+export function generateAthleteSlug(
+  firstName: string,
+  lastName: string,
+  birthDate: string,
+  tenantId: string,
+): string {
+  const birthYear = new Date(birthDate).getFullYear();
+  const base = `${firstName} ${lastName} ${birthYear}`
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  let candidate = base;
+  let suffix = 2;
+  while (mockAthletes.some((a) => a.slug === candidate && a.tenantId === tenantId)) {
+    candidate = `${base}-${suffix}`;
+    suffix++;
+  }
+  return candidate;
+}
+
+// Deriva categoria de base a partir da idade.
+export function deriveCategoryFromBirthDate(birthDate: string): string {
+  const birth = new Date(birthDate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  if (age <= 13) return "sub-13";
+  if (age <= 15) return "sub-15";
+  if (age <= 17) return "sub-17";
+  if (age <= 19) return "sub-19";
+  if (age <= 21) return "sub-21";
+  return "adulto";
+}
+
+// Push de atleta novo no array mock (mutação in-memory para o stub).
+export function addAthlete(athlete: Athlete): void {
+  mockAthletes.push(athlete);
+}
+
 // Mutação in-place para o stub. Retorna o atleta atualizado.
 // Não é memoizado — cada chamada deve reexecutar para refletir a última edição.
 export function updateAthleteById(

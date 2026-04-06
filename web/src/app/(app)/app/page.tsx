@@ -31,7 +31,7 @@ export const metadata = {
 // Guardian Dashboard
 // ---------------------------------------------------------------------------
 
-async function GuardianDashboard() {
+async function GuardianDashboard({ welcome }: { welcome?: boolean }) {
   const user = await getCurrentUser();
   const athletes = await getManagedAthletesForCurrentUser();
   const firstName = user.name.split(" ")[0];
@@ -40,6 +40,18 @@ async function GuardianDashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
+      {welcome && (
+        <div className="mb-8 rounded-xl border-2 border-primary/30 bg-primary/5 px-5 py-4">
+          <p className="text-sm font-bold text-primary">
+            Conta criada com sucesso!
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Você já está vinculado ao atleta. Acompanhe a evolução e aprove
+            alterações de visibilidade abaixo.
+          </p>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-10">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2">
@@ -168,11 +180,14 @@ function GuardianAthleteCard({ athlete }: { athlete: Athlete }) {
 // Athlete Dashboard (existing)
 // ---------------------------------------------------------------------------
 
-export default async function AppDashboardPage() {
+export default async function AppDashboardPage(props: {
+  searchParams: Promise<{ welcome?: string }>;
+}) {
   const persona = await getCurrentPersona();
+  const { welcome } = await props.searchParams;
 
   if (persona === "parent_guardian") {
-    return <GuardianDashboard />;
+    return <GuardianDashboard welcome={!!welcome} />;
   }
 
   const athlete = await getCurrentAthlete();
