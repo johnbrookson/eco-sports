@@ -3,7 +3,7 @@ name: conventions
 description: Use when starting any non-trivial work in the Eco-Sports codebase. Establishes the cross-cutting patterns (in-memory mutation, revalidatePath, React cache, Zod discriminated unions, DAL-authoritative authz, semantic tokens, commit format, Next.js 16 breaking changes) that every module follows. Invoke at the start of a session before touching any feature-specific skill.
 ---
 
-> **Manutenção desta skill**: última revisão refletindo o estado até `9372ff2` (docs persona atleta v1 completa). Se você está lendo isto e acabou de fazer mudanças estruturais nas convenções do projeto (novo padrão cross-cutting, nova dependência de infra, nova regra de commits), atualize esta skill **no mesmo commit** ou commit imediatamente adjacente. Ver `git log -- .claude/skills/conventions/` para histórico.
+> **Manutenção desta skill**: última revisão refletindo o estado até a implementação da persona `parent_guardian` (guardian dashboard, approval flow, cookie de persona, `requireGuardianOf`). Se você está lendo isto e acabou de fazer mudanças estruturais nas convenções do projeto (novo padrão cross-cutting, nova dependência de infra, nova regra de commits), atualize esta skill **no mesmo commit** ou commit imediatamente adjacente. Ver `git log -- .claude/skills/conventions/` para histórico.
 
 # Convenções cross-cutting do Eco-Sports
 
@@ -52,7 +52,8 @@ Toda mutação deve invalidar todas as páginas que derivam daquele dado. Tabela
 | `saveProfile` (editor do atleta) | `/atleta/<slugAntigo>`, `/atleta/<slugNovo>` se mudou, `/atletas`, `/app/perfil` |
 | `addPerformanceEvent` | `/app/performance` |
 | `signIn` / `signOut` | Não precisa — `createSession` já redireciona |
-| Futuras: `consent`, `approveVisibility`, etc | Incluir `/app/consentimentos`, `/app/perfil`, e perfil público afetado |
+| `resolveVisibilityApproval` (guardian aprova/rejeita) | `/app/aprovacoes`, `/app/atletas/<id>`, `/app`, `/atleta/<slug>`, `/atletas` |
+| Futuras: `consent`, etc | Incluir `/app/consentimentos`, `/app/perfil`, e perfil público afetado |
 
 **Anti-pattern:** não chame `revalidatePath("/")` ou `revalidatePath("/app")` — são amplos demais e invalidam caches que não mudaram. Seja específico.
 
@@ -86,7 +87,17 @@ const current = await getCurrentAthlete();
 
 **Por quê duas linhas?** O proxy pode ser burlado (bug do Next, cache stale, caminho não coberto pelo matcher). O DAL vive junto do dado e não tem como ser burlado sem reescrever a função. É a recomendação explícita do `web/node_modules/next/dist/docs/01-app/02-guides/data-security.md` — a única resposta correta é "authorize close to the data".
 
+O mesmo padrão se aplica para autorização de guardian: `requireGuardianOf(athleteId)` em `dal.ts` verifica que o user autenticado é guardian ativo do atleta indicado. Redireciona para `/app` se não for. Retorna `GuardianRelationship` para que o caller possa checar `legallyResponsible`.
+
 **Anti-pattern:** não leia `cookies()` direto num Server Component de `(app)/*`. Chame o DAL. Se precisa de uma variação do DAL, adicione método novo ao `dal.ts`, não contorne ele.
+
+### Cookie `eco-sports-persona` — persona switcher
+
+Cookie não-HttpOnly que rastreia qual role está ativo no shell (ex: `athlete`, `parent_guardian`). Setado pelo `signIn` com `roles[0]` do user e atualizado pelo persona switcher via `document.cookie`. Limpo no `signOut`.
+
+Lido no server por `getCurrentPersona()` em `dal.ts`, que valida o valor do cookie contra as roles reais do user (fallback pra `roles[0]` se inválido). **Não é sensível** — saber a role sem sessão válida é inútil.
+
+Usado pelo layout, dashboard e sidebar pra renderizar conteúdo específico por persona.
 
 ### Zod discriminated unions
 
@@ -148,20 +159,9 @@ Regras:
 - **Co-Authored-By no final.** `Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>`
 - **Never add without naming files.** Nunca `git add -A` ou `git add .`. Sempre stage por nome pra evitar pegar o Grupo C untracked sem querer.
 
-## Grupo C — arquivos untracked pré-existentes
+## Grupo C — resolvido
 
-Há 8 arquivos que estavam untracked/modificados quando esta fase começou e que **não devem ser comitados** sem autorização explícita:
-
-- `.gitignore` (modificado)
-- `docs/actors-permissoes.md`
-- `schemas/consent.json`
-- `schemas/guardian-relationship.json`
-- `schemas/organization-membership.json`
-- `schemas/service-contract.json`
-- `schemas/tenant.json`
-- `schemas/user.json`
-
-Eles vão precisar ser resolvidos quando a fase `parent_guardian` começar (vai usar `guardian-relationship.json`) ou quando o `consent flow` começar (vai usar `consent.json`). Até lá, **não toque**. Stage sempre arquivos específicos por nome.
+Os 8 arquivos que estavam untracked (schemas, docs/actors-permissoes.md, .gitignore) foram todos comitados durante a implementação das personas `athlete` e `parent_guardian`. A restrição de "não tocar" não se aplica mais. Continue usando `git add` com nomes específicos por boa prática, mas não há mais arquivos untracked pré-existentes para proteger.
 
 ## Next.js 16 — armadilhas recorrentes
 

@@ -3,7 +3,7 @@ name: athlete-profile
 description: Use when modifying anything related to the athlete profile domain — the schema `athlete.json`, the visibility model (publicProfileEnabled, discoverable, granular flags), the editable profile at /app/perfil, the public profile at /atleta/[slug], the public directory at /atletas, or the not-found fallback. Covers LGPD considerations for minor athletes and the dual-channel visibility pattern (direct link vs searchable directory).
 ---
 
-> **Manutenção desta skill**: última revisão refletindo o estado da persona atleta v1 + validação de unicidade de slug no `saveProfile`. Se você está lendo isto e acabou de fazer mudanças no domínio athlete (schema, editor, perfil público, vitrine, visibility, helpers de mock), atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/athlete-profile/` para histórico com hashes.
+> **Manutenção desta skill**: última revisão refletindo o estado da persona `parent_guardian` v1 (pendingVisibility, fluxo de aprovação, páginas do guardian). Se você está lendo isto e acabou de fazer mudanças no domínio athlete (schema, editor, perfil público, vitrine, visibility, helpers de mock), atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/athlete-profile/` para histórico com hashes.
 
 # Athlete profile — visibility, editor, perfil público e vitrine
 
@@ -128,14 +128,14 @@ Houve um refactor histórico (commit `1cc0af2`) que moveu a bio de um mapa separ
 - Schema tem `consents.minorConsentProvided`
 - Copy do editor avisa que `discoverable` deve ficar desligado pra menores
 - Guardiões existem como array em `athlete.guardians` (nome, relationship, phone, email)
+- **Aprovação do guardian para menores** — `saveProfile` checa `isMinorAthlete()` e redireciona mudanças em `publicProfileEnabled`, `discoverable`, `showMatchStats`, `showAssessmentStats` para `pendingVisibility` em vez de aplicar direto
+- **Painel do guardian** — `/app/aprovacoes` lista mudanças pendentes, guardian pode aprovar/rejeitar via `resolveVisibilityApproval`
+- **Detail do atleta** — `/app/atletas/[id]` mostra perfil + performance + visibility em read-only, autorizado via `requireGuardianOf`
+- Schema `guardian-relationship.json` consumido via `GuardianRelationship` type + mock
 
-**Não implementado (vem na fase `parent_guardian`):**
-- Aprovação obrigatória do responsável antes de ligar `discoverable` quando `minorConsentProvided` é true
-- Painel do guardian pra ver/aprovar mudanças pendentes
+**Não implementado (vem no consent flow LGPD):**
 - Versionamento de consentimento (`consentVersion`, fluxo de re-consent quando version muda)
-- Schema `consent.json` (está untracked no Grupo C, usar quando for implementar)
-- Schema `guardian-relationship.json` (idem)
-- **Aprovação do guardian para `showMatchStats`/`showAssessmentStats`** — as flags já existem e funcionam (implementadas em 2026-04-05), mas hoje a proteção para menores é só copy de aviso no editor. Na fase `parent_guardian`, entram na lista de flags que exigem aprovação do responsável quando `minorConsentProvided === true`.
+- Schema `consent.json` — existe tracked mas não consumido ainda. Substitui o `pendingVisibility` leve por `Consent` entities com cadeia de versões, evidências, escopo
 
 ### Card da vitrine — subset DO QUE aparece
 
@@ -154,6 +154,36 @@ Expondo propositalmente:
 - stats físicas
 
 Justificativa: a listagem é prévia, não o perfil. Detalhes moram no `/atleta/[slug]` individual.
+
+## pendingVisibility — fluxo de aprovação para menores
+
+Tipo `PendingVisibilityChange` em `types/athlete.ts`: `{ changes: Partial<AthleteVisibility>, requestedAt: string, requestedBy: string }`.
+
+**4 flags requerem aprovação do guardian para atletas menores:**
+- `publicProfileEnabled`, `discoverable`, `showMatchStats`, `showAssessmentStats`
+
+**Demais flags** (`showPhoto`, `showAge`, `showCity`, etc.) aplicam imediatamente mesmo para menores.
+
+**Fluxo:**
+1. Atleta menor altera flag crítica via `saveProfile`
+2. `isMinorAthlete()` (derivado de `birthDate`) detecta que é menor
+3. Mudança vai para `athlete.pendingVisibility` em vez de `visibility`
+4. `saveProfile` retorna mensagem indicando envio para aprovação
+5. Guardian vê em `/app/aprovacoes` e aprova/rejeita via `resolveVisibilityApproval`
+6. Aprovação: merge `pendingVisibility.changes` → `visibility`, limpa pending
+7. Rejeição: limpa pending
+
+`resolveVisibilityApproval` (em `lib/guardian/actions.ts`) checa `requireGuardianOf(athleteId)` + `legallyResponsible === true`. `revalidatePath` cobre: `/app/aprovacoes`, `/app/atletas/<id>`, `/app`, `/atleta/<slug>`, `/atletas`.
+
+### Guardian integration — arquivos
+
+- [web/src/lib/guardian/actions.ts](../../../web/src/lib/guardian/actions.ts) — Server Action `resolveVisibilityApproval`
+- [web/src/lib/mock/guardian-relationships.ts](../../../web/src/lib/mock/guardian-relationships.ts) — mock relationships + helpers memoizados
+- [web/src/types/guardian-relationship.ts](../../../web/src/types/guardian-relationship.ts) — type alinhado ao schema
+- [web/src/app/(app)/app/atletas/page.tsx](../../../web/src/app/(app)/app/atletas/page.tsx) — lista de atletas supervisionados
+- [web/src/app/(app)/app/atletas/[id]/page.tsx](../../../web/src/app/(app)/app/atletas/[id]/page.tsx) — detail read-only
+- [web/src/app/(app)/app/aprovacoes/page.tsx](../../../web/src/app/(app)/app/aprovacoes/page.tsx) — pendências
+- [web/src/app/(app)/app/aprovacoes/approval-card.tsx](../../../web/src/app/(app)/app/aprovacoes/approval-card.tsx) — card client com `useActionState`
 
 ## Anti-patterns específicos do domínio
 

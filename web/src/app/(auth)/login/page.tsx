@@ -39,8 +39,10 @@ function DemoCredentialsHint() {
         Usuários mock disponíveis:
       </p>
       <ul className="mt-2 space-y-1 font-mono text-xs text-foreground">
-        <li>joao@demo.ecosports.app / joao123</li>
-        <li>mariana@demo.ecosports.app / mariana123</li>
+        <li>joao@demo.ecosports.app / joao123 <span className="text-muted-foreground">(atleta)</span></li>
+        <li>mariana@demo.ecosports.app / mariana123 <span className="text-muted-foreground">(atleta)</span></li>
+        <li>enrico@demo.ecosports.app / enrico123 <span className="text-muted-foreground">(atleta menor)</span></li>
+        <li>rodrigo@demo.ecosports.app / rodrigo123 <span className="text-muted-foreground">(responsável)</span></li>
       </ul>
     </div>
   );

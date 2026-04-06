@@ -162,15 +162,32 @@ Na **topbar**, um **persona switcher mockado** permitirá alternar para visões 
 - **DAL autoritativa** em cada Server Component/Action que toca dado sensível — `proxy.ts` é só a primeira camada, não é suficiente.
 - **Tokens semânticos** no design system — nenhuma cor hardcoded nova deve ser aceita; se precisar de uma cor novea, criar token.
 
+### Persona `parent_guardian` v1 (2026-04-06)
+
+**Persona `parent_guardian` v1 completa.** Rodrigo Ceron (pai do Enrico, atleta menor sub-15) é o mock user demo.
+
+- **Modelo de dados**: `GuardianRelationship` entity (schema `schemas/guardian-relationship.json`) como vínculo guardian → athlete. `MockUser.managedAthleteIds` para domain mapping (não vai no JWT). O campo denormalizado `athlete.guardians[]` coexiste para exibição.
+- **Types**: `GuardianRelationship` em `types/guardian-relationship.ts`, `PendingVisibilityChange` em `types/athlete.ts`.
+- **Mock user**: `rodrigo@demo.ecosports.app` / `rodrigo123`, role `parent_guardian`, gerenciando Enrico Ceron.
+- **DAL expandido**: `getCurrentPersona()` (lê cookie `eco-sports-persona`), `getManagedAthletesForCurrentUser()`, `requireGuardianOf(athleteId)`.
+- **Persona switcher funcional**: role-aware — mostra como disponível apenas os roles que o user possui, outros ficam "em breve". Seta cookie `eco-sports-persona` ao trocar.
+- **Sidebar role-aware**: athlete vê Dashboard/Perfil/Performance; guardian vê Dashboard/Meus Atletas/Aprovações.
+- **Dashboard role-aware** (`/app`): athlete vê KPIs; guardian vê grid de atletas supervisionados com alerta de pendências.
+- **`/app/atletas`**: lista de atletas supervisionados pelo guardian.
+- **`/app/atletas/[id]`**: read-only detail (perfil + performance summary + visibility status). Autorizado via `requireGuardianOf()`.
+- **`/app/aprovacoes`**: lista de mudanças pendentes de visibilidade com botões aprovar/rejeitar. Client component `ApprovalCard` com `useActionState`.
+- **`saveProfile` com `pendingVisibility`**: atletas menores que alteram flags críticas (publicProfileEnabled, discoverable, showMatchStats, showAssessmentStats) têm mudanças redirecionadas para `pendingVisibility` em vez de aplicar direto. Flags não-críticas aplicam normalmente.
+- **`resolveVisibilityApproval`**: Server Action em `lib/guardian/actions.ts`. Aprovação faz merge `pendingVisibility.changes` → `visibility`; rejeição limpa o pending. Checa `requireGuardianOf` + `legallyResponsible`.
+- **signIn agora redireciona para `/app`** (dashboard role-aware) em vez de `/app/perfil`.
+
 ### Próximos passos
 
-1. **Segunda persona — `parent_guardian`**. Destrava o persona switcher, força decisões de multi-user-per-athlete e workflows de aprovação, e é legalmente necessária para atletas menores (fluxo de consentimento + aprovação de `discoverable`/`publicProfileEnabled` quando o atleta é menor).
-2. **Consent flow LGPD** — usar o schema `consent.json` que já existe em `schemas/` (atualmente untracked no Grupo C). Tela dedicada em `/app/consentimentos` com versionamento e aprovação de responsável.
-3. **Signup** — criar um atleta do zero, não só editar. Mesma infra de Server Action + Zod do login.
-4. **Unicidade de slug** — hoje `saveProfile` não checa colisão. Adicionar check + mensagem de erro.
-5. **Upload de foto** — compromisso inicial (base64 inline, URL data:) enquanto não há storage.
-6. **Mais atletas mock** — a vitrine está com apenas 1 atleta visível (Mariana). 5-8 atletas variados deixariam os filtros mais úteis.
-7. **Eventualmente**: migração das páginas de marketing para dentro de um grupo `(marketing)` — hoje estão flat em `src/app/`, não urgente.
+1. **Consent flow LGPD** — usar o schema `consent.json` que já existe em `schemas/`. Tela dedicada em `/app/consentimentos` com versionamento e aprovação de responsável. Substitui o `pendingVisibility` leve por `Consent` entities reais.
+2. **Signup** — criar um atleta ou guardian do zero, não só editar. Mesma infra de Server Action + Zod do login.
+3. **Upload de foto** — compromisso inicial (base64 inline, URL data:) enquanto não há storage.
+4. **Mais atletas mock** — a vitrine precisa de 5-8 atletas variados para filtros úteis.
+5. **Segundo guardian mock** (Ana Silva → João) para demonstrar multi-guardian.
+6. **Eventualmente**: migração das páginas de marketing para dentro de um grupo `(marketing)` — hoje estão flat em `src/app/`, não urgente.
 
 ### Ao continuar a implementação
 
