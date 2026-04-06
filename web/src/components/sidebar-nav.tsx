@@ -39,7 +39,9 @@ export function SidebarNav({ collapsed = false }: SidebarNavProps) {
               }`}
             >
               <Icon className="h-5 w-5 shrink-0" />
-              {!collapsed && item.label}
+              {!collapsed && (
+                <span className="truncate">{item.label}</span>
+              )}
             </Link>
           </li>
         );

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PersonaSwitcher } from "@/app/(app)/persona-switcher";
 import { AppBreadcrumbs } from "@/components/app-breadcrumbs";
 import { SidebarToggle } from "@/components/sidebar-toggle";
+import { DarkModeToggle } from "@/components/dark-mode-toggle";
 
 // Toolbar do shell autenticado — segue padrão Fuse Layout1:
 // sticky top, h-12 mobile / h-16 desktop.
@@ -46,7 +47,7 @@ export function AppToolbar({ initials, currentRole, mobileToggle }: AppToolbarPr
           <Button
             variant="ghost"
             size="icon-sm"
-            className="text-toolbar-foreground/50 hover:text-toolbar-foreground"
+            className="hidden sm:inline-flex text-toolbar-foreground/50 hover:text-toolbar-foreground"
             aria-label="Buscar"
           >
             <Search className="h-4 w-4" />
@@ -54,11 +55,12 @@ export function AppToolbar({ initials, currentRole, mobileToggle }: AppToolbarPr
           <Button
             variant="ghost"
             size="icon-sm"
-            className="text-toolbar-foreground/50 hover:text-toolbar-foreground"
+            className="hidden sm:inline-flex text-toolbar-foreground/50 hover:text-toolbar-foreground"
             aria-label="Notificações"
           >
             <Bell className="h-4 w-4" />
           </Button>
+          <DarkModeToggle />
           <div className="h-6 w-px bg-border mx-1" />
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs shrink-0">
             {initials}

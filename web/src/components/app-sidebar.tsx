@@ -57,7 +57,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
       }`}
     >
       {/* Logo */}
-      <div className="flex h-16 shrink-0 items-center px-5 overflow-hidden">
+      <div className="flex h-16 shrink-0 items-center px-5 overflow-hidden border-b border-sidebar-border">
         <Link
           href="/app"
           className="text-xl font-black tracking-tight hover:text-sidebar-primary transition-colors whitespace-nowrap"
@@ -82,7 +82,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
       </nav>
 
       {/* User menu — pinned bottom */}
-      <div className="border-t border-sidebar-border p-2">
+      <div className="border-t border-sidebar-border p-3">
         <SidebarUserMenu
           user={user}
           initials={initials}
