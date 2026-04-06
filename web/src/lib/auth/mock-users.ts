@@ -38,6 +38,16 @@ export const mockUsers: MockUser[] = [
     tenants: ["tenant-demo-individual"],
     athleteId: "b8c5d6e9-2f3a-5b4c-0d9e-1f2a3b4c5d6e",
   },
+  {
+    id: "usr-enrico",
+    email: "enrico@demo.ecosports.app",
+    password: "enrico123",
+    name: "Enrico Ceron",
+    roles: ["athlete"],
+    specialties: [],
+    tenants: ["tenant-demo-individual"],
+    athleteId: "c9d6e7f0-3a4b-6c5d-1e0f-2a3b4c5d6e7f",
+  },
 ];
 
 export function findMockUserByCredentials(

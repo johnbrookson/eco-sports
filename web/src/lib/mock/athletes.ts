@@ -21,7 +21,7 @@ export const mockAthletes: Athlete[] = [
       city: "São Paulo",
       nationality: "Brasileiro",
       photoUrl:
-        "https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=1600&q=80&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1519766304817-4f37bda74a26?w=1600&q=80&auto=format&fit=crop",
       bio: "Armador com visão de jogo acima da média para a idade, leitura rápida de pick-and-roll e mão boa em transição. Começou no basquete aos sete anos em projeto social da Zona Leste de São Paulo, passou pela peneira do clube aos onze e hoje lidera a categoria sub-17 nas competições estaduais. Fora da quadra, é aluno de escola pública integral com meta declarada de cursar Engenharia pela USP.",
     },
     contact: {
@@ -83,7 +83,7 @@ export const mockAthletes: Athlete[] = [
     },
     visibility: {
       publicProfileEnabled: true,
-      discoverable: false,
+      discoverable: true,
       showPhoto: true,
       showAge: true,
       showCity: true,
@@ -112,8 +112,8 @@ export const mockAthletes: Athlete[] = [
       state: "RJ",
       city: "Niterói",
       nationality: "Brasileira / Angolana",
-      photoUrl:
-        "https://images.unsplash.com/photo-1519766304817-4f37bda74a26?w=1600&q=80&auto=format&fit=crop",
+      photoUrl:        
+        "https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=1600&q=80&auto=format&fit=crop",
       bio: "Ala-pivô de dupla nacionalidade (Brasil/Angola) formada nas categorias de base do clube desde os doze anos. Combina tamanho acima da média para a posição com agilidade de exterior — capaz de correr o contra-ataque, proteger o garrafão e finalizar de meia distância. Convocada para seletivas da seleção brasileira sub-17 em 2025. Estuda com bolsa integral em colégio particular e pretende seguir carreira universitária nos Estados Unidos.",
     },
     contact: {
@@ -178,5 +178,97 @@ export const mockAthletes: Athlete[] = [
     tags: ["power_forward", "sub-18", "rio-de-janeiro", "ncaa-bound"],
     createdAt: "2024-06-18T14:00:00-03:00",
     updatedAt: "2026-03-30T11:10:00-03:00",
+  },
+  {
+    id: "c9d6e7f0-3a4b-6c5d-1e0f-2a3b4c5d6e7f",
+    tenantId: "tenant-demo-individual",
+    slug: "enrico-ceron-2011",
+    profile: {
+      firstName: "Enrico",
+      lastName: "Ceron",
+      birthDate: "2011-07-18",
+      gender: "male",
+      country: "BR",
+      state: "SP",
+      city: "São Paulo",
+      nationality: "Brasileiro",
+      photoUrl:
+        "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1600&q=80&auto=format&fit=crop",
+      bio: "Ala versátil com físico acima da média para a categoria sub-15 — 185 cm e envergadura de 195 cm aos quatorze anos. Formado na base do Monte-Líbano, onde aprendeu fundamentos e leitura de jogo, passou duas temporadas no Paulistano refinando arremesso de meia distância e jogo sem bola, e agora integra o Basket Base do São Paulo FC. Joga bem dos dois lados da quadra: pontua no perímetro, protege o aro com envergadura privilegiada e já aparece nas estatísticas de tocos e rebotes da categoria. Fora da quadra, estuda em período integral e tem como meta conciliar a formação esportiva com o ensino médio em escola de referência.",
+    },
+    contact: {
+      email: "enrico.ceron@exemplo.com",
+      instagram: "@enrico.ceron.bball",
+    },
+    guardians: [
+      {
+        name: "Rodrigo Ceron",
+        relationship: "father",
+        phone: "+55 11 98765-4321",
+        email: "rodrigo.ceron@exemplo.com",
+      },
+    ],
+    sport: {
+      discipline: "basketball",
+      primaryPosition: "small_forward",
+      secondaryPositions: ["shooting_guard"],
+      dominantSide: "right",
+    },
+    physicalProfile: {
+      heightCm: 185,
+      weightKg: 79,
+      wingspanCm: 195,
+    },
+    category: "sub-15",
+    education: {
+      schoolName: "Colégio Objetivo — Unidade Paulista",
+      gradeLevel: "9º ano EF",
+      graduationYear: 2029,
+      academicGoals: ["Ensino médio em escola de referência esportiva"],
+    },
+    career: {
+      currentClub: "São Paulo FC — Basket Base",
+      currentTeam: "Sub-15",
+      coachName: "Marcos Vinícius Duarte",
+      seasonGoals: [
+        "Titular no Campeonato Paulista Sub-15",
+        "Média de 12 pontos e 6 rebotes por jogo",
+      ],
+      achievements: [
+        "Destaque ofensivo do Torneio de Verão Sub-13 — Monte-Líbano (2024)",
+        "Campeão da Copa São Paulo Sub-14 — Paulistano (2025)",
+        "Melhor jogador jovem do Campeonato Metropolitano Sub-14 (2025)",
+        "Convocado para seletiva estadual Sub-15 (2026)",
+      ],
+    },
+    media: {
+      highlightVideoUrls: ["https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
+    },
+    status: "active",
+    consents: {
+      termsAccepted: true,
+      privacyAccepted: true,
+      imageUseAccepted: true,
+      minorConsentProvided: true,
+      consentVersion: "2026-01",
+      acceptedAt: "2026-03-01T09:00:00-03:00",
+    },
+    visibility: {
+      publicProfileEnabled: true,
+      discoverable: true,
+      showPhoto: true,
+      showAge: true,
+      showCity: false,
+      showPhysicalProfile: true,
+      showHighlightVideos: true,
+      showAchievements: true,
+      showCurrentClub: true,
+      showContact: false,
+      showMatchStats: false,
+      showAssessmentStats: false,
+    },
+    tags: ["small_forward", "sub-15", "sao-paulo"],
+    createdAt: "2026-03-01T09:00:00-03:00",
+    updatedAt: "2026-04-02T16:45:00-03:00",
   },
 ];
