@@ -18,9 +18,6 @@ export function AppBreadcrumbs() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
 
-  // Não mostra breadcrumb se estiver na raiz /app
-  if (segments.length <= 1) return null;
-
   const crumbs = segments.map((segment, i) => {
     const href = "/" + segments.slice(0, i + 1).join("/");
     const label = labels[segment] ?? segment;

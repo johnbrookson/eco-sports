@@ -67,11 +67,16 @@ export function AppSidebar({ user }: AppSidebarProps) {
       </div>
 
       {/* Nav scrollável */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4">
         {!collapsed && (
-          <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/40">
-            Navegação
-          </p>
+          <div className="px-3 mb-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-primary">
+              Painel do Atleta
+            </p>
+            <p className="text-[10px] text-sidebar-foreground/40 mt-0.5">
+              Gestão de carreira e performance
+            </p>
+          </div>
         )}
         <SidebarNav collapsed={collapsed} />
       </nav>

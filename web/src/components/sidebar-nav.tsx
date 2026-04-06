@@ -28,17 +28,17 @@ export function SidebarNav({ collapsed = false }: SidebarNavProps) {
             <Link
               href={item.href}
               title={collapsed ? item.label : undefined}
-              className={`flex items-center rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center rounded-lg text-sm transition-colors ${
                 collapsed
-                  ? "justify-center px-0 py-2.5"
-                  : "gap-3 px-3 py-2.5"
+                  ? "justify-center px-0 py-3"
+                  : "gap-3 px-3 py-3"
               } ${
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground font-medium"
               }`}
             >
-              <Icon className="h-4 w-4 shrink-0" />
+              <Icon className="h-5 w-5 shrink-0" />
               {!collapsed && item.label}
             </Link>
           </li>
