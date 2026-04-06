@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import {
-  ShieldCheck,
   Check,
   X,
   ArrowRight,
   Clock,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   resolveVisibilityApproval,
@@ -42,6 +42,18 @@ export function ApprovalCard({
 
   const state = approveState ?? rejectState;
   const isPending = approvePending || rejectPending;
+
+  const prevStateRef = useRef(state);
+  useEffect(() => {
+    if (state === prevStateRef.current) return;
+    prevStateRef.current = state;
+    if (!state) return;
+    if (state.ok) {
+      toast.success(state.message ?? "Alteração processada.");
+    } else if (state.message) {
+      toast.error(state.message);
+    }
+  }, [state]);
 
   // Se já resolveu, mostra feedback
   if (state?.ok) {

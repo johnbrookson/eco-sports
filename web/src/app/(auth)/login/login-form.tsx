@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,15 @@ export function LoginForm() {
     SignInFormState,
     FormData
   >(signIn, undefined);
+
+  const prevStateRef = useRef(state);
+  useEffect(() => {
+    if (state === prevStateRef.current) return;
+    prevStateRef.current = state;
+    if (state?.errors?.form) {
+      toast.error(state.errors.form[0]);
+    }
+  }, [state]);
 
   return (
     <form action={formAction} className="space-y-5" noValidate>
@@ -28,7 +38,7 @@ export function LoginForm() {
           type="email"
           autoComplete="email"
           required
-          defaultValue={state?.values?.email ?? ""}
+          defaultValue={state?.values?.email}
           aria-invalid={Boolean(state?.errors?.email)}
           aria-describedby="email-error"
         />

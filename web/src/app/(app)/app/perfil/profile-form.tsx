@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useId } from "react";
-import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { useActionState, useId, useEffect, useRef } from "react";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,28 +27,21 @@ export function ProfileForm({ athlete }: { athlete: Athlete }) {
   const v = athlete.visibility;
   const achievementsText = athlete.career?.achievements?.join("\n") ?? "";
 
+  // Toast de feedback após save
+  const prevStateRef = useRef(state);
+  useEffect(() => {
+    if (state === prevStateRef.current) return;
+    prevStateRef.current = state;
+    if (!state) return;
+    if (state.ok) {
+      toast.success(state.message ?? "Perfil atualizado.");
+    } else if (state.message) {
+      toast.error(state.message);
+    }
+  }, [state]);
+
   return (
     <form action={formAction} className="space-y-10" noValidate>
-      {/* Toast de resultado global */}
-      {state?.ok && (
-        <div
-          role="status"
-          className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary"
-        >
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          {state.message ?? "Perfil atualizado."}
-        </div>
-      )}
-      {state?.ok === false && state?.message && (
-        <div
-          role="alert"
-          className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm font-semibold text-destructive"
-        >
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          {state.message}
-        </div>
-      )}
-
       {/* Master: controles de exposição pública do perfil */}
       <PublicVisibilityCard
         publicProfileEnabled={v.publicProfileEnabled}
