@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { decrypt, SESSION_COOKIE_NAME } from "@/lib/auth/session";
+import { findMockUserById } from "@/lib/auth/mock-users";
 
 // Proxy (ex-middleware em Next.js <= 15, renomeado no Next.js 16).
 // Primeira linha de defesa: optimistic check que só lê o cookie de sessão.
@@ -8,7 +9,7 @@ import { decrypt, SESSION_COOKIE_NAME } from "@/lib/auth/session";
 // chamado dentro de cada Server Component / Action que toca dado sensível.
 
 const PROTECTED_PREFIXES = ["/app"];
-const AUTH_ROUTES = ["/login"];
+const AUTH_ROUTES = ["/login", "/signup"];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -32,9 +33,17 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Usuário já logado tentando abrir /login → joga direto pro app.
+  // Usuário já logado tentando abrir /login ou /signup → joga direto pro app.
+  // Verifica se o user ainda existe no mock (pode ter sido perdido no restart
+  // do dev server). Se não existe, limpa o cookie stale pra evitar loop.
   if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL("/app/perfil", req.nextUrl));
+    const user = findMockUserById(session!.sub);
+    if (!user) {
+      const response = NextResponse.next();
+      response.cookies.delete(SESSION_COOKIE_NAME);
+      return response;
+    }
+    return NextResponse.redirect(new URL("/app", req.nextUrl));
   }
 
   return NextResponse.next();
