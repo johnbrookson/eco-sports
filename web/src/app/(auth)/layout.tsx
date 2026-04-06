@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AppVersion } from "@/components/app-version";
 
 // Layout do grupo (auth) — telas de login, signup, recuperação de senha.
 // Minimalista centrado, sem nav do marketing nem do SaaS. Herda o root layout
@@ -24,10 +25,11 @@ export default function AuthLayout({
       <main className="flex-1 flex items-start justify-center px-6 py-8">
         <div className="w-full max-w-md">{children}</div>
       </main>
-      <footer className="px-6 py-6 text-center">
+      <footer className="px-6 py-6 text-center space-y-1">
         <p className="text-xs text-muted-foreground">
           © {new Date().getFullYear()} Ceronify · Eco-Sports
         </p>
+        <AppVersion />
       </footer>
     </div>
   );

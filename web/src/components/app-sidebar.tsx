@@ -13,6 +13,7 @@ import {
 import { SidebarNav } from "@/components/sidebar-nav";
 import { SidebarUserMenu } from "@/components/sidebar-user-menu";
 import { useSidebar } from "@/components/sidebar-context";
+import { AppVersion } from "@/components/app-version";
 
 // Sidebar do shell autenticado — segue padrão Fuse Layout1:
 // logo fixo no topo, nav scrollável no meio, user menu no fundo.
@@ -121,6 +122,11 @@ export function AppSidebar({ user, currentPersona }: AppSidebarProps) {
           initials={initials}
           collapsed={collapsed}
         />
+        {!collapsed && (
+          <div className="mt-2 px-3">
+            <AppVersion />
+          </div>
+        )}
       </div>
     </aside>
   );
