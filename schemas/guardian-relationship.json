@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eco-sports.local/schemas/guardian-relationship.json",
+  "title": "GuardianRelationship",
+  "description": "Vínculo entre um usuário com papel 'parent_guardian' e um atleta. Obrigatório para qualquer atleta menor de idade. Um atleta pode ter múltiplos responsáveis; um responsável pode ter múltiplos atletas.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "tenantId",
+    "athleteId",
+    "guardianUserId",
+    "relationshipType",
+    "legallyResponsible",
+    "status",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenantId": {
+      "type": "string",
+      "description": "Tenant individual do atleta."
+    },
+    "athleteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "guardianUserId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "relationshipType": {
+      "type": "string",
+      "enum": [
+        "mother",
+        "father",
+        "stepmother",
+        "stepfather",
+        "grandparent",
+        "sibling_adult",
+        "legal_guardian",
+        "foster_parent",
+        "other"
+      ]
+    },
+    "isPrimary": {
+      "type": "boolean",
+      "description": "Responsável primário. Apenas um por atleta pode ser marcado como primário ao mesmo tempo — decisões automáticas (notificações críticas, cobrança padrão) vão para ele."
+    },
+    "legallyResponsible": {
+      "type": "boolean",
+      "description": "Indica se o responsável tem poder legal para consentir em nome do atleta menor (para LGPD, contratos, exposição de imagem)."
+    },
+    "proofDocuments": {
+      "type": "array",
+      "description": "Documentos que comprovam a relação (certidão de nascimento, termo de guarda, procuração).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "url"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "birth_certificate",
+              "legal_guardianship",
+              "power_of_attorney",
+              "court_order",
+              "other"
+            ]
+          },
+          "url": { "type": "string", "format": "uri" },
+          "verifiedAt": { "type": "string", "format": "date-time" },
+          "verifiedBy": { "type": "string", "format": "uuid" }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending_verification", "active", "revoked", "expired"]
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Preenchido quando o vínculo é encerrado (ex.: atleta atinge maioridade, revogação judicial)."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

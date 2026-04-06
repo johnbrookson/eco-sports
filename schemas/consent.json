@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eco-sports.local/schemas/consent.json",
+  "title": "Consent",
+  "description": "Registro versionado e auditável de consentimento. Para atletas menores de idade, o concedente (grantedByUserId) deve ser um parent_guardian vinculado via GuardianRelationship. Consentimentos não são atualizados — novas versões são criadas e a anterior marcada como superseded.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "tenantId",
+    "subjectAthleteId",
+    "grantedByUserId",
+    "grantedByRole",
+    "consentType",
+    "status",
+    "version",
+    "documentVersion",
+    "grantedAt",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenantId": {
+      "type": "string",
+      "description": "Tenant individual do atleta ao qual o consentimento se refere."
+    },
+    "subjectAthleteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Atleta que é titular dos dados objeto do consentimento."
+    },
+    "grantedByUserId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Usuário que concedeu o consentimento. Para atleta menor, deve ser um parent_guardian com GuardianRelationship ativa e legallyResponsible=true."
+    },
+    "grantedByRole": {
+      "type": "string",
+      "enum": ["athlete", "parent_guardian"]
+    },
+    "consentType": {
+      "type": "string",
+      "enum": [
+        "terms_of_service",
+        "privacy_policy",
+        "image_use",
+        "public_portfolio",
+        "data_sharing_with_professional",
+        "data_sharing_with_organization",
+        "data_sharing_with_sponsor",
+        "service_contract",
+        "sponsorship_contract",
+        "sensitive_health_data",
+        "psychological_data",
+        "marketing_communications",
+        "third_party_integration"
+      ]
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Delimita o alcance do consentimento.",
+      "properties": {
+        "dataCategories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "performance_metrics",
+              "video",
+              "images",
+              "health",
+              "psychological",
+              "legal_documents",
+              "financial",
+              "academic",
+              "contact"
+            ]
+          }
+        },
+        "grantedToUserId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Destinatário individual do consentimento (profissional, scout externo)."
+        },
+        "grantedToTenantId": {
+          "type": "string",
+          "description": "Destinatário organizacional do consentimento (clube, empresa patrocinadora)."
+        },
+        "grantedToType": {
+          "type": "string",
+          "enum": ["user", "tenant", "public", "platform"]
+        },
+        "purposes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Finalidades específicas (LGPD Art. 7º)."
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["granted", "revoked", "expired", "superseded"]
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Versão do registro dentro da cadeia de consentimentos do mesmo tipo/escopo. Incrementa quando um novo consentimento supera o anterior."
+    },
+    "supersedesConsentId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Aponta para o consentimento anterior substituído por este."
+    },
+    "documentVersion": {
+      "type": "string",
+      "description": "Versão do documento de termos/política aceito (ex.: 'terms-2026-01')."
+    },
+    "documentUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "Snapshot imutável do documento aceito no momento da concessão."
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Evidências de obtenção do consentimento para fins de auditoria.",
+      "properties": {
+        "ipAddress": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "signatureMethod": {
+          "type": "string",
+          "enum": [
+            "click_through",
+            "digital_signature",
+            "wet_signature_scanned",
+            "video_recorded",
+            "icp_brasil"
+          ]
+        },
+        "signatureHash": { "type": "string" },
+        "witnessedByUserId": { "type": "string", "format": "uuid" }
+      }
+    },
+    "grantedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revokedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revokedByUserId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "revocationReason": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eco-sports.local/schemas/tenant.json",
+  "title": "Tenant",
+  "description": "Unidade de isolamento multi-tenant. Pode ser 'individual' (pessoa física — conta pessoal de um usuário) ou 'organization' (pessoa jurídica — clube, academia, escolinha, projeto social, empresa patrocinadora).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "name",
+    "country",
+    "status",
+    "subscription",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["individual", "organization"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome de exibição do tenant. Para individual, tipicamente o nome do usuário dono; para organization, o nome fantasia."
+    },
+    "legalName": {
+      "type": "string",
+      "description": "Razão social (organization) ou nome completo legal (individual)."
+    },
+    "taxId": {
+      "type": "string",
+      "description": "CPF (individual) ou CNPJ (organization)."
+    },
+    "ownerUserId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Obrigatório quando type=individual. Usuário proprietário do tenant individual."
+    },
+    "organization": {
+      "type": "object",
+      "description": "Presente somente quando type=organization.",
+      "additionalProperties": false,
+      "properties": {
+        "organizationType": {
+          "type": "string",
+          "enum": [
+            "professional_club",
+            "youth_club",
+            "academy",
+            "school",
+            "social_project",
+            "sponsor_company",
+            "agency",
+            "federation",
+            "other"
+          ]
+        },
+        "disciplines": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Modalidades esportivas atendidas (ex.: basketball, football)."
+        },
+        "foundedYear": { "type": "integer" },
+        "websiteUrl": { "type": "string", "format": "uri" },
+        "logoUrl": { "type": "string", "format": "uri" },
+        "description": { "type": "string" },
+        "registrations": {
+          "type": "array",
+          "description": "Inscrições oficiais (federações, confederações, conselhos).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "number"],
+            "properties": {
+              "type": { "type": "string" },
+              "number": { "type": "string" },
+              "issuer": { "type": "string" },
+              "expiresAt": { "type": "string", "format": "date" }
+            }
+          }
+        }
+      }
+    },
+    "address": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "street": { "type": "string" },
+        "number": { "type": "string" },
+        "complement": { "type": "string" },
+        "district": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "postalCode": { "type": "string" },
+        "country": { "type": "string" }
+      }
+    },
+    "country": {
+      "type": "string",
+      "description": "País principal do tenant (ISO 3166-1 alpha-2)."
+    },
+    "locale": {
+      "type": "string",
+      "description": "Locale padrão do tenant (BCP-47)."
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "subscription": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "status"],
+      "properties": {
+        "tier": {
+          "type": "string",
+          "enum": ["free", "starter", "pro", "elite", "organization"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["trialing", "active", "past_due", "cancelled", "suspended"]
+        },
+        "billingCycle": {
+          "type": "string",
+          "enum": ["monthly", "yearly"]
+        },
+        "currentPeriodStart": { "type": "string", "format": "date-time" },
+        "currentPeriodEnd": { "type": "string", "format": "date-time" },
+        "trialEndsAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "billing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "billingEmail": { "type": "string", "format": "email" },
+        "billingContactName": { "type": "string" },
+        "paymentMethodId": { "type": "string" }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "suspended", "archived"]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

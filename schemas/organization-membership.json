@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eco-sports.local/schemas/organization-membership.json",
+  "title": "OrganizationMembership",
+  "description": "Vínculo de um usuário a um tenant do tipo 'organization' com papel interno. Um usuário pode ser membro de N organizações com papéis distintos.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "tenantId",
+    "userId",
+    "role",
+    "status",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenantId": {
+      "type": "string",
+      "description": "ID do tenant organization ao qual o usuário está vinculado."
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "org_admin",
+        "org_manager",
+        "org_coach",
+        "org_scout",
+        "org_member",
+        "org_sponsor_manager"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "description": "Cargo descritivo (ex.: 'Técnico Sub-15', 'Diretor de Base'). Não afeta permissões."
+    },
+    "permissions": {
+      "type": "array",
+      "description": "Permissões adicionais concedidas ao usuário dentro do tenant. O papel base já concede o conjunto padrão; este campo é para extensões pontuais.",
+      "items": { "type": "string" }
+    },
+    "scope": {
+      "type": "object",
+      "description": "Escopo de atuação dentro da organização (ex.: restrito a uma categoria específica).",
+      "additionalProperties": false,
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Categorias de base que o usuário pode gerenciar (ex.: sub-13, sub-15)."
+        },
+        "teamIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending_invite", "active", "suspended", "left", "removed"]
+    },
+    "invitedByUserId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "invitedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "joinedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "leftAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

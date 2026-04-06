@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eco-sports.local/schemas/service-contract.json",
+  "title": "ServiceContract",
+  "description": "Contrato de prestação de serviço entre um profissional (ou organização) e um atleta. É o vínculo que autoriza o profissional a acessar e escrever dados do atleta nos domínios pertinentes à sua especialidade. Para atleta menor, exige consentimento de parent_guardian.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "tenantId",
+    "athleteId",
+    "providerType",
+    "serviceCategory",
+    "status",
+    "pricing",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenantId": {
+      "type": "string",
+      "description": "Tenant individual do atleta (dono dos dados)."
+    },
+    "athleteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "providerType": {
+      "type": "string",
+      "enum": ["professional_user", "organization"]
+    },
+    "providerUserId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Obrigatório quando providerType=professional_user."
+    },
+    "providerTenantId": {
+      "type": "string",
+      "description": "Obrigatório quando providerType=organization."
+    },
+    "providerSpecialty": {
+      "type": "string",
+      "enum": [
+        "coach",
+        "scout",
+        "physical_trainer",
+        "nutritionist",
+        "psychologist",
+        "lawyer",
+        "career_advisor",
+        "video_analyst"
+      ]
+    },
+    "serviceCategory": {
+      "type": "string",
+      "description": "Categoria do serviço conforme taxonomia em servicos-taxonomia.json (ex.: gestao_de_carreira, desenvolvimento_tecnico, analise_em_video)."
+    },
+    "serviceSubcategory": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Delimitação do que está incluído no contrato — define também o escopo de acesso a dados do atleta.",
+      "properties": {
+        "deliverables": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "dataAccess": {
+          "type": "array",
+          "description": "Categorias de dados do atleta que o contrato autoriza o provider a acessar/escrever.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "performance_metrics",
+              "video",
+              "training_programs",
+              "career",
+              "portfolio",
+              "legal",
+              "health",
+              "psychological",
+              "academic"
+            ]
+          }
+        },
+        "accessMode": {
+          "type": "string",
+          "enum": ["read", "write", "read_write"]
+        },
+        "sessionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sessionDurationMinutes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deliveryMode": {
+          "type": "string",
+          "enum": ["in_person", "remote", "hybrid", "async"]
+        }
+      }
+    },
+    "pricing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["billingType", "currency"],
+      "properties": {
+        "billingType": {
+          "type": "string",
+          "enum": ["one_time", "hourly", "per_session", "package", "subscription"]
+        },
+        "currency": {
+          "type": "string",
+          "description": "Código ISO 4217 (ex.: BRL, USD)."
+        },
+        "unitAmount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Valor por unidade (hora, sessão, pacote) em centavos ou unidade principal — padronizar em centavos."
+        },
+        "totalAmount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "platformFeePct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentual de comissão retido pela plataforma (marketplace)."
+        }
+      }
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "renewable": { "type": "boolean" }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_athlete_acceptance",
+        "pending_guardian_consent",
+        "pending_payment",
+        "active",
+        "completed",
+        "cancelled",
+        "expired",
+        "disputed"
+      ]
+    },
+    "consentIds": {
+      "type": "array",
+      "description": "IDs dos Consents (schemas/consent.json) vinculados a este contrato. Contratos envolvendo atletas menores exigem ao menos um consentimento de parent_guardian antes do status 'active'.",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "documents": {
+      "type": "array",
+      "description": "Arquivos vinculados ao contrato (minuta, contrato assinado, anexos).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "url"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["draft", "signed_contract", "attachment", "invoice", "receipt"]
+          },
+          "url": { "type": "string", "format": "uri" },
+          "version": { "type": "string" },
+          "uploadedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "signatures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["signerUserId", "signerRole", "signedAt"],
+        "properties": {
+          "signerUserId": { "type": "string", "format": "uuid" },
+          "signerRole": {
+            "type": "string",
+            "enum": ["athlete", "parent_guardian", "professional", "org_admin", "platform_admin"]
+          },
+          "signedAt": { "type": "string", "format": "date-time" },
+          "signatureMethod": {
+            "type": "string",
+            "enum": ["click_through", "digital_signature", "icp_brasil", "wet_signature_scanned"]
+          },
+          "signatureHash": { "type": "string" }
+        }
+      }
+    },
+    "cancelledAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cancelledByUserId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "cancellationReason": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
