@@ -1,6 +1,6 @@
 import { GeistSans } from "geist/font/sans";
 
-import { getCurrentUser } from "@/lib/auth/dal";
+import { getCurrentUser, getCurrentPersona } from "@/lib/auth/dal";
 import { SidebarProvider } from "@/components/sidebar-context";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppToolbar } from "@/components/app-toolbar";
@@ -18,6 +18,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
+  const currentPersona = await getCurrentPersona();
 
   return (
     <SidebarProvider>
@@ -25,12 +26,16 @@ export default async function AppLayout({
         className={`${GeistSans.variable} min-h-screen bg-background text-foreground flex`}
         style={{ "--font-sans": "var(--font-geist-sans)" } as React.CSSProperties}
       >
-        <AppSidebar user={{ name: user.name, email: user.email }} />
+        <AppSidebar
+          user={{ name: user.name, email: user.email }}
+          currentPersona={currentPersona}
+        />
 
         <div className="flex-1 flex flex-col min-w-0">
           <AppToolbar
             initials={user.name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
-            currentRole={user.roles[0] ?? "athlete"}
+            currentPersona={currentPersona}
+            userRoles={user.roles}
             mobileToggle={<MobileSidebarToggle />}
           />
 

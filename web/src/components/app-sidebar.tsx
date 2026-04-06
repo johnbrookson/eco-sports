@@ -38,9 +38,10 @@ export const navItems: NavItem[] = [
 
 interface AppSidebarProps {
   user: { name: string; email: string };
+  currentPersona: string;
 }
 
-export function AppSidebar({ user }: AppSidebarProps) {
+export function AppSidebar({ user, currentPersona }: AppSidebarProps) {
   const { collapsed } = useSidebar();
 
   const initials = user.name

@@ -4,60 +4,46 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ChevronDown, Check } from "lucide-react";
 
-// Persona switcher cosmético.
-// Não muda permissões de fato — só troca a visão. Só `athlete` tem telas de
-// verdade hoje; as outras redirecionam para /app/em-construcao. Quando
-// outras personas forem implementadas, a ideia é que um mesmo usuário
-// possa ter múltiplos papéis e alternar entre visões (ex: um coach que
-// também é parent_guardian).
+// Persona switcher role-aware.
+// Mostra como disponível apenas os roles que o user realmente possui.
+// Ao trocar, seta cookie eco-sports-persona e navega pro dashboard.
 
-type Persona = {
-  id: string;
-  label: string;
-  route: string;
-  available: boolean;
+const PERSONA_LABELS: Record<string, string> = {
+  athlete: "Atleta",
+  parent_guardian: "Responsável",
+  professional: "Profissional",
+  org_admin: "Clube / Organização",
+  sponsor: "Patrocinador",
+  platform_admin: "Admin da plataforma",
 };
 
-const personas: Persona[] = [
-  { id: "athlete", label: "Atleta", route: "/app/perfil", available: true },
-  {
-    id: "parent_guardian",
-    label: "Responsável",
-    route: "/app/em-construcao?persona=parent_guardian",
-    available: false,
-  },
-  {
-    id: "professional",
-    label: "Profissional",
-    route: "/app/em-construcao?persona=professional",
-    available: false,
-  },
-  {
-    id: "org_admin",
-    label: "Clube / Organização",
-    route: "/app/em-construcao?persona=org_admin",
-    available: false,
-  },
-  {
-    id: "sponsor",
-    label: "Patrocinador",
-    route: "/app/em-construcao?persona=sponsor",
-    available: false,
-  },
-  {
-    id: "platform_admin",
-    label: "Admin da plataforma",
-    route: "/app/em-construcao?persona=platform_admin",
-    available: false,
-  },
+const PERSONA_ORDER = [
+  "athlete",
+  "parent_guardian",
+  "professional",
+  "org_admin",
+  "sponsor",
+  "platform_admin",
 ];
 
-export function PersonaSwitcher({ currentRole }: { currentRole: string }) {
+function setPersonaCookie(persona: string) {
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `eco-sports-persona=${persona};path=/;expires=${expires};samesite=lax`;
+}
+
+interface PersonaSwitcherProps {
+  currentPersona: string;
+  userRoles: string[];
+}
+
+export function PersonaSwitcher({
+  currentPersona,
+  userRoles,
+}: PersonaSwitcherProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
-  const current =
-    personas.find((p) => p.id === currentRole) ?? personas[0];
+  const currentLabel = PERSONA_LABELS[currentPersona] ?? currentPersona;
 
   return (
     <div className="relative">
@@ -69,7 +55,7 @@ export function PersonaSwitcher({ currentRole }: { currentRole: string }) {
         <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
           Visão
         </span>
-        <span className="text-foreground">{current.label}</span>
+        <span className="text-foreground">{currentLabel}</span>
         <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
 
@@ -87,23 +73,29 @@ export function PersonaSwitcher({ currentRole }: { currentRole: string }) {
               </p>
             </div>
             <ul className="py-1">
-              {personas.map((p) => {
-                const isCurrent = p.id === current.id;
+              {PERSONA_ORDER.map((id) => {
+                const isCurrent = id === currentPersona;
+                const hasRole = userRoles.includes(id);
+                const label = PERSONA_LABELS[id] ?? id;
                 return (
-                  <li key={p.id}>
+                  <li key={id}>
                     <button
                       type="button"
+                      disabled={!hasRole}
                       onClick={() => {
+                        if (!hasRole) return;
                         setOpen(false);
-                        router.push(p.route);
+                        setPersonaCookie(id);
+                        router.push("/app");
+                        router.refresh();
                       }}
-                      className="flex w-full items-center justify-between px-3 py-2.5 text-sm text-left hover:bg-muted transition-colors"
+                      className="flex w-full items-center justify-between px-3 py-2.5 text-sm text-left hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
                       <span className="flex items-center gap-2">
                         <span className="font-semibold text-foreground">
-                          {p.label}
+                          {label}
                         </span>
-                        {!p.available && (
+                        {!hasRole && (
                           <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground border border-border rounded-full px-1.5 py-0.5">
                             em breve
                           </span>

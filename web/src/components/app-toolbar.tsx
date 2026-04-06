@@ -13,11 +13,12 @@ import { DarkModeToggle } from "@/components/dark-mode-toggle";
 
 interface AppToolbarProps {
   initials: string;
-  currentRole: string;
+  currentPersona: string;
+  userRoles: string[];
   mobileToggle?: React.ReactNode;
 }
 
-export function AppToolbar({ initials, currentRole, mobileToggle }: AppToolbarProps) {
+export function AppToolbar({ initials, currentPersona, userRoles, mobileToggle }: AppToolbarProps) {
 
   return (
     <header className="sticky top-0 z-20 bg-toolbar text-toolbar-foreground border-b border-border">
@@ -34,7 +35,7 @@ export function AppToolbar({ initials, currentRole, mobileToggle }: AppToolbarPr
           </Link>
           <div className="hidden sm:flex items-center gap-3 ml-1.5">
             <div className="h-6 w-px bg-border" />
-            <PersonaSwitcher currentRole={currentRole} />
+            <PersonaSwitcher currentPersona={currentPersona} userRoles={userRoles} />
           </div>
           <div className="hidden lg:flex items-center gap-3 ml-1.5">
             <div className="h-6 w-px bg-border" />
