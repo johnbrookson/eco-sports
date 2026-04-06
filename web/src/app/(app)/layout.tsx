@@ -36,7 +36,7 @@ export default async function AppLayout({
             initials={user.name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
             currentPersona={currentPersona}
             userRoles={user.roles}
-            mobileToggle={<MobileSidebarToggle />}
+            mobileToggle={<MobileSidebarToggle currentPersona={currentPersona} />}
           />
 
           <main className="relative z-10 flex-1 min-h-0 overflow-auto bg-content-surface">

@@ -2,22 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navItems } from "@/components/app-sidebar";
+import type { NavItem } from "@/components/app-sidebar";
 
 // Client component pra detecção de active state via usePathname().
 // Usado tanto no AppSidebar (desktop) quanto no MobileSidebar.
 // No modo collapsed, mostra só ícones com title tooltip.
 
 interface SidebarNavProps {
+  items: NavItem[];
   collapsed?: boolean;
 }
 
-export function SidebarNav({ collapsed = false }: SidebarNavProps) {
+export function SidebarNav({ items, collapsed = false }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
     <ul className="space-y-1">
-      {navItems.map((item) => {
+      {items.map((item) => {
         const Icon = item.icon;
         const isActive =
           item.href === "/app"

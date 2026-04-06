@@ -11,13 +11,34 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { getNavItemsForPersona, type NavItem } from "@/components/app-sidebar";
 
 // Sidebar mobile do shell autenticado.
 // Usa Sheet (drawer) do shadcn, abre pela esquerda.
 // Inclui PersonaSwitcher (que é hidden sm: na toolbar) e o section label
 // enriquecido pra consistência com o desktop.
 
-export function MobileSidebarToggle() {
+const sectionLabels: Record<string, { title: string; subtitle: string }> = {
+  athlete: {
+    title: "Painel do Atleta",
+    subtitle: "Gestão de carreira e performance",
+  },
+  parent_guardian: {
+    title: "Painel do Responsável",
+    subtitle: "Acompanhamento e aprovações",
+  },
+};
+
+interface MobileSidebarToggleProps {
+  currentPersona?: string;
+}
+
+export function MobileSidebarToggle({
+  currentPersona = "athlete",
+}: MobileSidebarToggleProps) {
+  const items = getNavItemsForPersona(currentPersona);
+  const section = sectionLabels[currentPersona] ?? sectionLabels.athlete;
+
   return (
     <Sheet>
       <SheetTrigger
@@ -52,13 +73,13 @@ export function MobileSidebarToggle() {
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <div className="px-3 mb-3">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-primary">
-              Painel do Atleta
+              {section.title}
             </p>
             <p className="text-[10px] text-sidebar-foreground/40 mt-0.5">
-              Gestão de carreira e performance
+              {section.subtitle}
             </p>
           </div>
-          <SidebarNav />
+          <SidebarNav items={items} />
         </nav>
       </SheetContent>
     </Sheet>

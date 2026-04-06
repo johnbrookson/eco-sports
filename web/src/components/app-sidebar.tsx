@@ -3,8 +3,10 @@
 import Link from "next/link";
 import {
   User,
+  Users,
   LayoutDashboard,
   BarChart3,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,7 +27,7 @@ export type NavItem = {
   icon: LucideIcon;
 };
 
-export const navItems: NavItem[] = [
+const athleteNavItems: NavItem[] = [
   { id: "dashboard", href: "/app", label: "Dashboard", icon: LayoutDashboard },
   { id: "perfil", href: "/app/perfil", label: "Perfil", icon: User },
   {
@@ -35,6 +37,33 @@ export const navItems: NavItem[] = [
     icon: BarChart3,
   },
 ];
+
+const guardianNavItems: NavItem[] = [
+  { id: "dashboard", href: "/app", label: "Dashboard", icon: LayoutDashboard },
+  { id: "atletas", href: "/app/atletas", label: "Meus Atletas", icon: Users },
+  {
+    id: "aprovacoes",
+    href: "/app/aprovacoes",
+    label: "Aprovações",
+    icon: ShieldCheck,
+  },
+];
+
+const sectionLabels: Record<string, { title: string; subtitle: string }> = {
+  athlete: {
+    title: "Painel do Atleta",
+    subtitle: "Gestão de carreira e performance",
+  },
+  parent_guardian: {
+    title: "Painel do Responsável",
+    subtitle: "Acompanhamento e aprovações",
+  },
+};
+
+export function getNavItemsForPersona(persona: string): NavItem[] {
+  if (persona === "parent_guardian") return guardianNavItems;
+  return athleteNavItems;
+}
 
 interface AppSidebarProps {
   user: { name: string; email: string };
@@ -50,6 +79,9 @@ export function AppSidebar({ user, currentPersona }: AppSidebarProps) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+
+  const items = getNavItemsForPersona(currentPersona);
+  const section = sectionLabels[currentPersona] ?? sectionLabels.athlete;
 
   return (
     <aside
@@ -72,14 +104,14 @@ export function AppSidebar({ user, currentPersona }: AppSidebarProps) {
         {!collapsed && (
           <div className="px-3 mb-3">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-primary">
-              Painel do Atleta
+              {section.title}
             </p>
             <p className="text-[10px] text-sidebar-foreground/40 mt-0.5">
-              Gestão de carreira e performance
+              {section.subtitle}
             </p>
           </div>
         )}
-        <SidebarNav collapsed={collapsed} />
+        <SidebarNav items={items} collapsed={collapsed} />
       </nav>
 
       {/* User menu — pinned bottom */}
