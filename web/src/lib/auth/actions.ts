@@ -1,10 +1,12 @@
 "use server";
 
 import { z } from "zod";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { createSession, deleteSession } from "./session";
 import { findMockUserByCredentials } from "./mock-users";
+import { PERSONA_COOKIE_NAME } from "./dal";
 
 // Server Actions do stub de auth.
 // Quando trocarmos por um provider real (Keycloak/Auth.js/Clerk/Auth0),
@@ -64,11 +66,24 @@ export async function signIn(
     tenants: user.tenants,
   });
 
-  // Redirect dispara dentro do Server Action — quem chamou não precisa tratar.
-  redirect("/app/perfil");
+  // Setar cookie de persona com o primeiro role do user.
+  // Não é HttpOnly — o persona switcher (client component) precisa ler.
+  const cookieStore = await cookies();
+  cookieStore.set(PERSONA_COOKIE_NAME, user.roles[0], {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    sameSite: "lax",
+    path: "/",
+  });
+
+  // Dashboard role-aware — funciona pra athlete e parent_guardian.
+  redirect("/app");
 }
 
 export async function signOut(): Promise<void> {
   await deleteSession();
+  const cookieStore = await cookies();
+  cookieStore.delete(PERSONA_COOKIE_NAME);
   redirect("/login");
 }
