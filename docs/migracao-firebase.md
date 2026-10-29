@@ -2,7 +2,7 @@
 
 Plano para tirar o basketball.net da Vercel, rodá-lo no Google Cloud via Firebase e trocar os mocks em memória por backend de verdade. Decidido com o John em 2026-10-29.
 
-> Status: **planejado**. Os arquivos de infraestrutura (`firebase.json`, `web/apphosting.yaml`, `dataconnect/`) já existem e o esquema do banco compila no emulador do Data Connect. Nada foi publicado nem criado na nuvem.
+> Status em 2026-10-29: **Fase 1 concluída** (app no ar no App Hosting, `us-east4`, deploy automático da `main`). **Fase 2 em PR** (login pelo Firebase Authentication). Fases 3 a 5 pendentes.
 
 ---
 
@@ -11,7 +11,7 @@ Plano para tirar o basketball.net da Vercel, rodá-lo no Google Cloud via Fireba
 | Peça | Hoje | Depois |
 |---|---|---|
 | Hospedagem do Next.js 16 | Vercel | **Firebase App Hosting** (Cloud Run por baixo), deploy automático a cada push no GitHub |
-| Login | Stub JWT (`lib/auth/session.ts`) com usuários mock | **Firebase Authentication** + cookie de sessão do Admin SDK |
+| Login | Stub JWT com usuários mock | **Firebase Authentication** + cookie de sessão do Admin SDK (feito na Fase 2) |
 | Banco | Arrays em memória (`lib/mock/*`) | **Cloud SQL for PostgreSQL** via **Firebase Data Connect** |
 | Fotos e vídeos | URLs externas | **Cloud Storage for Firebase** |
 | Segredos | `web/.env.local` | **Secret Manager** (referenciado no `apphosting.yaml`) |
@@ -29,7 +29,7 @@ Plano para tirar o basketball.net da Vercel, rodá-lo no Google Cloud via Fireba
 
 ```
 firebase.json                    App Hosting (rootDir web/), Data Connect e emuladores
-web/apphosting.yaml              Recursos do Cloud Run e o segredo SESSION_SECRET
+web/apphosting.yaml              Recursos do Cloud Run
 dataconnect/dataconnect.yaml     Serviço "basketball-net", Cloud SQL "basketball-net-pg"
 dataconnect/schema/schema.gql    Tabelas traduzidas dos JSON Schemas de schemas/
 dataconnect/connector/*.gql      Primeiras operações: perfil público, vitrine, atleta logado, responsável
@@ -49,12 +49,12 @@ Para rodar localmente sem nuvem: `firebase emulators:start --only dataconnect,au
 2. Garantir que o código está num repositório no GitHub e conectar o Firebase a ele.
 3. Ter acesso ao DNS de `basketball.net.br`.
 
-### Fase 1 — Paridade com a Vercel
+### Fase 1 — Paridade com a Vercel (concluída em 2026-10-29)
 
 Objetivo: o mesmo app de hoje, ainda com mocks, rodando no App Hosting.
 
-- Criar o backend do App Hosting apontando para o repositório e `rootDir: web`.
-- Criar o segredo `session-secret` no Secret Manager.
+- Criar o backend do App Hosting apontando para o repositório. **Atenção:** o wizard do console deixa o diretório raiz como `/`; é preciso mudar para `web` em Configurações → Implantação, senão o build falha com "package.json not found".
+- Criar o segredo `session-secret` e dar acesso ao backend (`firebase apphosting:secrets:grantaccess session-secret --backend basketball-net --project basketball-net`). Deixou de ser usado na Fase 2 e pode ser apagado do Secret Manager.
 - `.vercel/` não está versionado (está no `.gitignore`); o projeto na Vercel só é desligado na Fase 5.
 - Validar no link de prévia do App Hosting: home, vitrine, perfil público, login demo, `/app`.
 
@@ -62,11 +62,22 @@ Objetivo: o mesmo app de hoje, ainda com mocks, rodando no App Hosting.
 
 ### Fase 2 — Firebase Authentication
 
-- Login por e-mail e senha (e Google, se quiser) no cliente com o Firebase JS SDK.
-- O cliente manda o ID token para uma Server Action, que cria um **session cookie** com o Admin SDK (`createSessionCookie`).
-- `lib/auth/session.ts` passa a verificar esse cookie (`verifySessionCookie`), e `lib/auth/actions.ts` troca de mock para Firebase. A DAL (`dal.ts`) e as telas não mudam: o payload continua `sub`, `email`, `name`, `roles`, `tenants`.
-- Papéis (`roles`) e tenants vêm da tabela `User`/`OrganizationMembership`, não de custom claims. Assim mudar um papel não exige renovar token.
-- Signup cria o usuário no Auth e as linhas `User` + `Tenant` individual numa mesma mutation.
+Feito no código:
+
+- Login por e-mail e senha conferido no servidor pela REST do Identity Toolkit, sem SDK do Firebase no cliente: a Server Action e o formulário com `useActionState` continuam iguais.
+- O ID token vira **session cookie** do Admin SDK (`createSessionCookie`, 7 dias), verificado a cada request (`verifySessionCookie`). DAL, `proxy.ts` e telas não mudaram.
+- Papéis e tenants **não** vão para custom claims: vêm do mapping indexado pelo uid (`mock-users.ts` até a Fase 3, depois `User`/`OrganizationMembership`).
+- Signup cria o usuário no Firebase Auth com o uid do mapping.
+- Usuários demo: `npm run seed:auth` (idempotente). Local roda no emulador do Auth (ver `web/README.md`).
+- O `SESSION_SECRET` saiu do `apphosting.yaml`.
+
+Passos no console (John):
+
+1. Authentication → Começar → ativar o provedor **E-mail/senha**.
+2. Criar os usuários demo no projeto real: `gcloud auth application-default login` e depois `npm run seed:auth` dentro de `web/`.
+3. Depois do merge, testar login demo e um cadastro novo. Se aparecer erro de permissão no log, dar o papel "Firebase Authentication Admin" à conta `firebase-app-hosting-compute@basketball-net.iam.gserviceaccount.com`.
+
+Limitação até a Fase 3: o mapping de contas criadas pelo cadastro é in-memory. Depois de um restart ou em outra instância do Cloud Run, a conta existe no Firebase mas o login mostra "perfil não carregado". Os usuários demo não têm esse problema.
 
 ### Fase 3 — Banco (Data Connect + Cloud SQL)
 
