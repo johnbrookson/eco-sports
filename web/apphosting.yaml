@@ -2,9 +2,14 @@
 # Região e conexão com o GitHub são definidas ao criar o backend no console.
 # O login usa o Firebase Authentication do próprio projeto: não há segredo de
 # sessão para configurar (o session cookie é assinado pelo Firebase).
+#
+# maxInstances 1 é provisório: até a Fase 3 (Data Connect), perfis, atletas e
+# vínculos ficam na memória do servidor. Com mais de uma instância, uma conta
+# criada numa instância não existe na outra e o login volta para /login.
+# Voltar para 4 quando os dados estiverem no banco.
 runConfig:
   minInstances: 0
-  maxInstances: 4
+  maxInstances: 1
   concurrency: 80
   cpu: 1
   memoryMiB: 512
