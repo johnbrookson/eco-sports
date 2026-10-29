@@ -31,7 +31,7 @@ export function AppToolbar({ initials, currentPersona, userRoles, mobileToggle }
             href="/app"
             className="lg:hidden text-lg font-black tracking-tight"
           >
-            Eco-Sports
+            basketball.net
           </Link>
           <div className="hidden sm:flex items-center gap-3 ml-1.5">
             <div className="h-6 w-px bg-border" />

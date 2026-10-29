@@ -244,7 +244,7 @@ export default function Home() {
           <ScrollReveal>
             <h2 className="text-center text-3xl font-extrabold tracking-tight sm:text-5xl">
               Para quem é o{" "}
-              <span className="text-primary">Eco-Sports</span>?
+              <span className="text-primary">basketball.net</span>?
             </h2>
           </ScrollReveal>
         </div>

@@ -18,9 +18,9 @@ import {
 // Apenas atletas com `visibility.discoverable === true` aparecem aqui.
 
 export const metadata: Metadata = {
-  title: "Atletas — Eco-Sports",
+  title: "Atletas — basketball.net",
   description:
-    "Descubra atletas de categorias de base na vitrine pública da Eco-Sports.",
+    "Descubra atletas de categorias de base na vitrine pública do basketball.net.",
 };
 
 const positionLabels: Record<string, string> = {

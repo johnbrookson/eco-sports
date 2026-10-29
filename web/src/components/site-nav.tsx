@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
 
-// Top nav compartilhado entre todas as páginas públicas do Eco-Sports.
+// Top nav compartilhado entre todas as páginas públicas do basketball.net.
 // Três variantes visuais:
 // - `hero`: usada na home. Absoluta, transparente, sobre o gradiente laranja.
 // - `primary`: usada em /ferramentas, /blog, /ecossistema, /para-quem e
@@ -90,7 +90,7 @@ export function SiteNav({ variant, active }: SiteNavProps) {
         href="/"
         className={`text-2xl font-black tracking-tight ${t.logo}`}
       >
-        Eco-Sports
+        basketball.net
       </Link>
 
       <div

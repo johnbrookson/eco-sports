@@ -3,8 +3,8 @@ import Link from "next/link";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Entrar — Eco-Sports",
-  description: "Acesse sua conta na Eco-Sports.",
+  title: "Entrar — basketball.net",
+  description: "Acesse sua conta no basketball.net.",
   robots: { index: false, follow: false },
 };
 
@@ -19,7 +19,7 @@ export default function LoginPage() {
           Acesse sua conta
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Use seu e-mail e senha para entrar na Eco-Sports.
+          Use seu e-mail e senha para entrar no basketball.net.
         </p>
       </div>
 
@@ -50,10 +50,10 @@ function DemoCredentialsHint() {
         Usuários mock disponíveis:
       </p>
       <ul className="mt-2 space-y-1 font-mono text-xs text-foreground">
-        <li>joao@demo.ecosports.app / joao123 <span className="text-muted-foreground">(atleta)</span></li>
-        <li>mariana@demo.ecosports.app / mariana123 <span className="text-muted-foreground">(atleta)</span></li>
-        <li>enrico@demo.ecosports.app / enrico123 <span className="text-muted-foreground">(atleta menor)</span></li>
-        <li>rodrigo@demo.ecosports.app / rodrigo123 <span className="text-muted-foreground">(responsável)</span></li>
+        <li>joao@demo.basketball.net / joao123 <span className="text-muted-foreground">(atleta)</span></li>
+        <li>mariana@demo.basketball.net / mariana123 <span className="text-muted-foreground">(atleta)</span></li>
+        <li>enrico@demo.basketball.net / enrico123 <span className="text-muted-foreground">(atleta menor)</span></li>
+        <li>rodrigo@demo.basketball.net / rodrigo123 <span className="text-muted-foreground">(responsável)</span></li>
       </ul>
     </div>
   );

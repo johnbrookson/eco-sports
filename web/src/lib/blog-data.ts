@@ -37,7 +37,7 @@ O desenvolvimento motor e técnico tem janelas de oportunidade que, quando aprov
 
 ## O papel da tecnologia na formação
 
-Plataformas como o Eco-Sports estão revolucionando a forma como acompanhamos o desenvolvimento de jovens atletas. Com dashboards de métricas, análise de vídeo e planejamento de carreira integrados, treinadores e famílias têm visibilidade total sobre a evolução do atleta.
+Plataformas como o basketball.net estão revolucionando a forma como acompanhamos o desenvolvimento de jovens atletas. Com dashboards de métricas, análise de vídeo e planejamento de carreira integrados, treinadores e famílias têm visibilidade total sobre a evolução do atleta.
 
 ## Além da quadra
 
@@ -49,7 +49,7 @@ O investimento em categorias de base não é apenas sobre esporte — é sobre t
     category: "Desenvolvimento",
     tags: ["categorias de base", "formação", "desenvolvimento integral", "basketball"],
     author: {
-      name: "Eco-Sports",
+      name: "basketball.net",
       role: "Equipe Editorial",
     },
     publishedAt: "2026-03-15",
@@ -85,7 +85,7 @@ A democratização da análise de vídeo está nivelando o campo de jogo para at
     category: "Tecnologia",
     tags: ["análise de vídeo", "tática", "highlights", "scouts", "tecnologia"],
     author: {
-      name: "Eco-Sports",
+      name: "basketball.net",
       role: "Equipe Editorial",
     },
     publishedAt: "2026-03-10",
@@ -121,7 +121,7 @@ A carreira esportiva é curta. Planejá-la desde o início não é apenas inteli
     category: "Carreira",
     tags: ["gestão de carreira", "planejamento", "transições", "portfólio", "família"],
     author: {
-      name: "Eco-Sports",
+      name: "basketball.net",
       role: "Equipe Editorial",
     },
     publishedAt: "2026-03-05",
@@ -157,7 +157,7 @@ O atleta que cuida da mente performa melhor, por mais tempo e com mais satisfaç
     category: "Bem-estar",
     tags: ["saúde mental", "psicologia", "pressão", "bem-estar", "jovens atletas"],
     author: {
-      name: "Eco-Sports",
+      name: "basketball.net",
       role: "Equipe Editorial",
     },
     publishedAt: "2026-02-28",
@@ -193,7 +193,7 @@ A Lei de Incentivo é uma ponte entre o potencial esportivo e os recursos necess
     category: "Captação",
     tags: ["lei de incentivo", "patrocínio", "captação", "projetos sociais", "financiamento"],
     author: {
-      name: "Eco-Sports",
+      name: "basketball.net",
       role: "Equipe Editorial",
     },
     publishedAt: "2026-02-20",
@@ -229,7 +229,7 @@ O marketplace esportivo não é apenas uma conveniência — é uma revolução 
     category: "Marketplace",
     tags: ["marketplace", "profissionais", "agendamento", "nutricionista", "treinador"],
     author: {
-      name: "Eco-Sports",
+      name: "basketball.net",
       role: "Equipe Editorial",
     },
     publishedAt: "2026-02-15",

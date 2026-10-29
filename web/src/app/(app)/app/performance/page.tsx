@@ -4,7 +4,7 @@ import { PerformanceDashboard } from "./performance-dashboard";
 import { AddEventForm } from "./add-event-form";
 
 export const metadata = {
-  title: "Performance — Eco-Sports",
+  title: "Performance — basketball.net",
 };
 
 export default async function PerformancePage() {

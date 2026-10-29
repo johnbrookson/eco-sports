@@ -388,7 +388,7 @@ export default function FerramentasPage() {
             </span>
           </h1>
           <p className="mt-6 max-w-2xl mx-auto text-lg leading-relaxed text-white/65 font-light">
-            Conheça em detalhes cada ferramenta da plataforma Eco-Sports.
+            Conheça em detalhes cada ferramenta da plataforma basketball.net.
             Tudo pensado para o desenvolvimento completo do atleta — da
             performance à carreira.
           </p>
@@ -496,7 +496,7 @@ export default function FerramentasPage() {
             essas ferramentas?
           </h2>
           <p className="mt-6 text-lg text-white/70">
-            Comece gratuitamente e tenha acesso a toda a plataforma Eco-Sports.
+            Comece gratuitamente e tenha acesso a toda a plataforma basketball.net.
           </p>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row justify-center">
             <Button

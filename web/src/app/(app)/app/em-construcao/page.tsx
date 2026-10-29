@@ -4,7 +4,7 @@ import { ArrowLeft, HardHat } from "lucide-react";
 import { verifySession } from "@/lib/auth/dal";
 
 export const metadata = {
-  title: "Em construção — Eco-Sports",
+  title: "Em construção — basketball.net",
 };
 
 const personaLabels: Record<string, string> = {
@@ -40,7 +40,7 @@ export default async function EmConstrucaoPage({
           : "Essa área ainda está em construção."}
       </h1>
       <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-        No MVP, o Eco-Sports começa pela experiência do atleta — é a única
+        No MVP, o basketball.net começa pela experiência do atleta — é a única
         persona com telas funcionais. Outras personas serão liberadas nas
         próximas entregas do roadmap.
       </p>

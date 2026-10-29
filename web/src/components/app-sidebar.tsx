@@ -96,7 +96,7 @@ export function AppSidebar({ user, currentPersona }: AppSidebarProps) {
           href="/app"
           className="text-xl font-black tracking-tight hover:text-sidebar-primary transition-colors whitespace-nowrap"
         >
-          {collapsed ? "ES" : "Eco-Sports"}
+          {collapsed ? "BN" : "basketball.net"}
         </Link>
       </div>
 

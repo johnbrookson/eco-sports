@@ -5,7 +5,7 @@ import { getCurrentAthlete } from "@/lib/auth/dal";
 import { ProfileForm } from "./profile-form";
 
 export const metadata = {
-  title: "Meu perfil — Eco-Sports",
+  title: "Meu perfil — basketball.net",
 };
 
 export default async function ProfilePage(props: {

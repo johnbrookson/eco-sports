@@ -9,7 +9,7 @@ import type { Athlete } from "@/types/athlete";
 import { ApprovalCard } from "./approval-card";
 
 export const metadata = {
-  title: "Aprovações — Eco-Sports",
+  title: "Aprovações — basketball.net",
 };
 
 const VISIBILITY_LABELS: Record<string, string> = {

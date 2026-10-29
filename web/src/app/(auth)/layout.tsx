@@ -18,7 +18,7 @@ export default function AuthLayout({
             href="/"
             className="inline-block text-xl font-black tracking-tight hover:text-primary transition-colors"
           >
-            Eco-Sports
+            basketball.net
           </Link>
         </div>
       </header>
@@ -27,7 +27,7 @@ export default function AuthLayout({
       </main>
       <footer className="px-6 py-6 text-center space-y-1">
         <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Ceronify · Eco-Sports
+          © {new Date().getFullYear()} Ceronify · basketball.net
         </p>
         <AppVersion />
       </footer>

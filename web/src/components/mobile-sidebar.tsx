@@ -65,7 +65,7 @@ export function MobileSidebarToggle({
             href="/app"
             className="text-xl font-black tracking-tight"
           >
-            Eco-Sports
+            basketball.net
           </Link>
         </div>
 

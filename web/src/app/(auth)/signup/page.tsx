@@ -3,8 +3,8 @@ import Link from "next/link";
 import { SignupForm } from "./signup-form";
 
 export const metadata: Metadata = {
-  title: "Criar conta — Eco-Sports",
-  description: "Crie sua conta na Eco-Sports.",
+  title: "Criar conta — basketball.net",
+  description: "Crie sua conta no basketball.net.",
   robots: { index: false, follow: false },
 };
 
@@ -16,7 +16,7 @@ export default function SignupPage() {
           Criar conta
         </p>
         <h1 className="text-3xl md:text-4xl font-black tracking-tight">
-          Comece na Eco-Sports
+          Comece no basketball.net
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Preencha os dados abaixo para criar sua conta.

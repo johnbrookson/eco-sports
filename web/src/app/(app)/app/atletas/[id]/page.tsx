@@ -19,7 +19,7 @@ import type { Athlete } from "@/types/athlete";
 import type { PerformanceEvent } from "@/types/performance";
 
 export const metadata = {
-  title: "Detalhe do Atleta — Eco-Sports",
+  title: "Detalhe do Atleta — basketball.net",
 };
 
 export default async function AthleteDetailPage(
