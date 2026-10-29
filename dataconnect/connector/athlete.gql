@@ -1,0 +1,51 @@
+# Operações do atleta logado. `auth.uid` é o uid do Firebase Authentication.
+
+query MyAthlete @auth(level: USER) {
+  athletes(where: { user: { id: { eq_expr: "auth.uid" } } }, limit: 1) {
+    id
+    slug
+    firstName
+    lastName
+    category
+    pendingVisibility
+  }
+}
+
+query MyPerformanceEvents($athleteId: UUID!) @auth(level: USER) {
+  performanceEvents(
+    where: {
+      athleteId: { eq: $athleteId }
+      athlete: { user: { id: { eq_expr: "auth.uid" } } }
+    }
+    orderBy: [{ startedAt: DESC }]
+  ) {
+    id
+    sourceType
+    startedAt
+    endedAt
+    season
+    context
+    metrics
+  }
+}
+
+# Atletas que o responsável logado supervisiona (persona parent_guardian).
+query MyManagedAthletes @auth(level: USER) {
+  guardianRelationships(
+    where: {
+      guardian: { id: { eq_expr: "auth.uid" } }
+      status: { eq: active }
+    }
+  ) {
+    legallyResponsible
+    relationshipType
+    athlete {
+      id
+      slug
+      firstName
+      lastName
+      category
+      pendingVisibility
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "dataconnect": {
+    "source": "dataconnect"
+  },
+  "apphosting": [
+    {
+      "backendId": "basketball-net",
+      "rootDir": "web",
+      "ignore": ["node_modules", ".git", ".next", "firebase-debug.log"]
+    }
+  ],
+  "emulators": {
+    "dataconnect": {
+      "dataDir": "dataconnect/.dataconnect/pgliteData"
+    },
+    "auth": { "port": 9099 },
+    "ui": { "enabled": true }
+  }
+}

@@ -1,0 +1,11 @@
+specVersion: "v1"
+serviceId: "basketball-net"
+location: "southamerica-east1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "basketball-net"
+      cloudSql:
+        instanceId: "basketball-net-pg"
+connectorDirs: ["./connector"]
