@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter } from "next/font/google";
+import { Anton, Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -9,8 +9,15 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// Fonte de títulos do tema echo-charlie (ver --display-font em globals.css).
+const anton = Anton({
+  variable: "--font-anton",
+  weight: "400",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "Eco-Sports — Gestão de Carreira e Desenvolvimento de Atletas",
+  title: "basketball.net — Gestão de Carreira e Desenvolvimento de Atletas",
   description:
     "Plataforma para gestão completa de carreira, desenvolvimento técnico, análise de desempenho e captação de recursos para atletas.",
 };
@@ -25,7 +32,7 @@ export default function RootLayout({
       lang="pt-BR"
       data-theme="basketball"
       data-scroll-behavior="smooth"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${inter.variable} ${anton.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
