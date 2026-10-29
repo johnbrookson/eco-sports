@@ -45,7 +45,7 @@ Para rodar localmente sem nuvem: `firebase emulators:start --only dataconnect,au
 
 ### Fase 0 — Pré-requisitos (John)
 
-1. Criar o projeto no console do Firebase e ativar o plano **Blaze**, que o App Hosting e o Cloud SQL exigem.
+1. Criar o projeto no console do Firebase e ativar o plano **Blaze**, que o App Hosting e o Cloud SQL exigem. Feito: projeto `basketball-net`, registrado como padrão em `.firebaserc`.
 2. Garantir que o código está num repositório no GitHub e conectar o Firebase a ele.
 3. Ter acesso ao DNS de `basketball.net.br`.
 
@@ -55,7 +55,7 @@ Objetivo: o mesmo app de hoje, ainda com mocks, rodando no App Hosting.
 
 - Criar o backend do App Hosting apontando para o repositório e `rootDir: web`.
 - Criar o segredo `session-secret` no Secret Manager.
-- Remover `.vercel/` do repositório.
+- `.vercel/` não está versionado (está no `.gitignore`); o projeto na Vercel só é desligado na Fase 5.
 - Validar no link de prévia do App Hosting: home, vitrine, perfil público, login demo, `/app`.
 
 **Risco a validar aqui:** suporte ao Next.js 16 (com `proxy.ts`) no adaptador do App Hosting. Se algo quebrar, esta fase existe justamente para descobrir isso antes de mexer em dados.
@@ -96,5 +96,5 @@ Objetivo: o mesmo app de hoje, ainda com mocks, rodando no App Hosting.
 
 ## Fora deste plano
 
-- E-mail `@basketball.net.br` (Google Workspace): independente da migração; pendente de confirmação do John.
+- E-mail `@basketball.net.br` (Google Workspace): confirmado pelo John em 2026-10-29. É independente da migração: assinatura no Google Workspace e registros MX/SPF/DKIM no DNS do domínio.
 - Consent flow LGPD completo: a tabela `Consent` já existe no esquema, mas o fluxo de telas é trabalho separado.
