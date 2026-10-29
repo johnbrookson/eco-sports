@@ -1,13 +1,17 @@
 import "server-only";
 
-import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-// Stub de session management — JWT assinado via jose, armazenado num cookie
-// HttpOnly. O payload é deliberadamente próximo de OIDC/JWT claims
-// (sub, email, name, roles, specialties, tenants, iat, exp) para que a troca
-// por Keycloak/Auth.js/Clerk/Auth0/Supabase vire substituir ESTE arquivo
-// mais o lib/auth/actions.ts sem mexer em nenhuma tela.
+import { getAdminAuth } from "./firebase";
+import { findMockUserById } from "./mock-users";
+
+// Sessão sobre o Firebase Authentication. O cookie guarda o session cookie
+// emitido pelo Admin SDK (createSessionCookie), que é verificado a cada
+// request. O payload exposto ao resto do app continua OIDC-like (sub, email,
+// name, roles, specialties, tenants, iat, exp): identidade vem do Firebase,
+// papéis e tenants vêm do mapping do usuário (mock-users hoje, tabelas
+// User/OrganizationMembership do Data Connect na Fase 3). Sem custom claims,
+// para que mudar um papel não exija renovar o token.
 
 export interface SessionPayload {
   sub: string;
@@ -22,53 +26,44 @@ export interface SessionPayload {
 
 export const SESSION_COOKIE_NAME = "eco-sports-session";
 
-function getEncodedKey(): Uint8Array {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret) {
-    throw new Error(
-      "SESSION_SECRET não configurado. Defina em web/.env.local (arquivo gitignored).",
-    );
-  }
-  return new TextEncoder().encode(secret);
-}
+const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
-export async function encrypt(payload: SessionPayload): Promise<string> {
-  return new SignJWT(payload as unknown as Record<string, unknown>)
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(getEncodedKey());
-}
-
+// Verifica o session cookie e monta o payload. Retorna null se o cookie for
+// inválido/expirado ou se o uid não tiver mapping (ex: usuário criado via
+// signup antes de um restart, já que o mapping ainda é in-memory).
 export async function decrypt(
   token: string | undefined,
 ): Promise<SessionPayload | null> {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, getEncodedKey(), {
-      algorithms: ["HS256"],
-    });
-    return payload as unknown as SessionPayload;
+    const decoded = await getAdminAuth().verifySessionCookie(token);
+    const user = findMockUserById(decoded.uid);
+    if (!user) return null;
+    return {
+      sub: decoded.uid,
+      email: decoded.email ?? user.email,
+      name: user.name,
+      roles: user.roles,
+      specialties: user.specialties,
+      tenants: user.tenants,
+      iat: decoded.iat,
+      exp: decoded.exp,
+    };
   } catch {
     return null;
   }
 }
 
-export async function createSession(input: {
-  sub: string;
-  email: string;
-  name: string;
-  roles: string[];
-  specialties: string[];
-  tenants: string[];
-}): Promise<void> {
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const token = await encrypt(input);
+// Troca o ID token recém-emitido pelo Firebase por um session cookie HttpOnly.
+export async function createSession(idToken: string): Promise<void> {
+  const token = await getAdminAuth().createSessionCookie(idToken, {
+    expiresIn: SESSION_DURATION_MS,
+  });
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    expires: expiresAt,
+    expires: new Date(Date.now() + SESSION_DURATION_MS),
     sameSite: "lax",
     path: "/",
   });

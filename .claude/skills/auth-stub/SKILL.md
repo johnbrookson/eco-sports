@@ -1,24 +1,28 @@
 ---
 name: auth-stub
-description: Use when working on authentication, authorization, session management, the login flow, the protected /app/* routes, the proxy.ts (ex-middleware), the Data Access Layer, or anything that touches the JWT cookie. Also invoke when planning to swap the stub for a real auth provider (Keycloak, Auth.js, Clerk, Auth0, Supabase) — the skill covers the invariants that make the swap trivial.
+description: Use when working on authentication, authorization, session management, the login flow, the protected /app/* routes, the proxy.ts (ex-middleware), the Data Access Layer, Firebase Authentication (session cookie, emulator, demo users seed), or anything that touches the session cookie.
 ---
 
-> **Manutenção desta skill**: última revisão refletindo o estado até a implementação do **signup** (criação de conta para atleta e guardian, Server Action `signUp` com Zod discriminated union, geração de Athlete skeleton + GuardianRelationship in-memory). Se você mudou algo em `lib/auth/`, `lib/guardian/`, `proxy.ts`, `(auth)/`, ou trocou o provider de auth, atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/auth-stub/` para histórico.
+> **Manutenção desta skill**: última revisão refletindo a **troca do stub JWT pelo Firebase Authentication** (Fase 2 de `docs/migracao-firebase.md`, 2026-10-29). Antes disso: implementação do **signup** (criação de conta para atleta e guardian, Server Action `signUp` com Zod discriminated union, geração de Athlete skeleton + GuardianRelationship in-memory). Se você mudou algo em `lib/auth/`, `lib/guardian/`, `proxy.ts`, `(auth)/`, ou trocou o provider de auth, atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/auth-stub/` para histórico.
 
-# Auth stub — session, DAL, proxy, login
+# Auth — Firebase Authentication, session, DAL, proxy, login
 
-Autenticação e autorização no Eco-Sports. Intencionalmente um stub durante o MVP, **shape OIDC-like para tornar a troca por provider real uma substituição local** em `lib/auth/` sem mexer em nenhuma tela.
+Autenticação e autorização no basketball.net. Começou como stub JWT com shape OIDC-like justamente para a troca de provider ser local a `lib/auth/`. Em 2026-10-29 a troca aconteceu: **identidade e senha vivem no Firebase Authentication**, a sessão é um **session cookie do Admin SDK**, e nenhuma tela, DAL ou `proxy.ts` mudou. O nome da skill ficou por histórico.
+
+**O que ainda é stub:** o mapping usuário → domínio (`roles`, `tenants`, `athleteId`, `managedAthleteIds`) segue in-memory em `mock-users.ts`, indexado pelo **uid do Firebase**. Vai para as tabelas `User`/`OrganizationMembership` do Data Connect na Fase 3.
 
 ## Imperativo (30 segundos)
 
 - **Leia a skill `conventions` primeiro** se ainda não leu nesta conversa.
 - **DAL é autoritativo, proxy é primeira linha.** Nunca conte apenas com o proxy pra proteger dado sensível. Toda Server Component em `(app)/*` e toda Server Action que lê/muta dado deve chamar `getCurrentUser()`, `getCurrentAthlete()` ou `verifySession()` do `lib/auth/dal.ts`.
 - **Claims do JWT são PURAS.** Apenas identidade e autorização (`sub`, `email`, `name`, `roles[]`, `specialties[]`, `tenants[]`, `iat`, `exp`). Dados do domínio (athleteId, managedAthletes, etc) **não** entram no JWT — ficam no mapping user → domínio em `mock-users.ts` (ou em banco, no futuro real).
-- **Invariante da troca de provider**: trocar Keycloak/Auth.js/Clerk/Auth0/Supabase deve mexer apenas em `lib/auth/session.ts` + `lib/auth/actions.ts`. **Zero mudança em UI, DAL consumers ou páginas**. Se uma mudança quebra essa invariante, é bug.
+- **Invariante de provider**: o provider (hoje Firebase) fica encapsulado em `lib/auth/firebase.ts`, `session.ts` e `actions.ts`. **Zero conhecimento de Firebase em UI, DAL consumers ou páginas**. Se uma mudança quebra essa invariante, é bug.
+- **Sem SDK do Firebase no cliente.** O login continua sendo Server Action com `useActionState`: a action confere e-mail e senha pela REST do Identity Toolkit (`signInWithPassword` em `firebase.ts`) e troca o ID token por session cookie (`createSessionCookie`). Não adicione `firebase` (client SDK) só para login.
+- **Papéis não vêm de custom claims.** O payload junta identidade do session cookie (uid, email, iat, exp) com papéis/tenants do mapping. Mudar papel não exige renovar token.
 - **Nunca leia `cookies()` direto fora de `session.ts`.** Qualquer outro código que precisa da sessão vai pelo DAL.
 - **Cookie de sessão é HttpOnly, Secure em produção, SameSite lax, path /, expira em 7d.** Não customize isso por módulo.
 - **Cookie de persona `eco-sports-persona`** — **não** é HttpOnly (lido pelo client pra renderização condicional). Setado pelo `signIn` com `roles[0]` do user. Lido pelo DAL via `getCurrentPersona()`. Não contém segredo — apenas o nome da role ativa.
-- **`SESSION_SECRET` é obrigatório** e vive em `web/.env.local` (gitignored). A função `getEncodedKey()` falha loud se não estiver definido.
+- **Localmente, use o emulador do Auth** (`FIREBASE_AUTH_EMULATOR_HOST` + `GCLOUD_PROJECT=demo-basketball-net` em `web/.env.local`, `npm run emulators`, `npm run seed:auth`). Sem emulador nem credenciais, o login falha loud. Passo a passo em `web/README.md`. Não existe mais `SESSION_SECRET`.
 
 ## Arquitetura — 4 camadas
 
@@ -41,17 +45,22 @@ Autenticação e autorização no Eco-Sports. Intencionalmente um stub durante o
 │     - AUTORITATIVA. Vive junto do dado.                      │
 ├──────────────────────────────────────────────────────────────┤
 │  3. Session  (src/lib/auth/session.ts)                       │
-│     - encrypt() / decrypt() via jose HS256                   │
-│     - createSession() / getSession() / deleteSession()       │
-│     - Lê/escreve cookie HttpOnly                             │
-│     - server-only (não importa em Client Components)         │
+│     - createSession(idToken) → createSessionCookie (Admin)   │
+│     - decrypt(cookie) → verifySessionCookie + mapping        │
+│     - getSession() / deleteSession()                         │
+│     - Lê/escreve cookie HttpOnly. server-only                │
 ├──────────────────────────────────────────────────────────────┤
-│  4. Mock users  (src/lib/auth/mock-users.ts)                 │
-│     - mockUsers array com email + password plain + role +    │
-│       tenants + athleteId (mapping, não vai pro JWT)         │
-│     - findMockUserByCredentials() / findMockUserById()       │
-│     - findMockUserByEmail() / addMockUser() (signup)         │
-│     - Substituído por query em banco no futuro real          │
+│  4. Firebase  (src/lib/auth/firebase.ts)                     │
+│     - getAdminAuth() → Admin SDK (ADC no App Hosting,        │
+│       emulador se FIREBASE_AUTH_EMULATOR_HOST)               │
+│     - signInWithPassword() → REST do Identity Toolkit        │
+├──────────────────────────────────────────────────────────────┤
+│  5. Mapping  (src/lib/auth/mock-users.ts)                    │
+│     - mockUsers indexado pelo uid do Firebase: roles,        │
+│       tenants, athleteId, managedAthleteIds. Sem senha.      │
+│     - findMockUserById() / findMockUserByEmail() /           │
+│       addMockUser() (signup)                                 │
+│     - Vira tabela User/OrganizationMembership na Fase 3      │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -65,12 +74,12 @@ interface SessionPayload {
   roles: string[];       // ["athlete"], ["parent_guardian"], ["org_admin"], etc
   specialties: string[]; // para professional: ["coach"], ["scout"], ["psychologist"]
   tenants: string[];     // tenants que o usuário pertence
-  iat?: number;          // issued-at, adicionado por jose
+  iat?: number;          // issued-at do session cookie
   exp?: number;          // expiração, 7 dias
 }
 ```
 
-**Por que este shape?** É um subset de JWT claims padrão do OpenID Connect. Keycloak emite isso nativamente. Auth.js (NextAuth v5) mapeia pra isso. Clerk, Auth0 e Supabase todos têm equivalentes. Trocar provider é copiar os claims que o provider devolve pra esse shape — nada mais.
+**Por que este shape?** É um subset de JWT claims padrão do OpenID Connect, e foi o que permitiu trocar o stub pelo Firebase sem mexer em nenhum consumidor. `decrypt()` monta o payload: `sub`/`email`/`iat`/`exp` do session cookie verificado, `name`/`roles`/`specialties`/`tenants` do mapping. Se o uid não tem mapping, `decrypt()` devolve `null` (sessão inválida).
 
 **O que NÃO entra no payload:**
 - `athleteId`, `managedAthleteIds`, `organizationId` — mapping domain-specific fica em `mock-users` (ou no banco quando real)
@@ -79,10 +88,12 @@ interface SessionPayload {
 
 ## Arquivos-chave
 
-- [web/src/lib/auth/session.ts](../../../web/src/lib/auth/session.ts) — crypto, cookie IO. Se trocar provider, este arquivo muda bastante. `"server-only"` no topo.
-- [web/src/lib/auth/mock-users.ts](../../../web/src/lib/auth/mock-users.ts) — fixture de usuários. Cada um tem `password` plain text (stub explícito), `roles[]`, `specialties[]`, `tenants[]`, e `athleteId` opcional como mapping domain. `"server-only"` no topo.
+- [web/src/lib/auth/firebase.ts](../../../web/src/lib/auth/firebase.ts) — Admin SDK (`getAdminAuth`) e login por senha via REST (`signInWithPassword`, com erros normalizados em `invalid-credentials` / `too-many-attempts` / `unavailable`). A API key pública vem de `FIREBASE_API_KEY`, que o `next.config.ts` copia do `FIREBASE_WEBAPP_CONFIG` no build do App Hosting. `"server-only"` no topo.
+- [web/src/lib/auth/session.ts](../../../web/src/lib/auth/session.ts) — session cookie do Firebase e cookie IO. `"server-only"` no topo.
+- [web/src/lib/auth/mock-users.ts](../../../web/src/lib/auth/mock-users.ts) — mapping de usuários indexado pelo uid do Firebase: `roles[]`, `specialties[]`, `tenants[]`, `athleteId` e `managedAthleteIds` opcionais. Sem senha. `"server-only"` no topo.
+- [web/scripts/seed-demo-users.mjs](../../../web/scripts/seed-demo-users.mjs) — `npm run seed:auth`: cria/atualiza os usuários demo no Firebase (emulador ou projeto real) com o mesmo uid do mapping. Idempotente. As senhas demo vivem aqui.
 - [web/src/lib/auth/dal.ts](../../../web/src/lib/auth/dal.ts) — **o arquivo mais importante do módulo**. Camada autoritativa. Cada função memoizada via `cache()`. Se uma função aqui redireciona, ela chama `redirect()` do `next/navigation` — nunca retorna null pra chamador tratar (decisão: força o caller a assumir que sessão é válida depois da chamada).
-- [web/src/lib/auth/actions.ts](../../../web/src/lib/auth/actions.ts) — Server Actions `signIn`, `signOut` e `signUp`. `signIn` tem Zod validation, retorna `SignInFormState` com erros por campo + mensagem de form. `signUp` usa dois Zod schemas (atleta vs guardian) selecionados por role, cria MockUser + Athlete skeleton (atleta) ou MockUser + GuardianRelationship (guardian) in-memory, depois chama `createSession` + redirect. Usa `useActionState` no client.
+- [web/src/lib/auth/actions.ts](../../../web/src/lib/auth/actions.ts) — Server Actions `signIn`, `signOut` e `signUp`. `signIn` valida com Zod, confere a senha no Firebase, exige mapping para o uid e abre a sessão com o ID token. `signUp` usa dois Zod schemas (atleta vs guardian), cria o usuário no Firebase via Admin SDK (`registerFirebaseUser`, com o uid gerado para o mapping) **antes** de criar MockUser + Athlete skeleton ou MockUser + GuardianRelationship in-memory, depois `createSession` + redirect. Usa `useActionState` no client.
 - [web/src/proxy.ts](../../../web/src/proxy.ts) — proxy Next.js 16. Exporta `proxy` (não `middleware`). Matcher exclui `_next/static`, `_next/image`, `favicon.ico` e arquivos com extensão. Protege `/app/*`, redireciona `/login` e `/signup` se logado.
 - [web/src/app/(auth)/layout.tsx](../../../web/src/app/(auth)/layout.tsx) — layout minimalista centrado do grupo auth.
 - [web/src/app/(auth)/login/page.tsx](../../../web/src/app/(auth)/login/page.tsx) — página de login Server Component.
@@ -94,31 +105,35 @@ interface SessionPayload {
 
 ## Usuários demo
 
-Quatro contas no `mock-users.ts`:
+Quatro contas. O mapping fica em `mock-users.ts`; a conta (e-mail + senha) é criada no Firebase por `npm run seed:auth` com o mesmo uid:
 
-| Email | Senha | Role | Vinculado |
-|---|---|---|---|
-| `joao@demo.ecosports.app` | `joao123` | `athlete` | João Silva (sub-17, Paulistano, menor) |
-| `mariana@demo.ecosports.app` | `mariana123` | `athlete` | Mariana Costa (sub-18, Fluminense, maior) |
-| `enrico@demo.ecosports.app` | `enrico123` | `athlete` | Enrico Ceron (sub-15, SPFC Basket Base, menor) |
-| `rodrigo@demo.ecosports.app` | `rodrigo123` | `parent_guardian` | Gerencia Enrico (via `managedAthleteIds`) |
+| Email | Senha | uid | Role | Vinculado |
+|---|---|---|---|---|
+| `joao@demo.basketball.net` | `joao123` | `usr-joao` | `athlete` | João Silva (sub-17, Paulistano, menor) |
+| `mariana@demo.basketball.net` | `mariana123` | `usr-mariana` | `athlete` | Mariana Costa (sub-18, Fluminense, maior) |
+| `enrico@demo.basketball.net` | `enrico123` | `usr-enrico` | `athlete` | Enrico Ceron (sub-15, SPFC Basket Base, menor) |
+| `rodrigo@demo.basketball.net` | `rodrigo123` | `usr-rodrigo` | `parent_guardian` | Gerencia Enrico (via `managedAthleteIds`) |
+
+Usuário demo novo = entrada no `mockUsers` + entrada no `DEMO_USERS` do seed, com o mesmo uid, no mesmo commit.
 
 `MockUser` tem `managedAthleteIds?: string[]` para o mapping domain de guardians. Mesmo padrão do `athleteId` — vive no mock, não no JWT.
 
 Quando for adicionar personas futuras (`professional`, `org_admin`, `sponsor`, `platform_admin`), adicione mock users correspondentes **no mesmo commit** da tela deles, não antes.
 
-## Trocando por provider real — checklist
+## Firebase — como o login funciona
 
-Quando chegar a hora de ir pra Keycloak/Auth.js/Clerk/Auth0/Supabase:
+1. `signIn` valida com Zod e chama `signInWithPassword(email, senha)` (REST `accounts:signInWithPassword`). O Firebase devolve `localId` (uid) + `idToken`.
+2. A action exige mapping (`findMockUserById(uid)`). Sem mapping, erro de form explicando o ambiente demo (mapping in-memory perdido num restart).
+3. `createSession(idToken)` chama `createSessionCookie` (7 dias) e grava no cookie `eco-sports-session` (nome antigo mantido para não derrubar sessões; trocar junto com o rebrand de cookies).
+4. A cada request, `decrypt()` faz `verifySessionCookie` (chaves públicas do Google, cacheadas pelo Admin SDK) e monta o payload.
 
-1. **`lib/auth/session.ts`**: substituir `encrypt`/`decrypt`/`createSession`/`getSession`/`deleteSession` pelos equivalentes do provider. O shape `SessionPayload` permanece.
-2. **`lib/auth/mock-users.ts`**: substituir `findMockUserByCredentials` e `findMockUserById` por queries em banco. O tipo `MockUser` vira `User` sem o campo `password`.
-3. **`lib/auth/actions.ts`**: o `signIn` deixa de validar senha localmente; delega pro provider e só chama `createSession` após sucesso. Shape `SignInFormState` permanece (exceto mensagens de erro, que o provider pode ter seus próprios códigos).
-4. **`lib/auth/dal.ts`**: **não muda**. É justamente o ponto do design.
-5. **`proxy.ts`**: **não muda** (já lê via `decrypt` abstrato).
-6. **UI (`(auth)/login`, `(app)/*`)**: **não muda**.
+**Ambientes:**
 
-Se uma mudança futura força alterações fora de `lib/auth/`, é sinal de que a abstração vazou e precisa ser refeita antes de continuar.
+- **App Hosting:** `initializeApp()` sem argumentos usa a conta de serviço do backend e o `FIREBASE_CONFIG` injetado. A conta de serviço precisa de permissão no Firebase Auth (criar usuário, emitir session cookie). Se o signup ou o login falharem com erro de permissão no log, conceder o papel "Firebase Authentication Admin" a `firebase-app-hosting-compute@<projeto>.iam.gserviceaccount.com`.
+- **Local:** emulador do Auth. O emulador aceita qualquer API key e emite tokens sem assinatura; não use os testes locais para validar adulteração de cookie.
+- **Provedor Email/Password** precisa estar ativo em Authentication → Método de login no console.
+
+**Fase 3 (Data Connect):** trocar `findMockUserById`/`addMockUser` por queries em `User`/`OrganizationMembership`, criando a linha `User` na mesma operação do signup. `session.ts` e `actions.ts` mudam pouco; DAL, proxy e UI não mudam.
 
 ## Padrões estabelecidos
 
@@ -182,21 +197,11 @@ Fluxo de criação de conta em `/signup`, rota única com seletor de role (athle
 
 O `proxy.ts` redireciona `/app/*` sem sessão → `/login`, e auth routes (`/login`, `/signup`) com sessão → `/app/perfil`. Se as duas regras ativassem simultaneamente, haveria loop. A proteção: cada regra checa exclusivamente seu próprio conjunto de paths. **Não adicione regras que cruzem esses limites** sem testar manualmente em browser.
 
-### `SESSION_SECRET`
-
-Vive em `web/.env.local` (gitignored). A função `getEncodedKey()` lança erro se a env var não está definida. **Isso é intencional** — melhor falhar loud no primeiro request do que assinar com string vazia.
-
-```
-# web/.env.local
-SESSION_SECRET=dev-secret-change-me-in-prod-0123456789abcdef
-```
-
-Em produção/staging, trocar por secret forte gerenciado pelo provider de infra. Para desenvolvimento local, o valor é irrelevante desde que exista.
-
 ## Anti-patterns específicos do domínio
 
 - **Não leia `cookies()` direto** fora de `session.ts`. Se você precisa da sessão noutro lugar, importe do DAL.
-- **Não coloque dados do domínio no JWT** (athleteId, managed relationships, etc). Claims são puras.
+- **Não coloque dados do domínio em custom claims do Firebase** (athleteId, managed relationships, papéis). Claims são puras; o domínio vem do mapping.
+- **Não guarde senha no mapping.** Senha só existe no Firebase (e, para os demo, no script de seed).
 - **Não pule o DAL "porque o proxy já protegeu"**. O DAL é a linha autoritativa.
 - **Não retorne `null` de funções "verify"** — redirecione. A semântica das funções `verify*` é "depois disto, assume que é válido".
 - **Não desabilite o proxy matcher em paths de `/app/*`** em nome de performance. A proteção vem antes da performance.
