@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
+import { SESSION_COOKIE_NAME } from "./cookies";
 import { getAdminAuth } from "./firebase";
 import { findMockUserById } from "./mock-users";
 
@@ -24,7 +25,7 @@ export interface SessionPayload {
   exp?: number;
 }
 
-export const SESSION_COOKIE_NAME = "eco-sports-session";
+export { SESSION_COOKIE_NAME };
 
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 

@@ -14,6 +14,7 @@ Autenticação e autorização no basketball.net. Começou como stub JWT com sha
 ## Imperativo (30 segundos)
 
 - **Leia a skill `conventions` primeiro** se ainda não leu nesta conversa.
+- **Proxy só olha se o cookie existe.** Ele roda num bundle separado, com cópia própria dos módulos: não enxerga usuários criados em runtime no mapping in-memory (foi o bug de 2026-10-29: conta nova logava e voltava para `/login`). Não importe `session.ts`, `mock-users.ts` nem o Admin SDK no `proxy.ts`; o nome do cookie vem de `lib/auth/cookies.ts`.
 - **DAL é autoritativo, proxy é primeira linha.** Nunca conte apenas com o proxy pra proteger dado sensível. Toda Server Component em `(app)/*` e toda Server Action que lê/muta dado deve chamar `getCurrentUser()`, `getCurrentAthlete()` ou `verifySession()` do `lib/auth/dal.ts`.
 - **Claims do JWT são PURAS.** Apenas identidade e autorização (`sub`, `email`, `name`, `roles[]`, `specialties[]`, `tenants[]`, `iat`, `exp`). Dados do domínio (athleteId, managedAthletes, etc) **não** entram no JWT — ficam no mapping user → domínio em `mock-users.ts` (ou em banco, no futuro real).
 - **Invariante de provider**: o provider (hoje Firebase) fica encapsulado em `lib/auth/firebase.ts`, `session.ts` e `actions.ts`. **Zero conhecimento de Firebase em UI, DAL consumers ou páginas**. Se uma mudança quebra essa invariante, é bug.
@@ -31,9 +32,9 @@ Autenticação e autorização no basketball.net. Começou como stub JWT com sha
 │  Usuário                                                     │
 ├──────────────────────────────────────────────────────────────┤
 │  1. proxy.ts  (src/proxy.ts, Next.js 16)                     │
-│     - Optimistic check do cookie                             │
-│     - Redireciona /app/* sem sessão → /login?next=<path>     │
-│     - Redireciona /login com sessão → /app/perfil            │
+│     - Optimistic check: só vê se o cookie EXISTE             │
+│     - Redireciona /app/* sem cookie → /login?next=<path>     │
+│     - Não verifica cookie nem consulta usuários (ver abaixo) │
 │     - Não é autoritativo. Pode ser burlado por bug.          │
 ├──────────────────────────────────────────────────────────────┤
 │  2. DAL  (src/lib/auth/dal.ts)                               │
@@ -94,7 +95,7 @@ interface SessionPayload {
 - [web/scripts/seed-demo-users.mjs](../../../web/scripts/seed-demo-users.mjs) — `npm run seed:auth`: cria/atualiza os usuários demo no Firebase (emulador ou projeto real) com o mesmo uid do mapping. Idempotente. As senhas demo vivem aqui.
 - [web/src/lib/auth/dal.ts](../../../web/src/lib/auth/dal.ts) — **o arquivo mais importante do módulo**. Camada autoritativa. Cada função memoizada via `cache()`. Se uma função aqui redireciona, ela chama `redirect()` do `next/navigation` — nunca retorna null pra chamador tratar (decisão: força o caller a assumir que sessão é válida depois da chamada).
 - [web/src/lib/auth/actions.ts](../../../web/src/lib/auth/actions.ts) — Server Actions `signIn`, `signOut` e `signUp`. `signIn` valida com Zod, confere a senha no Firebase, exige mapping para o uid e abre a sessão com o ID token. `signUp` usa dois Zod schemas (atleta vs guardian), cria o usuário no Firebase via Admin SDK (`registerFirebaseUser`, com o uid gerado para o mapping) **antes** de criar MockUser + Athlete skeleton ou MockUser + GuardianRelationship in-memory, depois `createSession` + redirect. Usa `useActionState` no client.
-- [web/src/proxy.ts](../../../web/src/proxy.ts) — proxy Next.js 16. Exporta `proxy` (não `middleware`). Matcher exclui `_next/static`, `_next/image`, `favicon.ico` e arquivos com extensão. Protege `/app/*`, redireciona `/login` e `/signup` se logado.
+- [web/src/proxy.ts](../../../web/src/proxy.ts) — proxy Next.js 16. Exporta `proxy` (não `middleware`). Matcher exclui `_next/static`, `_next/image`, `favicon.ico` e arquivos com extensão. Protege `/app/*` checando só a presença do cookie. O redirect de quem já está logado em `/login` e `/signup` fica no [`(auth)/layout.tsx`](../../../web/src/app/(auth)/layout.tsx), via `getOptionalSession()` do DAL.
 - [web/src/app/(auth)/layout.tsx](../../../web/src/app/(auth)/layout.tsx) — layout minimalista centrado do grupo auth.
 - [web/src/app/(auth)/login/page.tsx](../../../web/src/app/(auth)/login/page.tsx) — página de login Server Component.
 - [web/src/app/(auth)/login/login-form.tsx](../../../web/src/app/(auth)/login/login-form.tsx) — form client com `useActionState`, exibe erros inline.
@@ -195,7 +196,7 @@ Fluxo de criação de conta em `/signup`, rota única com seletor de role (athle
 
 ### Redirect loops — cuidados
 
-O `proxy.ts` redireciona `/app/*` sem sessão → `/login`, e auth routes (`/login`, `/signup`) com sessão → `/app/perfil`. Se as duas regras ativassem simultaneamente, haveria loop. A proteção: cada regra checa exclusivamente seu próprio conjunto de paths. **Não adicione regras que cruzem esses limites** sem testar manualmente em browser.
+O `proxy.ts` redireciona `/app/*` sem cookie → `/login`; o DAL redireciona `/app/*` com cookie inválido → `/login`; o `(auth)/layout.tsx` redireciona `/login` e `/signup` com sessão **válida** (verificada pelo DAL) → `/app`. Não há loop porque o layout usa a mesma verificação do DAL: cookie inválido nunca é tratado como logado nos dois lados. **Não adicione regras que cruzem esses limites** sem testar manualmente em browser.
 
 ## Anti-patterns específicos do domínio
 
