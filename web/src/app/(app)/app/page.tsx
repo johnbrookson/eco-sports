@@ -24,7 +24,7 @@ import { getPerformanceEventsForAthlete } from "@/lib/mock/get-performance";
 import type { Athlete } from "@/types/athlete";
 
 export const metadata = {
-  title: "Dashboard — Eco-Sports",
+  title: "Dashboard — basketball.net",
 };
 
 // ---------------------------------------------------------------------------

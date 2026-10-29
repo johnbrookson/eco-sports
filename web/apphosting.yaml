@@ -1,0 +1,14 @@
+# Configuração do Firebase App Hosting (backend "basketball-net").
+# Região e conexão com o GitHub são definidas ao criar o backend no console.
+runConfig:
+  minInstances: 0
+  maxInstances: 4
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+
+env:
+  # Assinatura do cookie de sessão. Criar no Secret Manager com:
+  #   firebase apphosting:secrets:set session-secret
+  - variable: SESSION_SECRET
+    secret: session-secret

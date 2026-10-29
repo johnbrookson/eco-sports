@@ -5,6 +5,11 @@ import { useEffect, useState } from "react";
 const themes = [
   { id: "indigo", label: "Indigo", color: "bg-indigo-500" },
   { id: "basketball", label: "Basketball", color: "bg-orange-500" },
+  {
+    id: "echo-charlie",
+    label: "Echo-Charlie",
+    color: "bg-neutral-950 border-2 border-orange-500",
+  },
 ] as const;
 
 type ThemeId = (typeof themes)[number]["id"];

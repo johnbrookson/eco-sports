@@ -21,7 +21,7 @@ export interface MockUser {
 export const mockUsers: MockUser[] = [
   {
     id: "usr-joao",
-    email: "joao@demo.ecosports.app",
+    email: "joao@demo.basketball.net",
     password: "joao123",
     name: "João Silva",
     roles: ["athlete"],
@@ -31,7 +31,7 @@ export const mockUsers: MockUser[] = [
   },
   {
     id: "usr-mariana",
-    email: "mariana@demo.ecosports.app",
+    email: "mariana@demo.basketball.net",
     password: "mariana123",
     name: "Mariana Costa",
     roles: ["athlete"],
@@ -41,7 +41,7 @@ export const mockUsers: MockUser[] = [
   },
   {
     id: "usr-enrico",
-    email: "enrico@demo.ecosports.app",
+    email: "enrico@demo.basketball.net",
     password: "enrico123",
     name: "Enrico Ceron",
     roles: ["athlete"],
@@ -51,7 +51,7 @@ export const mockUsers: MockUser[] = [
   },
   {
     id: "usr-rodrigo",
-    email: "rodrigo@demo.ecosports.app",
+    email: "rodrigo@demo.basketball.net",
     password: "rodrigo123",
     name: "Rodrigo Ceron",
     roles: ["parent_guardian"],

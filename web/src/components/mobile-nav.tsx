@@ -47,7 +47,7 @@ export function MobileNav({ variant = "solid" }: MobileNavProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b">
             <SheetTitle className="text-xl font-black tracking-tight">
-              Eco-Sports
+              basketball.net
             </SheetTitle>
           </div>
 

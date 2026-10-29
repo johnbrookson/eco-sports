@@ -43,7 +43,7 @@ export function SiteFooter() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-14">
           <div>
             <span className="text-3xl font-black tracking-tight text-background">
-              Eco-Sports
+              basketball.net
             </span>
             <p className="mt-2 text-sm leading-relaxed text-background/50 max-w-md">
               A plataforma completa para atletas de categorias de base.

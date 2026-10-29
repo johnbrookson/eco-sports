@@ -10,7 +10,7 @@ import { getManagedAthletesForCurrentUser } from "@/lib/auth/dal";
 import type { Athlete } from "@/types/athlete";
 
 export const metadata = {
-  title: "Meus Atletas — Eco-Sports",
+  title: "Meus Atletas — basketball.net",
 };
 
 export default async function MeusAtletasPage() {

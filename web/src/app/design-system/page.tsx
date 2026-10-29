@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Design System — Eco-Sports",
+  title: "Design System — basketball.net",
 };
 
 export default function DesignSystemPage() {
@@ -41,7 +41,7 @@ export default function DesignSystemPage() {
       <header className="border-b bg-card">
         <div className="mx-auto max-w-7xl px-8 py-8 lg:px-16">
           <h1 className="text-3xl font-black tracking-tight">
-            Eco-Sports <span className="text-primary">Design System</span>
+            basketball.net <span className="text-primary">Design System</span>
           </h1>
           <p className="mt-2 text-muted-foreground">
             Tokens, tipografia, componentes e padrões visuais da plataforma.
@@ -637,13 +637,14 @@ export default function DesignSystemPage() {
         <section>
           <SectionTitle
             title="Referência de Tokens"
-            description="Variáveis CSS utilizadas no design system. Dois temas disponíveis: Indigo e Basketball."
+            description="Variáveis CSS utilizadas no design system. Três temas disponíveis: Indigo, Basketball e Echo-Charlie."
           />
 
           <Tabs defaultValue="indigo" className="w-full">
             <TabsList>
               <TabsTrigger value="indigo">Tema Indigo</TabsTrigger>
               <TabsTrigger value="basketball">Tema Basketball</TabsTrigger>
+              <TabsTrigger value="echo-charlie">Tema Echo-Charlie</TabsTrigger>
             </TabsList>
             <TabsContent value="indigo" className="mt-4">
               <Card>
@@ -705,6 +706,36 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
             </TabsContent>
+            <TabsContent value="echo-charlie" className="mt-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Token</TableHead>
+                        <TableHead>Uso</TableHead>
+                        <TableHead>Valor</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {tokenReferenceEchoCharlie.map((t) => (
+                        <TableRow key={t.token}>
+                          <TableCell>
+                            <code className="text-xs bg-muted px-2 py-1 rounded">
+                              {t.token}
+                            </code>
+                          </TableCell>
+                          <TableCell className="text-sm">{t.usage}</TableCell>
+                          <TableCell>
+                            <code className="text-xs">{t.value}</code>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </section>
       </div>
@@ -712,7 +743,7 @@ export default function DesignSystemPage() {
       {/* Footer */}
       <footer className="border-t py-8 px-8 lg:px-16 mt-12">
         <div className="mx-auto max-w-7xl text-center text-sm text-muted-foreground">
-          Eco-Sports Design System · Ceronify · {new Date().getFullYear()}
+          basketball.net Design System · Ceronify · {new Date().getFullYear()}
         </div>
       </footer>
     </div>
@@ -803,6 +834,22 @@ const basketballValues: Record<string, string> = {
   "--hero-accent": "oklch(0.85 0.12 55) — laranja suave",
 };
 
+const echoCharlieValues: Record<string, string> = {
+  "--primary": "oklch(0.703 0.198 43.4) — flame (#ff6b1a)",
+  "--accent": "oklch(0.779 0.144 50.8) — flame suave (#ff9a5c)",
+  "--secondary": "oklch(0.920 0.012 87.5)",
+  "--muted": "oklch(0.920 0.012 87.5)",
+  "--destructive": "oklch(0.577 0.245 27)",
+  "--background": "oklch(0.959 0.010 87.5) — giz (#f4f1ea); dark: ink (#0b0b0c)",
+  "--foreground": "oklch(0.150 0.002 286.1) — ink (#0b0b0c)",
+  "--border": "oklch(0.870 0.012 87.5)",
+  "--ring": "oklch(0.703 0.198 43.4)",
+  "--radius": "0.625rem",
+  "--hero-start": "oklch(0.150 0.002 286.1) — ink",
+  "--hero-end": "oklch(0.320 0.090 43.4) — brasa",
+  "--hero-accent": "oklch(0.779 0.144 50.8) — flame suave",
+};
+
 const tokenReferenceIndigo = tokenBase.map((t) => ({
   ...t,
   value: indigoValues[t.token] ?? "",
@@ -811,4 +858,9 @@ const tokenReferenceIndigo = tokenBase.map((t) => ({
 const tokenReferenceBasketball = tokenBase.map((t) => ({
   ...t,
   value: basketballValues[t.token] ?? "",
+}));
+
+const tokenReferenceEchoCharlie = tokenBase.map((t) => ({
+  ...t,
+  value: echoCharlieValues[t.token] ?? "",
 }));

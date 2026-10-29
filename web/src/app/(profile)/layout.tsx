@@ -13,13 +13,13 @@ export default function ProfileLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header className="absolute top-0 left-0 right-0 z-50">
+      <header className="absolute top-0 left-0 right-0 z-50 print:hidden">
         <div className="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
           <Link
             href="/"
-            className="text-white font-black tracking-tight text-lg drop-shadow-sm hover:opacity-80 transition-opacity"
+            className="display text-white text-2xl drop-shadow-sm hover:opacity-80 transition-opacity"
           >
-            Eco-Sports
+            basketball.net
           </Link>
           <Link
             href="/"
@@ -32,7 +32,7 @@ export default function ProfileLayout({
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-border bg-card">
+      <footer className="border-t border-border bg-card print:hidden">
         <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -42,7 +42,7 @@ export default function ProfileLayout({
               href="/"
               className="mt-1 inline-block text-xl font-black tracking-tight hover:text-primary transition-colors"
             >
-              Eco-Sports
+              basketball.net
             </Link>
           </div>
           <div className="flex flex-col sm:items-end gap-1">

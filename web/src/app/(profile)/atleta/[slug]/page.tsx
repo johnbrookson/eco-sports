@@ -2,16 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import {
-  MapPin,
-  InstagramIcon,
-  LinkedinIcon,
-  Mail,
-  Phone,
-  PlayCircle,
-  Trophy,
-  TrendingUp,
-} from "lucide-react";
+import { InstagramIcon, LinkedinIcon, Mail, Phone } from "lucide-react";
+
+import { LiteYouTube } from "@/components/lite-youtube";
+import { ScoutModeButton } from "@/components/scout-mode-button";
+import { ScrollReveal } from "@/components/scroll-reveal";
 
 import {
   getPublicAthleteBySlug,
@@ -34,7 +29,7 @@ export async function generateMetadata(
   const { slug } = await props.params;
   const athlete = await getPublicAthleteBySlug(slug);
   if (!athlete) {
-    return { title: "Perfil não encontrado — Eco-Sports" };
+    return { title: "Perfil não encontrado — basketball.net" };
   }
 
   const name = formatFullName(athlete);
@@ -87,15 +82,30 @@ export default async function AthleteProfilePage(
   const age = v.showAge ? computeAge(athlete.profile.birthDate) : undefined;
   const location = v.showCity ? formatLocation(athlete) : undefined;
   const currentClub = v.showCurrentClub ? athlete.career?.currentClub : undefined;
-  const highlightVideo =
-    v.showHighlightVideos && athlete.media?.highlightVideoUrls?.[0]
-      ? athlete.media.highlightVideoUrls[0]
-      : undefined;
+  const physical = v.showPhysicalProfile ? athlete.physicalProfile : undefined;
+  const highlightVideos = v.showHighlightVideos
+    ? (athlete.media?.highlightVideoUrls ?? [])
+    : [];
+  const achievements = v.showAchievements
+    ? (athlete.career?.achievements ?? [])
+    : [];
+  const contactItems =
+    v.showContact && athlete.contact ? buildContactItems(athlete.contact) : [];
 
   const showPerformance = v.showMatchStats || v.showAssessmentStats;
   const perfEvents = showPerformance
     ? await getPerformanceEventsForAthlete(athlete.id)
     : [];
+
+  const ctas = [
+    { href: "#ficha", label: "Ver ficha", primary: true },
+    ...(highlightVideos.length > 0
+      ? [{ href: "#videos", label: "Highlights", primary: false }]
+      : []),
+    ...(contactItems.length > 0
+      ? [{ href: "#contato", label: "Contato", primary: false }]
+      : []),
+  ];
 
   return (
     <article className="bg-background">
@@ -106,30 +116,40 @@ export default async function AthleteProfilePage(
         age={age}
         location={location}
         currentClub={currentClub}
+        physical={physical}
+        ctas={ctas}
       />
 
-      {bio && <BioSection bio={bio} />}
+      <ScoutSheetSection
+        athlete={athlete}
+        fullName={fullName}
+        position={position}
+        age={age}
+        location={location}
+        currentClub={currentClub}
+        physical={physical}
+      >
+        {showPerformance && perfEvents.length > 0 && (
+          <PerformanceSection
+            events={perfEvents}
+            showMatchStats={!!v.showMatchStats}
+            showAssessmentStats={!!v.showAssessmentStats}
+          />
+        )}
+      </ScoutSheetSection>
 
-      {highlightVideo && <HighlightVideoSection videoUrl={highlightVideo} />}
-
-      {v.showPhysicalProfile && athlete.physicalProfile && (
-        <PhysicalStatsSection athlete={athlete} />
+      {highlightVideos.length > 0 && (
+        <HighlightsSection videoUrls={highlightVideos} name={fullName} />
       )}
 
-      {v.showAchievements && athlete.career?.achievements && athlete.career.achievements.length > 0 && (
-        <AchievementsSection achievements={athlete.career.achievements} />
+      {bio && <StorySection bio={bio} />}
+
+      {achievements.length > 0 && (
+        <AchievementsSection achievements={achievements} />
       )}
 
-      {showPerformance && perfEvents.length > 0 && (
-        <PerformanceSection
-          events={perfEvents}
-          showMatchStats={!!v.showMatchStats}
-          showAssessmentStats={!!v.showAssessmentStats}
-        />
-      )}
-
-      {v.showContact && athlete.contact && (
-        <ContactSection contact={athlete.contact} name={fullName} />
+      {contactItems.length > 0 && (
+        <ContactSection items={contactItems} name={fullName} />
       )}
     </article>
   );
@@ -139,6 +159,11 @@ export default async function AthleteProfilePage(
 // Sections
 // ============================================================
 
+// Visual inspirado no site do EC (enricoceron.com.br): títulos `.display`,
+// rótulos `.kicker`, linhas de quadra no hero e a ficha imprimível (Scout
+// Mode). Tudo via tokens, então o perfil segue o tema ativo; no tema
+// echo-charlie ele fica igual ao site do EC.
+
 function HeroSection({
   athlete,
   fullName,
@@ -146,6 +171,8 @@ function HeroSection({
   age,
   location,
   currentClub,
+  physical,
+  ctas,
 }: {
   athlete: Athlete;
   fullName: string;
@@ -153,160 +180,301 @@ function HeroSection({
   age?: number;
   location?: string;
   currentClub?: string;
+  physical?: Athlete["physicalProfile"];
+  ctas: { href: string; label: string; primary: boolean }[];
 }) {
   const showPhoto = athlete.visibility.showPhoto && athlete.profile.photoUrl;
+  const kicker = [position, athlete.category.toUpperCase(), currentClub]
+    .filter(Boolean)
+    .join(" · ");
+
+  // Três números grandes no rodapé do hero, só com o que as flags liberam.
+  const stats: { value: string; label: string }[] = [];
+  if (physical?.heightCm)
+    stats.push({ value: formatHeight(physical.heightCm), label: "Altura" });
+  if (physical?.wingspanCm)
+    stats.push({ value: `${physical.wingspanCm}`, label: "Envergadura (cm)" });
+  if (age !== undefined) stats.push({ value: `${age}`, label: "Anos" });
+  if (stats.length < 3)
+    stats.push({ value: athlete.category.toUpperCase(), label: "Categoria" });
 
   return (
-    <section className="relative isolate overflow-hidden bg-profile-surface text-white">
+    <section className="relative isolate flex min-h-svh items-end overflow-hidden bg-profile-surface pt-24 text-white print:hidden">
       {showPhoto && (
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-y-0 right-0 -z-20 w-full md:w-3/5">
           <Image
             src={athlete.profile.photoUrl!}
             alt={fullName}
             fill
             priority
-            sizes="100vw"
-            className="object-cover object-center opacity-60"
+            sizes="(min-width: 768px) 60vw, 100vw"
+            className="object-cover object-top opacity-50 md:opacity-70"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-profile-surface" />
-          <div className="absolute inset-0 bg-gradient-to-r from-profile-surface via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-profile-surface via-profile-surface/40 to-transparent" />
         </div>
       )}
 
-      <div className="mx-auto max-w-6xl px-6 pt-32 pb-20 md:pt-40 md:pb-28">
-        <div className="flex flex-col gap-5 max-w-3xl">
-          <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-white/70">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-3 py-1 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              {formatDiscipline(athlete.sport.discipline)}
-            </span>
-            <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 backdrop-blur-sm">
-              {athlete.category.toUpperCase()}
-            </span>
-            {currentClub && (
-              <span className="rounded-full border border-white/20 bg-white/5 px-3 py-1 backdrop-blur-sm">
-                {currentClub}
-              </span>
-            )}
-          </div>
+      <CourtLines />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_30%,color-mix(in_oklch,var(--primary)_35%,transparent),transparent_55%)]" />
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-gradient-to-t from-profile-surface to-transparent" />
 
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-[0.9] uppercase">
-            <span className="block text-white">{athlete.profile.firstName}</span>
-            <span className="block text-primary">
-              {athlete.profile.lastName}
-            </span>
-          </h1>
+      {/* Categoria em contorno ao fundo (o EC usa o número da camisa, que o
+          schema ainda não tem). */}
+      <span
+        className="display outline-text pointer-events-none absolute -right-4 top-16 -z-10 select-none text-[28vw] leading-none [--outline-text-color:var(--color-white)] md:text-[20vw]"
+        aria-hidden
+      >
+        {athlete.category.toUpperCase()}
+      </span>
 
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-base font-semibold text-white/80">
-            <span className="text-primary uppercase tracking-wider text-sm font-bold">
-              {position}
-            </span>
-            {age !== undefined && (
-              <>
-                <Dot />
-                <span>{age} anos</span>
-              </>
-            )}
-            {location && (
-              <>
-                <Dot />
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4" />
-                  {location}
-                </span>
-              </>
-            )}
-          </div>
+      <div className="mx-auto w-full max-w-6xl px-6 pb-14 md:pb-20">
+        <p className="kicker mb-5">{kicker}</p>
+        <h1 className="display text-[19vw] sm:text-[15vw] lg:text-[11rem]">
+          <span className="block">{athlete.profile.preferredName ?? athlete.profile.firstName}</span>
+          <span className="block text-primary">{athlete.profile.lastName}</span>
+        </h1>
+        {location && (
+          <p className="mt-6 text-lg text-white/70">{location}</p>
+        )}
+
+        <div className="mt-10 grid max-w-2xl grid-cols-3 gap-4 border-t border-white/15 pt-6">
+          {stats.slice(0, 3).map((s) => (
+            <div key={s.label}>
+              <p className="display text-4xl normal-case sm:text-6xl">{s.value}</p>
+              <p className="mt-1 text-xs uppercase text-white/60 sm:text-sm">
+                {s.label}
+              </p>
+            </div>
+          ))}
         </div>
-      </div>
-    </section>
-  );
-}
 
-function BioSection({ bio }: { bio: string }) {
-  return (
-    <section className="bg-background">
-      <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-6">
-          Perfil
-        </p>
-        <p className="text-xl md:text-2xl leading-relaxed font-medium text-foreground">
-          {bio}
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function HighlightVideoSection({ videoUrl }: { videoUrl: string }) {
-  const embedUrl = toYouTubeEmbed(videoUrl);
-  return (
-    <section className="bg-card border-y border-border">
-      <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-        <div className="flex items-center gap-3 mb-8">
-          <PlayCircle className="h-5 w-5 text-primary" />
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            Highlights
-          </p>
-        </div>
-        <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-2xl ring-1 ring-border">
-          {embedUrl ? (
-            <iframe
-              src={embedUrl}
-              title="Highlight video"
-              className="absolute inset-0 h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
+        <div className="mt-10 flex flex-wrap gap-3">
+          {ctas.map((cta) => (
             <a
-              href={videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute inset-0 flex items-center justify-center text-white"
+              key={cta.href}
+              href={cta.href}
+              className={
+                cta.primary
+                  ? "rounded-full bg-primary px-6 py-3 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/85"
+                  : "rounded-full border border-white/30 px-6 py-3 text-sm font-bold uppercase tracking-wide transition-colors hover:border-primary hover:text-primary"
+              }
             >
-              Assistir vídeo →
+              {cta.label}
             </a>
-          )}
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function PhysicalStatsSection({ athlete }: { athlete: Athlete }) {
-  const phys = athlete.physicalProfile!;
-  const stats: { label: string; value: string }[] = [];
-  if (phys.heightCm) stats.push({ label: "Altura", value: formatHeight(phys.heightCm) });
-  if (phys.weightKg) stats.push({ label: "Peso", value: `${phys.weightKg} kg` });
-  if (phys.wingspanCm) stats.push({ label: "Envergadura", value: `${phys.wingspanCm} cm` });
-  if (athlete.sport.dominantSide && athlete.sport.dominantSide !== "not_applicable") {
-    stats.push({
+function CourtLines() {
+  return (
+    <svg
+      className="absolute inset-0 -z-10 h-full w-full text-white opacity-[0.07]"
+      viewBox="0 0 1000 600"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden
+    >
+      <g fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="20" y="20" width="960" height="560" />
+        <line x1="500" y1="20" x2="500" y2="580" />
+        <circle cx="500" cy="300" r="70" />
+        <path d="M20 90 H150 A210 210 0 0 1 150 510 H20" />
+        <path d="M980 90 H850 A210 210 0 0 0 850 510 H980" />
+        <rect x="20" y="220" width="190" height="160" />
+        <rect x="790" y="220" width="190" height="160" />
+      </g>
+    </svg>
+  );
+}
+
+function SectionHeader({
+  kicker,
+  title,
+  children,
+}: {
+  kicker: string;
+  title: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="kicker">{kicker}</p>
+      <h2 className="display mt-3 text-5xl text-foreground sm:text-7xl">
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+// Ficha do atleta: é o que o Scout Mode imprime, junto com a performance
+// (passada como children) e as conquistas.
+function ScoutSheetSection({
+  athlete,
+  fullName,
+  position,
+  age,
+  location,
+  currentClub,
+  physical,
+  children,
+}: {
+  athlete: Athlete;
+  fullName: string;
+  position: string;
+  age?: number;
+  location?: string;
+  currentClub?: string;
+  physical?: Athlete["physicalProfile"];
+  children?: React.ReactNode;
+}) {
+  const measures: { label: string; value: string }[] = [];
+  if (physical?.heightCm)
+    measures.push({ label: "Altura", value: formatHeight(physical.heightCm) });
+  if (physical?.wingspanCm)
+    measures.push({ label: "Envergadura", value: `${physical.wingspanCm} cm` });
+  if (physical?.weightKg)
+    measures.push({ label: "Peso", value: `${physical.weightKg} kg` });
+  if (
+    physical &&
+    athlete.sport.dominantSide &&
+    athlete.sport.dominantSide !== "not_applicable"
+  ) {
+    measures.push({
       label: "Lado dominante",
       value: formatDominantSide(athlete.sport.dominantSide),
     });
   }
 
-  if (stats.length === 0) return null;
+  const secondary = athlete.sport.secondaryPositions?.map(formatPosition);
+  const facts: { label: string; value: string }[] = [
+    {
+      label: "Posição",
+      value: secondary?.length ? `${position} (também ${secondary.join(", ").toLowerCase()})` : position,
+    },
+    { label: "Categoria", value: athlete.category.toUpperCase() },
+    ...(currentClub ? [{ label: "Clube", value: currentClub }] : []),
+    ...(age !== undefined ? [{ label: "Idade", value: `${age} anos` }] : []),
+    ...(location ? [{ label: "Cidade", value: location }] : []),
+  ];
 
   return (
-    <section className="bg-background">
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-10">
-          Ficha Física
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden ring-1 ring-border">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-card px-6 py-10">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">
-                {stat.label}
+    <section
+      id="ficha"
+      className="scroll-mt-4 border-y border-border bg-card py-20 md:py-28 print:border-0 print:py-0"
+    >
+      <div className="mx-auto max-w-6xl px-6">
+        <ScrollReveal>
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <SectionHeader kicker="Ficha do atleta" title="Ficha técnica">
+              <p className="mt-3 text-lg text-muted-foreground">
+                {fullName} · {position} · {athlete.category.toUpperCase()}
               </p>
-              <p className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
-                {stat.value}
-              </p>
+            </SectionHeader>
+            <ScoutModeButton />
+          </div>
+        </ScrollReveal>
+
+        {measures.length > 0 && (
+          <div className="mt-14 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {measures.map((m) => (
+              <div
+                key={m.label}
+                className="rounded-2xl border border-border bg-background/60 p-6"
+              >
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  {m.label}
+                </p>
+                <p className="display mt-3 text-4xl normal-case text-foreground sm:text-5xl">
+                  {m.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <dl
+          className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 ${measures.length > 0 ? "mt-4" : "mt-14"}`}
+        >
+          {facts.map((f) => (
+            <div key={f.label} className="rounded-2xl border border-border p-6">
+              <dt className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                {f.label}
+              </dt>
+              <dd className="mt-2 text-lg font-semibold text-foreground">
+                {f.value}
+              </dd>
             </div>
           ))}
+        </dl>
+
+        {children}
+
+        <p className="mt-10 hidden text-sm text-muted-foreground print:block">
+          Perfil público em basketball.net · /atleta/{athlete.slug}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function HighlightsSection({
+  videoUrls,
+  name,
+}: {
+  videoUrls: string[];
+  name: string;
+}) {
+  return (
+    <section id="videos" className="scroll-mt-4 bg-background py-20 md:py-28 print:hidden">
+      <div className="mx-auto max-w-6xl px-6">
+        <ScrollReveal>
+          <SectionHeader kicker="Vídeos" title="Highlights" />
+        </ScrollReveal>
+        <div
+          className={`mt-10 grid gap-5 ${videoUrls.length > 1 ? "md:grid-cols-2" : ""}`}
+        >
+          {videoUrls.map((url, i) => {
+            const videoId = toYouTubeId(url);
+            const title = `${name} — highlight ${i + 1}`;
+            return (
+              <div
+                key={url + i}
+                className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-profile-surface"
+              >
+                {videoId ? (
+                  <LiteYouTube videoId={videoId} title={title} />
+                ) : (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 flex items-center justify-center font-semibold text-white"
+                  >
+                    Assistir vídeo →
+                  </a>
+                )}
+              </div>
+            );
+          })}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function StorySection({ bio }: { bio: string }) {
+  return (
+    <section className="border-y border-border bg-card py-20 md:py-28 print:hidden">
+      <div className="mx-auto max-w-6xl px-6">
+        <ScrollReveal>
+          <SectionHeader kicker="Trajetória" title="História" />
+          <p className="mt-10 max-w-3xl text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            {bio}
+          </p>
+        </ScrollReveal>
       </div>
     </section>
   );
@@ -314,29 +482,26 @@ function PhysicalStatsSection({ athlete }: { athlete: Athlete }) {
 
 function AchievementsSection({ achievements }: { achievements: string[] }) {
   return (
-    <section className="bg-card border-y border-border">
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <div className="flex items-center gap-3 mb-10">
-          <Trophy className="h-5 w-5 text-primary" />
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            Conquistas
-          </p>
-        </div>
-        <ul className="space-y-4 md:space-y-5">
+    <section className="bg-background py-20 md:py-28 print:py-10">
+      <div className="mx-auto max-w-6xl px-6">
+        <ScrollReveal>
+          <SectionHeader kicker="Conquistas" title="Destaques" />
+        </ScrollReveal>
+        <ol className="mt-10 space-y-4 md:space-y-5">
           {achievements.map((achievement, i) => (
             <li
               key={i}
-              className="flex items-start gap-6 border-b border-border pb-4 md:pb-5 last:border-0 last:pb-0"
+              className="flex items-baseline gap-6 border-b border-border pb-4 last:border-0 last:pb-0 md:pb-5"
             >
-              <span className="text-primary font-black text-xl md:text-2xl tabular-nums tracking-tight shrink-0 w-10">
+              <span className="display w-12 shrink-0 text-3xl tabular-nums text-primary md:text-4xl">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span className="text-lg md:text-xl font-semibold text-foreground leading-snug">
+              <span className="text-lg font-semibold leading-snug text-foreground md:text-xl">
                 {achievement}
               </span>
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
     </section>
   );
@@ -494,17 +659,15 @@ function PerformanceSection({
 
   const bothTypes = matchCards.length > 0 && assessmentCards.length > 0;
 
+  // Renderizada dentro da ficha (ScoutSheetSection), então entra no Scout Mode.
   return (
-    <section className="bg-background">
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <div className="flex items-center gap-3 mb-6">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            Performance
-          </p>
-        </div>
+    <div className="mt-16">
+      <div>
+        <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+          Performance na temporada
+        </h3>
 
-        <div className="mb-10 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-semibold">
+        <div className="mt-3 mb-8 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-semibold">
           <span className={trendColor}>{trendLabel}</span>
           {trendDetail && (
             <span className="text-muted-foreground font-normal">
@@ -535,13 +698,13 @@ function PerformanceSection({
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
 }
 
 function PerfStatsGrid({ cards }: { cards: PerfCardData[] }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden ring-1 ring-border">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       {cards.map((card) => (
         <PerfStatCard key={card.label} card={card} />
       ))}
@@ -571,11 +734,11 @@ function PerfStatCard({ card }: { card: PerfCardData }) {
   }
 
   return (
-    <div className="bg-card px-6 py-10">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+    <div className="rounded-2xl border border-border bg-background/60 p-6">
+      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {label}
       </p>
-      <p className="text-4xl md:text-5xl font-black tracking-tight text-foreground tabular-nums">
+      <p className="display mt-3 whitespace-nowrap text-3xl normal-case tabular-nums text-foreground lg:text-4xl">
         {value}
       </p>
       <p className="text-sm mt-2 text-muted-foreground">
@@ -604,14 +767,17 @@ function perfTrendDetail(
   return parts.length > 0 ? parts.join(", ") : null;
 }
 
-function ContactSection({
-  contact,
-  name,
-}: {
-  contact: NonNullable<Athlete["contact"]>;
-  name: string;
-}) {
-  const items: { icon: typeof Mail; label: string; value: string; href: string }[] = [];
+type ContactItem = {
+  icon: typeof Mail;
+  label: string;
+  value: string;
+  href: string;
+};
+
+function buildContactItems(
+  contact: NonNullable<Athlete["contact"]>,
+): ContactItem[] {
+  const items: ContactItem[] = [];
   if (contact.email)
     items.push({
       icon: Mail,
@@ -640,19 +806,26 @@ function ContactSection({
       value: contact.linkedin.replace(/^https?:\/\//, ""),
       href: contact.linkedin,
     });
+  return items;
+}
 
-  if (items.length === 0) return null;
-
+function ContactSection({
+  items,
+  name,
+}: {
+  items: ContactItem[];
+  name: string;
+}) {
   return (
-    <section className="bg-background">
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">
-          Contato
-        </p>
-        <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-10 max-w-2xl">
-          Interessado em conhecer melhor {name.split(" ")[0]}?
-        </h2>
-        <div className="grid sm:grid-cols-2 gap-4">
+    <section
+      id="contato"
+      className="scroll-mt-4 border-t border-border bg-card py-20 md:py-28 print:hidden"
+    >
+      <div className="mx-auto max-w-6xl px-6">
+        <ScrollReveal>
+          <SectionHeader kicker="Contato" title={`Fale com ${name.split(" ")[0]}`} />
+        </ScrollReveal>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
           {items.map((item) => {
             const Icon = item.icon;
             return (
@@ -661,16 +834,16 @@ function ContactSection({
                 href={item.href}
                 target={item.href.startsWith("http") ? "_blank" : undefined}
                 rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className="group flex items-center gap-5 rounded-2xl border border-border bg-card p-5 hover:border-primary transition-colors"
+                className="group flex items-center gap-5 rounded-2xl border border-border bg-background/60 p-5 transition-colors hover:border-primary"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     {item.label}
                   </p>
-                  <p className="text-base font-bold text-foreground truncate">
+                  <p className="truncate text-base font-bold text-foreground">
                     {item.value}
                   </p>
                 </div>
@@ -681,14 +854,6 @@ function ContactSection({
       </div>
     </section>
   );
-}
-
-// ============================================================
-// Atoms
-// ============================================================
-
-function Dot() {
-  return <span className="h-1 w-1 rounded-full bg-white/40" aria-hidden />;
 }
 
 // ============================================================
@@ -726,15 +891,6 @@ function formatHeight(heightCm: number): string {
   return `${meters}m`;
 }
 
-function formatDiscipline(discipline: string): string {
-  const map: Record<string, string> = {
-    basketball: "Basquete",
-    soccer: "Futebol",
-    volleyball: "Vôlei",
-  };
-  return map[discipline] ?? discipline;
-}
-
 function formatPosition(position?: string): string {
   if (!position) return "Atleta";
   const map: Record<string, string> = {
@@ -757,16 +913,14 @@ function formatDominantSide(side: NonNullable<Athlete["sport"]["dominantSide"]>)
   return map[side];
 }
 
-function toYouTubeEmbed(url: string): string | undefined {
+function toYouTubeId(url: string): string | undefined {
   try {
     const u = new URL(url);
     if (u.hostname.includes("youtu.be")) {
-      const id = u.pathname.slice(1);
-      return id ? `https://www.youtube.com/embed/${id}` : undefined;
+      return u.pathname.slice(1) || undefined;
     }
     if (u.hostname.includes("youtube.com")) {
-      const id = u.searchParams.get("v");
-      return id ? `https://www.youtube.com/embed/${id}` : undefined;
+      return u.searchParams.get("v") ?? undefined;
     }
   } catch {
     return undefined;

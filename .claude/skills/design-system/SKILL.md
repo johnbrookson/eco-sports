@@ -1,19 +1,19 @@
 ---
 name: design-system
-description: Use when working on design tokens, themes (basketball, indigo), CSS custom properties, adding a new color, modifying the SiteNav component with its three variants, the SaaS admin shell (sidebar, toolbar, content surfaces), working on the dark editorial surface (--profile-surface), or designing new surfaces that need to be theme-aware. Also invoke when adding a new route whose nav needs to decide between hero/primary/dark variants.
+description: Use when working on design tokens, themes (basketball, indigo, echo-charlie), CSS custom properties, adding a new color, modifying the SiteNav component with its three variants, the SaaS admin shell (sidebar, toolbar, content surfaces), working on the dark editorial surface (--profile-surface), or designing new surfaces that need to be theme-aware. Also invoke when adding a new route whose nav needs to decide between hero/primary/dark variants.
 ---
 
-> **Manutenção desta skill**: última revisão refletindo o estado até `573a30c` (admin shell com sidebar, toolbar, breadcrumbs, collapse). Se você adicionou um token novo, um tema novo, um componente do shell, ou mudou a regra "nunca hardcode cor", atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/design-system/` para histórico.
+> **Manutenção desta skill**: última revisão refletindo o estado até `573a30c` (admin shell com sidebar, toolbar, breadcrumbs, collapse) mais o tema `echo-charlie` (2026-10-29). Se você adicionou um token novo, um tema novo, um componente do shell, ou mudou a regra "nunca hardcode cor", atualize esta skill **no mesmo commit** ou commit adjacente. Ver `git log -- .claude/skills/design-system/` para histórico.
 
 # Design system — tokens, temas, SiteNav, SaaS shell
 
-Sistema de design do Eco-Sports em Tailwind v4 + oklch. Dois temas, paleta totalmente tokenizada, um componente de nav de marketing com 3 variantes, e um shell de admin com sidebar/toolbar/content surfaces inspirado no Fuse Layout1.
+Sistema de design do Eco-Sports em Tailwind v4 + oklch. Três temas, paleta totalmente tokenizada, um componente de nav de marketing com 3 variantes, e um shell de admin com sidebar/toolbar/content surfaces inspirado no Fuse Layout1.
 
 ## Imperativo (30 segundos)
 
 - **Leia a skill `conventions` primeiro** se ainda não leu nesta conversa.
 - **Nunca hardcode cor nova.** Se precisa de uma cor que não existe como token, crie um token. Hardcoded colors acumulam, drift entre temas, quebram light/dark. Foi justamente o problema que resolvemos no commit `d8662ad` substituindo 11 ocorrências de `#0b0f1a` por `--profile-surface`.
-- **Adicionar um token é mexer em 4 blocos + 1 registration.** Nos 4 blocos de tema (`[data-theme="indigo"]`, `[data-theme="indigo"].dark`, `[data-theme="basketball"]`, `[data-theme="basketball"].dark`) declare o token, e no `@theme inline` do final registre como `--color-nome-do-token` pra virar utility Tailwind.
+- **Adicionar um token é mexer em 6 blocos + 1 registration.** Nos 6 blocos de tema (`[data-theme="indigo"]`, `[data-theme="indigo"].dark`, `[data-theme="basketball"]`, `[data-theme="basketball"].dark`, `[data-theme="echo-charlie"]`, `[data-theme="echo-charlie"].dark`) declare o token, e no `@theme inline` do final registre como `--color-nome-do-token` pra virar utility Tailwind.
 - **Tokens existem em oklch.** Nunca rgb, hex ou hsl num tema novo — oklch dá consistência perceptual melhor (ajuste de luminosidade independente de hue).
 - **O `SiteNav` tem 3 variantes: `hero`, `primary`, `dark`.** Cada nova página de marketing escolhe uma delas baseada no hero que ela tem embaixo. **Não** crie uma quarta variante sem discutir — duplica complexidade por muito pouco ganho.
 - **`profile-surface` é o token da identidade editorial do atleta.** Usado na vitrine, nos perfis individuais, no card fallback, no teaser da home. Deliberadamente igual em light e dark mode dentro de cada tema — é uma escolha editorial, não resposta a preferência de modo.
@@ -40,6 +40,14 @@ O sistema de design tem **dois componentes de navegação distintos**:
 - Light: `--background: oklch(0.99 0.005 70)` creme quente, `--primary: oklch(0.65 0.22 45)` laranja, `--accent: oklch(0.50 0.18 255)` navy
 - Dark: `--background: oklch(0.15 0.02 250)` navy escuro, `--primary: oklch(0.72 0.20 45)` laranja clareado
 
+**`echo-charlie`** — visual do site enricoceron.com.br ("EC", projeto Astro em `~/work/brookson/enricoceron`), referência visual do basketball.net.br. Tinta quase preta, giz quente e laranja "flame"; títulos em Anton.
+
+- Paleta de origem (hex do EC → oklch): ink `#0b0b0c` → `oklch(0.150 0.002 286.1)`, coal `#151517` → `oklch(0.197 0.004 286.0)`, line `#2a2a2e` → `oklch(0.287 0.007 285.9)`, chalk `#f4f1ea` → `oklch(0.959 0.010 87.5)`, mute `#9a978f` → `oklch(0.677 0.012 89.8)`, flame `#ff6b1a` → `oklch(0.703 0.198 43.4)`, flame-soft `#ff9a5c` → `oklch(0.779 0.144 50.8)`
+- Light: fundo chalk, texto ink, primary flame. Dark (o modo "original" do EC): fundo ink, cards coal, bordas line, texto chalk
+- `--primary-foreground` é **ink**, não branco, nos dois modos: branco sobre o flame não tem contraste suficiente
+- Hero (`--hero-start` → `--hero-end`) é escuro nos dois modos (ink → brasa), como o hero do EC
+- Único tema que muda `--display-font` (ver "Fonte display" abaixo)
+
 **`indigo`** — tema alternativo para pivotar o nicho no futuro. Primary azul/violeta.
 
 - Light: `--background: oklch(0.99 0.002 270)`, `--primary: oklch(0.50 0.24 270)` indigo forte, `--accent: oklch(0.60 0.22 290)` violeta
@@ -47,9 +55,9 @@ O sistema de design tem **dois componentes de navegação distintos**:
 
 Alternância via atributo `data-theme` no `<html>`, persistido em localStorage, trocado pelo [theme-switcher](../../../web/src/components/theme-switcher.tsx) (vive no SiteFooter).
 
-### Tokens semânticos (comuns aos dois temas, valores diferentes por tema)
+### Tokens semânticos (comuns a todos os temas, valores diferentes por tema)
 
-Os dois temas declaram os mesmos nomes de token, só mudam valores. Categoria por propósito:
+Todos os temas declaram os mesmos nomes de token, só mudam valores. Categoria por propósito:
 
 - **Neutros**: `--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--muted`, `--muted-foreground`
 - **Brand**: `--primary`, `--primary-foreground`, `--secondary`, `--secondary-foreground`, `--accent`, `--accent-foreground`
@@ -78,6 +86,7 @@ Valores:
 |---|---|---|
 | basketball | `oklch(0.12 0.02 260)` | Navy charcoal — evoca "ginásio com luzes apagadas" |
 | indigo | `oklch(0.13 0.03 275)` | Noite indigo levemente violeta — evoca "NCAA arena à noite" |
+| echo-charlie | `oklch(0.150 0.002 286.1)` | O ink do EC — preto neutro, quase sem matiz |
 
 **Mesmo valor em light e dark mode dentro de cada tema** — é uma escolha editorial ("spotlight surface"), não uma resposta à preferência do usuário.
 
@@ -139,15 +148,31 @@ A fonte Geist (pacote `geist`) é carregada no `(app)/layout.tsx` via `GeistSans
 
 Páginas públicas (marketing, blog, atletas) continuam usando Inter (root layout). A escolha de Geist para o SaaS segue o Fuse — fonte geométrica otimizada para interfaces densas e dashboards.
 
+### Fonte display e classes editoriais
+
+`--display-font` (registrado no `@theme inline` como `--font-display`, utility `font-display`) é a fonte dos títulos editoriais. Em `:root` vale `var(--font-sans)`, então indigo e basketball não mudam. O `echo-charlie` define `var(--font-anton), "Impact", sans-serif`. A Anton é carregada no root layout via `next/font/google` (`--font-anton`).
+
+Classes utilitárias trazidas do EC, em `globals.css`, todas baseadas em tokens:
+
+- `.display` — título grande em caixa alta, `--display-font`, `line-height: 0.9`
+- `.kicker` — rótulo pequeno espaçado em `--primary` ("Armador · Sub-15 · #7")
+- `.outline-text` — só contorno (número da camisa ao fundo). Usa `--foreground`; sobre a `profile-surface` defina `--outline-text-color` com a cor do texto daquela superfície
+
+Elas vivem em `@layer components`, então utilities vencem (ex.: `display normal-case` para valores com unidade como "1,85m"). `.display` também usa `--display-weight` (900 por padrão, 400 no echo-charlie, porque a Anton só tem um peso).
+
+### Impressão
+
+O `@media print` no fim de `globals.css` troca os tokens neutros por papel (fundo branco, texto preto) em qualquer tema e modo. Usado pelo Scout Mode do perfil público; para tirar algo da impressão, use `print:hidden` no componente.
+
 ## Como adicionar um token novo
 
 ### Passo a passo
 
 1. **Escolha o nome semântico**, não descritivo. `--coach-accent` é ruim porque amarra ao uso; `--instructor-surface` melhor se for genérico. Preferir nomes baseados em **função** (`--spotlight-bg`, `--nav-accent`) ou em **domínio** (`--profile-surface`, `--consent-callout`).
 
-2. **Defina o valor em oklch para cada uma das 4 combinações** de tema × modo. Para tema basketball, o primary é laranja/navy; escolha um valor que harmoniza. Para indigo, azul/violeta; ajuste.
+2. **Defina o valor em oklch para cada uma das 6 combinações** de tema × modo. Para tema basketball, o primary é laranja/navy; escolha um valor que harmoniza. Para indigo, azul/violeta; ajuste. Para echo-charlie, neutros ink/chalk com flame.
 
-3. **Declare nos 4 blocos** de `globals.css`:
+3. **Declare nos 6 blocos** de `globals.css` (exemplo abaixo mostra 4; o echo-charlie segue o mesmo padrão):
 
 ```css
 /* web/src/app/globals.css */
@@ -245,7 +270,7 @@ Cada variante do SiteNav passa o `mobile` correspondente pro `<MobileNav variant
 - **Criar um segundo componente de nav** pra uma página específica porque "é diferente". Estenda as variantes do `SiteNav` (marketing) ou os componentes do admin shell (SaaS).
 - **Usar `bg-orange-500`** (cor de paleta default do Tailwind) em vez de `bg-primary`. Paleta default do Tailwind não existe — nossos temas sobrescrevem tudo.
 - **Esquecer de registrar no `@theme inline`** após declarar um token. Se esquecer, o token existe mas a utility Tailwind não, e você acaba usando `style={{ background: 'var(--token)' }}` como workaround — sinal de bug de skill.
-- **Esquecer de declarar nos 4 blocos**. Se declarar só em um tema, o outro tema quebra silenciosamente (Tailwind usa o fallback).
+- **Esquecer de declarar nos 6 blocos**. Se declarar só em um tema, o outro tema quebra silenciosamente (Tailwind usa o fallback).
 - **Misturar SiteNav e admin shell**. SiteNav é marketing, admin shell é SaaS. Nunca use um no contexto do outro.
 - **Adicionar variante ao SidebarNav sem discutir**. O sidebar tem 2 estados (expandido/recolhido), não variantes visuais.
 

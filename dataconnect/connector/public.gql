@@ -1,0 +1,73 @@
+# Leituras públicas (sem login): perfil /atleta/[slug] e vitrine /atletas.
+# As flags de visibilidade são aplicadas aqui, no banco, e não só na tela.
+
+query PublicAthleteBySlug($tenantId: UUID!, $slug: String!) @auth(level: PUBLIC) {
+  athletes(
+    where: {
+      tenantId: { eq: $tenantId }
+      slug: { eq: $slug }
+      publicProfileEnabled: { eq: true }
+    }
+    limit: 1
+  ) {
+    id
+    slug
+    firstName
+    lastName
+    preferredName
+    birthDate
+    country
+    state
+    city
+    photoUrl
+    bio
+    contactEmail
+    contactPhone
+    contactInstagram
+    contactLinkedin
+    discipline
+    primaryPosition
+    secondaryPositions
+    dominantSide
+    heightCm
+    weightKg
+    wingspanCm
+    category
+    career
+    media
+    showPhoto
+    showAge
+    showCity
+    showPhysicalProfile
+    showHighlightVideos
+    showAchievements
+    showCurrentClub
+    showContact
+    showMatchStats
+    showAssessmentStats
+  }
+}
+
+query DiscoverableAthletes($position: String, $category: String) @auth(level: PUBLIC) {
+  athletes(
+    where: {
+      publicProfileEnabled: { eq: true }
+      discoverable: { eq: true }
+      primaryPosition: { eq: $position }
+      category: { eq: $category }
+    }
+    orderBy: [{ firstName: ASC }]
+  ) {
+    id
+    slug
+    firstName
+    lastName
+    preferredName
+    primaryPosition
+    category
+    photoUrl
+    showPhoto
+    showCurrentClub
+    career
+  }
+}

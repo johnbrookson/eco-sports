@@ -1,0 +1,7 @@
+connectorId: "web"
+# SDK gerado para o Next.js (usado só no servidor: Server Components e Server Actions).
+generate:
+  javascriptSdk:
+    outputDir: "../../web/src/dataconnect-generated"
+    package: "@basketball-net/dataconnect"
+    packageJsonDir: "../../web"

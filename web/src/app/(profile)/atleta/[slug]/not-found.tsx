@@ -8,7 +8,7 @@ import { ArrowRight, Search } from "lucide-react";
 // Herda o layout de (profile): header absoluto sobre o hero + footer discreto.
 
 export const metadata: Metadata = {
-  title: "Perfil não encontrado — Eco-Sports",
+  title: "Perfil não encontrado — basketball.net",
   description:
     "Esse perfil de atleta não existe, foi arquivado ou ainda não foi publicado.",
   robots: { index: false, follow: false },
@@ -76,7 +76,7 @@ export default function AthleteNotFound() {
                   Plataforma
                 </p>
                 <p className="text-base font-bold text-foreground">
-                  Voltar para a Eco-Sports
+                  Voltar para o basketball.net
                 </p>
               </div>
             </Link>
@@ -93,7 +93,7 @@ export default function AthleteNotFound() {
                   Descubra
                 </p>
                 <p className="text-base font-bold text-foreground">
-                  Para quem é o Eco-Sports
+                  Para quem é o basketball.net
                 </p>
               </div>
             </Link>

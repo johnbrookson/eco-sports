@@ -1,0 +1,371 @@
+# Esquema do banco (Firebase Data Connect → Cloud SQL for PostgreSQL).
+#
+# Traduzido dos JSON Schemas canônicos em `schemas/`. Regras da tradução:
+# - Cada entidade de domínio vira uma tabela; `tenantId` vira a relação `tenant`.
+# - Campos usados em filtro, busca ou autorização viram colunas próprias
+#   (slug, categoria, posição, flags de visibilidade, papéis).
+# - Blocos que só são lidos inteiros e ainda mudam muito (endereço, evidências
+#   de consentimento, métricas de performance) ficam em colunas `Any` (jsonb).
+# - `User.id` é o `uid` do Firebase Authentication, para casar com `auth.uid`
+#   nas regras `@auth` das operações.
+# - Datas: `Date` para datas puras, `Timestamp` para instantes.
+
+# ============================================================
+# Enums
+# ============================================================
+
+enum TenantType {
+  individual
+  organization
+}
+
+enum TenantStatus {
+  active
+  suspended
+  archived
+}
+
+enum SubscriptionTier {
+  free
+  starter
+  pro
+  elite
+  organization
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  cancelled
+  suspended
+}
+
+enum UserStatus {
+  pending_verification
+  active
+  suspended
+  deactivated
+}
+
+enum Gender {
+  female
+  male
+  non_binary
+  prefer_not_to_say
+  other
+}
+
+enum DominantSide {
+  left
+  right
+  ambidextrous
+  not_applicable
+}
+
+enum AthleteStatus {
+  prospect
+  active
+  inactive
+  graduated
+  archived
+}
+
+enum GuardianRelationshipType {
+  mother
+  father
+  stepmother
+  stepfather
+  grandparent
+  sibling_adult
+  legal_guardian
+  foster_parent
+  other
+}
+
+enum GuardianRelationshipStatus {
+  pending_verification
+  active
+  revoked
+  expired
+}
+
+enum OrgRole {
+  org_admin
+  org_manager
+  org_coach
+  org_scout
+  org_member
+  org_sponsor_manager
+}
+
+enum MembershipStatus {
+  pending_invite
+  active
+  suspended
+  left
+  removed
+}
+
+enum ConsentGrantedByRole {
+  athlete
+  parent_guardian
+}
+
+enum ConsentType {
+  terms_of_service
+  privacy_policy
+  image_use
+  public_portfolio
+  data_sharing_with_professional
+  data_sharing_with_organization
+  data_sharing_with_sponsor
+  service_contract
+  sponsorship_contract
+  sensitive_health_data
+  psychological_data
+  marketing_communications
+  third_party_integration
+}
+
+enum ConsentStatus {
+  granted
+  revoked
+  expired
+  superseded
+}
+
+enum PerformanceSourceType {
+  training
+  match
+  assessment
+  video_review
+  combined
+}
+
+# ============================================================
+# Tenancy e identidade
+# ============================================================
+
+# fonte: schemas/tenant.json
+type Tenant @table {
+  id: UUID! @default(expr: "uuidV4()")
+  type: TenantType!
+  name: String!
+  legalName: String
+  taxId: String
+  owner: User
+  # Bloco `organization` (tipo, modalidades, registros...) e `address`.
+  organization: Any
+  address: Any
+  country: String!
+  locale: String
+  timezone: String
+  subscriptionTier: SubscriptionTier!
+  subscriptionStatus: SubscriptionStatus!
+  # billingCycle, períodos, trial e dados de cobrança.
+  subscriptionDetails: Any
+  billing: Any
+  status: TenantStatus!
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+# fonte: schemas/user.json
+type User @table {
+  # uid do Firebase Authentication.
+  id: String! @col(dataType: "varchar(128)")
+  individualTenant: Tenant!
+  firstName: String!
+  lastName: String!
+  preferredName: String
+  birthDate: Date
+  gender: Gender
+  country: String
+  state: String
+  city: String
+  photoUrl: String
+  locale: String
+  timezone: String
+  email: String! @unique
+  emailVerified: Boolean
+  phone: String
+  phoneVerified: Boolean
+  # athlete, parent_guardian, professional, sponsor, platform_admin.
+  globalRoles: [String!]!
+  professionalSpecialties: [String!]
+  professionalCredentials: Any
+  status: UserStatus!
+  isMinor: Boolean
+  tags: [String!]
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+# fonte: schemas/organization-membership.json
+type OrganizationMembership @table @unique(fields: ["tenant", "user"]) {
+  id: UUID! @default(expr: "uuidV4()")
+  tenant: Tenant!
+  user: User!
+  role: OrgRole!
+  title: String
+  permissions: [String!]
+  # categories, teamIds.
+  scope: Any
+  status: MembershipStatus!
+  invitedBy: User
+  invitedAt: Timestamp
+  joinedAt: Timestamp
+  leftAt: Timestamp
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+# ============================================================
+# Atleta
+# ============================================================
+
+# fonte: schemas/athlete.json
+# O bloco `consents` do JSON Schema não vira coluna: o estado de consentimento
+# vem da tabela Consent (versionada). `guardians[]` também não: vem de
+# GuardianRelationship.
+type Athlete @table @unique(fields: ["tenant", "slug"]) {
+  id: UUID! @default(expr: "uuidV4()")
+  tenant: Tenant!
+  # Conta do próprio atleta, quando ele tem login (menores podem não ter).
+  user: User
+  slug: String
+
+  # profile
+  firstName: String!
+  lastName: String!
+  preferredName: String
+  birthDate: Date!
+  gender: Gender!
+  country: String!
+  state: String
+  city: String
+  nationality: String
+  photoUrl: String
+  bio: String
+
+  # contact
+  contactEmail: String
+  contactPhone: String
+  contactInstagram: String
+  contactLinkedin: String
+
+  # sport
+  discipline: String!
+  primaryPosition: String
+  secondaryPositions: [String!]
+  dominantSide: DominantSide
+
+  # physicalProfile
+  heightCm: Float
+  weightKg: Float
+  wingspanCm: Float
+  bodyFatPct: Float
+  physicalNotes: String
+
+  category: String!
+
+  # education, career e media são lidos inteiros pelo perfil e pelo editor.
+  education: Any
+  career: Any
+  media: Any
+
+  status: AthleteStatus!
+
+  # visibility — colunas porque a vitrine e o perfil público filtram por elas.
+  publicProfileEnabled: Boolean! @default(value: false)
+  discoverable: Boolean! @default(value: false)
+  showPhoto: Boolean! @default(value: false)
+  showAge: Boolean! @default(value: false)
+  showCity: Boolean! @default(value: false)
+  showPhysicalProfile: Boolean! @default(value: false)
+  showHighlightVideos: Boolean! @default(value: false)
+  showAchievements: Boolean! @default(value: false)
+  showCurrentClub: Boolean! @default(value: false)
+  showContact: Boolean! @default(value: false)
+  showMatchStats: Boolean! @default(value: false)
+  showAssessmentStats: Boolean! @default(value: false)
+
+  # Mudança de visibilidade de atleta menor aguardando o responsável
+  # ({ changes, requestedAt, requestedBy }). Some quando o consent flow LGPD
+  # substituir o fluxo leve por registros em Consent.
+  pendingVisibility: Any
+
+  tags: [String!]
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+# fonte: schemas/guardian-relationship.json
+type GuardianRelationship @table @unique(fields: ["athlete", "guardian"]) {
+  id: UUID! @default(expr: "uuidV4()")
+  tenant: Tenant!
+  athlete: Athlete!
+  guardian: User!
+  relationshipType: GuardianRelationshipType!
+  isPrimary: Boolean
+  legallyResponsible: Boolean!
+  proofDocuments: Any
+  status: GuardianRelationshipStatus!
+  startedAt: Timestamp
+  endedAt: Timestamp
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+# fonte: schemas/consent.json
+# Registros imutáveis: uma nova versão cria outra linha e marca a anterior
+# como `superseded` (trilha de auditoria da LGPD).
+type Consent @table {
+  id: UUID! @default(expr: "uuidV4()")
+  tenant: Tenant!
+  subjectAthlete: Athlete!
+  grantedBy: User!
+  grantedByRole: ConsentGrantedByRole!
+  consentType: ConsentType!
+  # dataCategories, grantedTo*, purposes.
+  scope: Any
+  status: ConsentStatus!
+  version: Int!
+  supersedes: Consent
+  documentVersion: String!
+  documentUrl: String
+  # ip, userAgent, método de assinatura, hash.
+  evidence: Any
+  grantedAt: Timestamp!
+  expiresAt: Timestamp
+  revokedAt: Timestamp
+  revokedBy: User
+  revocationReason: String
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+# ============================================================
+# Performance
+# ============================================================
+
+# fonte: schemas/performance-metrics.json
+type PerformanceEvent @table @index(fields: ["athleteId", "startedAt"]) {
+  id: UUID! @default(expr: "uuidV4()")
+  tenant: Tenant!
+  athlete: Athlete!
+  sport: String!
+  sourceType: PerformanceSourceType!
+  # sessionId, matchId, opponent, competition, location, notes.
+  context: Any
+  startedAt: Timestamp!
+  endedAt: Timestamp!
+  season: String
+  cycle: String
+  # Estatísticas de jogo e avaliação física; o formulário valida com Zod.
+  metrics: Any!
+  benchmarks: Any
+  attachments: Any
+  createdAt: Timestamp! @default(expr: "request.time")
+}

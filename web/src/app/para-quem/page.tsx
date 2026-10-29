@@ -316,9 +316,9 @@ function accentClasses(accent: string) {
 /* ─── Page ─── */
 
 export const metadata = {
-  title: "Para Quem — Eco-Sports",
+  title: "Para Quem — basketball.net",
   description:
-    "Conheça os stakeholders do ecossistema Eco-Sports: atletas, pais, treinadores, clubes, scouts, patrocinadores e profissionais.",
+    "Conheça os stakeholders do ecossistema basketball.net: atletas, pais, treinadores, clubes, scouts, patrocinadores e profissionais.",
 };
 
 export default function ParaQuemPage() {
