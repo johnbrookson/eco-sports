@@ -5,8 +5,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { createSession, deleteSession } from "./session";
+import { getAdminAuth, signInWithPassword } from "./firebase";
 import {
-  findMockUserByCredentials,
+  findMockUserById,
   findMockUserByEmail,
   addMockUser,
   type MockUser,
@@ -21,10 +22,10 @@ import { addGuardianRelationship } from "@/lib/mock/guardian-relationships";
 import type { Athlete } from "@/types/athlete";
 import type { GuardianRelationship } from "@/types/guardian-relationship";
 
-// Server Actions do stub de auth.
-// Quando trocarmos por um provider real (Keycloak/Auth.js/Clerk/Auth0),
-// apenas o corpo dessas funções muda — a assinatura e o shape de FormState
-// permanecem, então nenhuma tela precisa ser alterada.
+// Server Actions de auth sobre o Firebase Authentication.
+// A senha é conferida pelo Firebase (lib/auth/firebase.ts) e a sessão vira um
+// session cookie do Admin SDK. Assinaturas e shape de FormState são os mesmos
+// do stub, então nenhuma tela mudou na troca.
 
 const SignInSchema = z.object({
   email: z.string().trim().toLowerCase().email({
@@ -46,6 +47,13 @@ export type SignInFormState =
     }
   | undefined;
 
+const SIGN_IN_ERRORS = {
+  "invalid-credentials": "E-mail ou senha inválidos.",
+  "too-many-attempts":
+    "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.",
+  unavailable: "Não foi possível entrar agora. Tente de novo em instantes.",
+} as const;
+
 export async function signIn(
   _prev: SignInFormState,
   formData: FormData,
@@ -62,22 +70,29 @@ export async function signIn(
     };
   }
 
-  const user = findMockUserByCredentials(parsed.data.email, parsed.data.password);
-  if (!user) {
+  const result = await signInWithPassword(parsed.data.email, parsed.data.password);
+  if (!result.ok) {
     return {
-      errors: { form: ["E-mail ou senha inválidos."] },
+      errors: { form: [SIGN_IN_ERRORS[result.reason]] },
       values: { email: parsed.data.email },
     };
   }
 
-  await createSession({
-    sub: user.id,
-    email: user.email,
-    name: user.name,
-    roles: user.roles,
-    specialties: user.specialties,
-    tenants: user.tenants,
-  });
+  const user = findMockUserById(result.uid);
+  if (!user) {
+    // Conta existe no Firebase, mas o mapping in-memory se perdeu (signup
+    // anterior a um restart). Some na Fase 3, com o mapping no banco.
+    return {
+      errors: {
+        form: [
+          "Sua conta existe, mas o perfil não está carregado neste ambiente de demonstração. Crie uma conta nova ou use um usuário demo.",
+        ],
+      },
+      values: { email: parsed.data.email },
+    };
+  }
+
+  await createSession(result.idToken);
 
   // Setar cookie de persona com o primeiro role do user.
   // Não é HttpOnly — o persona switcher (client component) precisa ler.
@@ -104,6 +119,44 @@ export async function signOut(): Promise<void> {
 // --- Sign Up ---
 
 const DEMO_TENANT = "tenant-demo-individual";
+
+// Cria a conta no Firebase Auth com o uid do mapping e devolve um ID token
+// novo para abrir a sessão.
+async function registerFirebaseUser(input: {
+  uid: string;
+  email: string;
+  password: string;
+  name: string;
+}): Promise<{ ok: true; idToken: string } | { ok: false; emailTaken: boolean }> {
+  try {
+    await getAdminAuth().createUser({
+      uid: input.uid,
+      email: input.email,
+      password: input.password,
+      displayName: input.name,
+    });
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "auth/email-already-exists") return { ok: false, emailTaken: true };
+    console.error("Firebase createUser falhou:", code ?? error);
+    return { ok: false, emailTaken: false };
+  }
+  const result = await signInWithPassword(input.email, input.password);
+  if (!result.ok) return { ok: false, emailTaken: false };
+  return { ok: true, idToken: result.idToken };
+}
+
+function signUpFailure(
+  emailTaken: boolean,
+  values: NonNullable<SignUpFormState>["values"],
+): SignUpFormState {
+  return emailTaken
+    ? { errors: { email: ["Já existe uma conta com este e-mail."] }, values }
+    : {
+        errors: { form: ["Não foi possível criar a conta agora. Tente de novo em instantes."] },
+        values,
+      };
+}
 
 const SignUpBaseSchema = z.object({
   firstName: z
@@ -234,6 +287,14 @@ export async function signUp(
   const now = new Date().toISOString();
 
   if (data.role === "athlete") {
+    const registered = await registerFirebaseUser({
+      uid: userId,
+      email: data.email,
+      password: data.password,
+      name: `${data.firstName} ${data.lastName}`,
+    });
+    if (!registered.ok) return signUpFailure(registered.emailTaken, rawValues);
+
     // Criar Athlete skeleton
     const athleteId = crypto.randomUUID();
     const slug = generateAthleteSlug(
@@ -275,7 +336,6 @@ export async function signUp(
     const user: MockUser = {
       id: userId,
       email: data.email,
-      password: data.password,
       name: `${data.firstName} ${data.lastName}`,
       roles: ["athlete"],
       specialties: [],
@@ -285,14 +345,7 @@ export async function signUp(
 
     addMockUser(user);
 
-    await createSession({
-      sub: user.id,
-      email: user.email,
-      name: user.name,
-      roles: user.roles,
-      specialties: user.specialties,
-      tenants: user.tenants,
-    });
+    await createSession(registered.idToken);
 
     const cookieStore = await cookies();
     cookieStore.set(PERSONA_COOKIE_NAME, "athlete", {
@@ -317,10 +370,17 @@ export async function signUp(
     };
   }
 
+  const registered = await registerFirebaseUser({
+    uid: userId,
+    email: data.email,
+    password: data.password,
+    name: `${data.firstName} ${data.lastName}`,
+  });
+  if (!registered.ok) return signUpFailure(registered.emailTaken, rawValues);
+
   const user: MockUser = {
     id: userId,
     email: data.email,
-    password: data.password,
     name: `${data.firstName} ${data.lastName}`,
     roles: ["parent_guardian"],
     specialties: [],
@@ -345,14 +405,7 @@ export async function signUp(
 
   addGuardianRelationship(relationship);
 
-  await createSession({
-    sub: user.id,
-    email: user.email,
-    name: user.name,
-    roles: user.roles,
-    specialties: user.specialties,
-    tenants: user.tenants,
-  });
+  await createSession(registered.idToken);
 
   const cookieStore = await cookies();
   cookieStore.set(PERSONA_COOKIE_NAME, "parent_guardian", {

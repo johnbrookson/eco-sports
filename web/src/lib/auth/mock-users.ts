@@ -1,15 +1,14 @@
 import "server-only";
 
-// Mock de usuários para o stub de auth.
-// Sem hash de senha — é explicitamente um stub e NÃO deve chegar em produção.
-// O payload de sessão (lib/auth/session.ts) segue formato OIDC-like; o mapping
-// user → athleteId vive aqui (não no JWT) para manter os claims puros e
-// permitir troca de provider sem mexer no DAL.
+// Mapping usuário → domínio (papéis, tenants, atleta, atletas supervisionados).
+// Login e senha vivem no Firebase Authentication; o `id` aqui é o uid do
+// Firebase. Os usuários demo são criados lá com esse mesmo uid por
+// `npm run seed:auth` (web/scripts/seed-demo-users.mjs). Na Fase 3 este
+// arquivo dá lugar às tabelas User/OrganizationMembership do Data Connect.
 
 export interface MockUser {
   id: string;
   email: string;
-  password: string; // stub apenas; troca por auth real elimina este campo
   name: string;
   roles: string[];
   specialties: string[];
@@ -22,7 +21,6 @@ export const mockUsers: MockUser[] = [
   {
     id: "usr-joao",
     email: "joao@demo.basketball.net",
-    password: "joao123",
     name: "João Silva",
     roles: ["athlete"],
     specialties: [],
@@ -32,7 +30,6 @@ export const mockUsers: MockUser[] = [
   {
     id: "usr-mariana",
     email: "mariana@demo.basketball.net",
-    password: "mariana123",
     name: "Mariana Costa",
     roles: ["athlete"],
     specialties: [],
@@ -42,7 +39,6 @@ export const mockUsers: MockUser[] = [
   {
     id: "usr-enrico",
     email: "enrico@demo.basketball.net",
-    password: "enrico123",
     name: "Enrico Ceron",
     roles: ["athlete"],
     specialties: [],
@@ -52,7 +48,6 @@ export const mockUsers: MockUser[] = [
   {
     id: "usr-rodrigo",
     email: "rodrigo@demo.basketball.net",
-    password: "rodrigo123",
     name: "Rodrigo Ceron",
     roles: ["parent_guardian"],
     specialties: [],
@@ -60,18 +55,6 @@ export const mockUsers: MockUser[] = [
     managedAthleteIds: ["c9d6e7f0-3a4b-6c5d-1e0f-2a3b4c5d6e7f"], // Enrico
   },
 ];
-
-export function findMockUserByCredentials(
-  email: string,
-  password: string,
-): MockUser | null {
-  const user = mockUsers.find(
-    (u) => u.email.toLowerCase() === email.toLowerCase(),
-  );
-  if (!user) return null;
-  if (user.password !== password) return null;
-  return user;
-}
 
 export function findMockUserById(id: string): MockUser | null {
   return mockUsers.find((u) => u.id === id) ?? null;
