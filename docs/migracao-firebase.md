@@ -77,7 +77,7 @@ Passos no console (John):
 2. Criar os usuários demo no projeto real: `gcloud auth application-default login` e depois `npm run seed:auth` dentro de `web/`.
 3. Depois do merge, testar login demo e um cadastro novo. Se aparecer erro de permissão no log, dar o papel "Firebase Authentication Admin" à conta `firebase-app-hosting-compute@basketball-net.iam.gserviceaccount.com`.
 
-Limitação até a Fase 3: o mapping de contas criadas pelo cadastro é in-memory. Depois de um restart ou em outra instância do Cloud Run, a conta existe no Firebase mas o login mostra "perfil não carregado". Os usuários demo não têm esse problema.
+Limitação até a Fase 3: o mapping de contas criadas pelo cadastro é in-memory. Depois de um restart ou em outra instância do Cloud Run, a conta existe no Firebase mas o login mostra "perfil não carregado". Os usuários demo não têm esse problema. Para evitar o caso das várias instâncias (login que volta para `/login` sem mensagem), o `apphosting.yaml` fica com `maxInstances: 1` até a Fase 3; o restart por ociosidade continua apagando contas novas.
 
 ### Fase 3 — Banco (Data Connect + Cloud SQL)
 
