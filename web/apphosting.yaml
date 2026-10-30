@@ -13,3 +13,9 @@ runConfig:
   concurrency: 80
   cpu: 1
   memoryMiB: 512
+
+env:
+  # Página "Em breve" na home e links de Entrar/Cadastrar escondidos.
+  # Trocar para "false" (ou remover) no lançamento. Ver src/lib/launch.ts.
+  - variable: NEXT_PUBLIC_COMING_SOON
+    value: "true"

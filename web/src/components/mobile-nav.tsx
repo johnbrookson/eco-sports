@@ -11,6 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { COMING_SOON } from "@/lib/launch";
 
 const links = [
   { href: "/atletas", label: "Atletas" },
@@ -72,22 +73,24 @@ export function MobileNav({ variant = "solid" }: MobileNavProps) {
             })}
           </nav>
 
-          {/* Actions */}
-          <div className="px-6 py-6 border-t space-y-3">
-            <Button
-              variant="outline"
-              className="w-full rounded-full font-semibold"
-              onClick={() => setOpen(false)}
-            >
-              Entrar
-            </Button>
-            <Button
-              className="w-full rounded-full font-bold"
-              onClick={() => setOpen(false)}
-            >
-              Cadastrar
-            </Button>
-          </div>
+          {/* Actions — escondidas enquanto o site está em "Em breve" */}
+          {!COMING_SOON && (
+            <div className="px-6 py-6 border-t space-y-3">
+              <Button
+                variant="outline"
+                className="w-full rounded-full font-semibold"
+                onClick={() => setOpen(false)}
+              >
+                Entrar
+              </Button>
+              <Button
+                className="w-full rounded-full font-bold"
+                onClick={() => setOpen(false)}
+              >
+                Cadastrar
+              </Button>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

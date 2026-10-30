@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { InstagramIcon, LinkedinIcon, Mail, Phone } from "lucide-react";
 
+import { CourtLines } from "@/components/court-lines";
 import { LiteYouTube } from "@/components/lite-youtube";
 import { ScoutModeButton } from "@/components/scout-mode-button";
 import { ScrollReveal } from "@/components/scroll-reveal";
@@ -265,27 +266,6 @@ function HeroSection({
         </div>
       </div>
     </section>
-  );
-}
-
-function CourtLines() {
-  return (
-    <svg
-      className="absolute inset-0 -z-10 h-full w-full text-white opacity-[0.07]"
-      viewBox="0 0 1000 600"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden
-    >
-      <g fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="20" y="20" width="960" height="560" />
-        <line x1="500" y1="20" x2="500" y2="580" />
-        <circle cx="500" cy="300" r="70" />
-        <path d="M20 90 H150 A210 210 0 0 1 150 510 H20" />
-        <path d="M980 90 H850 A210 210 0 0 0 850 510 H980" />
-        <rect x="20" y="220" width="190" height="160" />
-        <rect x="790" y="220" width="190" height="160" />
-      </g>
-    </svg>
   );
 }
 

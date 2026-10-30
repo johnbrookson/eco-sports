@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Anton, Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { COMING_SOON } from "@/lib/launch";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -20,6 +21,8 @@ export const metadata: Metadata = {
   title: "basketball.net — Gestão de Carreira e Desenvolvimento de Atletas",
   description:
     "Plataforma para gestão completa de carreira, desenvolvimento técnico, análise de desempenho e captação de recursos para atletas.",
+  // Em "Em breve" só a home pode ser indexada (ver lib/launch.ts).
+  robots: COMING_SOON ? { index: false, follow: false } : undefined,
 };
 
 export default function RootLayout({

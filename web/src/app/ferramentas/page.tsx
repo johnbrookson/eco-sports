@@ -29,6 +29,7 @@ import {
   Star,
   MagnifyingGlass,
 } from "@phosphor-icons/react/dist/ssr";
+import { COMING_SOON } from "@/lib/launch";
 
 const tools = [
   {
@@ -499,13 +500,15 @@ export default function FerramentasPage() {
             Comece gratuitamente e tenha acesso a toda a plataforma basketball.net.
           </p>
           <div className="mt-10 flex flex-col gap-4 sm:flex-row justify-center">
-            <Button
-              size="lg"
-              className="btn-glow bg-white text-primary font-bold hover:bg-white/90 text-base px-10 h-14 rounded-full shadow-xl shadow-black/25 transition-transform hover:scale-105"
-            >
-              Criar conta gratuita
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            {!COMING_SOON && (
+              <Button
+                size="lg"
+                className="btn-glow bg-white text-primary font-bold hover:bg-white/90 text-base px-10 h-14 rounded-full shadow-xl shadow-black/25 transition-transform hover:scale-105"
+              >
+                Criar conta gratuita
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            )}
             <Link href="/">
               <Button
                 variant="outline"
