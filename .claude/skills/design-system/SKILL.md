@@ -263,6 +263,15 @@ Decisão orientada pelo hero da página:
 
 Cada variante do SiteNav passa o `mobile` correspondente pro `<MobileNav variant={t.mobile} />`. `hero` → `"hero"`, `primary` → `"solid"`, `dark` → `"hero"`.
 
+## Página "Em breve" (pré-lançamento)
+
+Com `NEXT_PUBLIC_COMING_SOON=true` (definido em `web/apphosting.yaml`, lido por [`lib/launch.ts`](../../../web/src/lib/launch.ts)), a home renderiza [`ComingSoon`](../../../web/src/components/coming-soon.tsx) em vez da landing, o `SiteNav`/`MobileNav` escondem Entrar e Cadastrar, os CTAs "Criar conta gratuita" somem e o root layout marca o site como `noindex` (só a home fica indexável). As rotas continuam acessíveis por URL direta para a equipe testar.
+
+- Visual: mesma linguagem do hero do perfil do atleta (`bg-profile-surface`, `CourtLines`, brilho radial do `--primary`, `.display` + `.kicker`). `CourtLines` foi extraído para [`components/court-lines.tsx`](../../../web/src/components/court-lines.tsx) e é compartilhado com `/atleta/[slug]`.
+- O valor entra no build (é `NEXT_PUBLIC_`): trocar a chave exige novo deploy.
+- Localmente fica desligado; para ver, `NEXT_PUBLIC_COMING_SOON=true` no `web/.env.local`.
+- CTA novo de cadastro ou login em página de marketing deve respeitar `COMING_SOON` enquanto ele existir.
+
 ## Anti-patterns específicos do domínio
 
 - **`bg-[#xxxxxx]`** (cor arbitrária Tailwind) para qualquer cor nova. Se não tem token, crie.

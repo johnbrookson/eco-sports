@@ -28,6 +28,7 @@ import {
   VideoCamera,
   Handshake,
 } from "@phosphor-icons/react/dist/ssr";
+import { COMING_SOON } from "@/lib/launch";
 
 /* ─── 4 pillars (hub concept) ─── */
 const pillars = [
@@ -382,13 +383,15 @@ export default function EcossistemaPage() {
                 Ver ferramentas
               </Button>
             </Link>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-2 border-white/50 text-white font-bold hover:bg-white/15 hover:border-white/70 text-base px-10 h-14 rounded-full bg-white/10 backdrop-blur-sm"
-            >
-              Criar conta gratuita
-            </Button>
+            {!COMING_SOON && (
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-2 border-white/50 text-white font-bold hover:bg-white/15 hover:border-white/70 text-base px-10 h-14 rounded-full bg-white/10 backdrop-blur-sm"
+              >
+                Criar conta gratuita
+              </Button>
+            )}
           </div>
         </ScrollReveal>
       </section>

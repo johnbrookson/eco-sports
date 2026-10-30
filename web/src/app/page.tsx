@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { SiteNav } from "@/components/site-nav";
 import { AutoCarousel } from "@/components/auto-carousel";
 import { SiteFooter } from "@/components/site-footer";
+import { ComingSoon } from "@/components/coming-soon";
+import { COMING_SOON } from "@/lib/launch";
 import {
   ArrowRight,
   Basketball,
@@ -23,7 +26,15 @@ import {
   Play,
 } from "@phosphor-icons/react/dist/ssr";
 
+// Enquanto a plataforma não está pronta, a home é a página "Em breve" e é a
+// única que pede indexação (o root layout marca o resto como noindex).
+export const metadata: Metadata = COMING_SOON
+  ? { robots: { index: true, follow: false } }
+  : {};
+
 export default function Home() {
+  if (COMING_SOON) return <ComingSoon />;
+
   return (
     <div className="flex flex-col min-h-screen">
       <SiteNav variant="hero" />

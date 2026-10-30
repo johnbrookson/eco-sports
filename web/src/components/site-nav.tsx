@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/mobile-nav";
+import { COMING_SOON } from "@/lib/launch";
 
 // Top nav compartilhado entre todas as páginas públicas do basketball.net.
 // Três variantes visuais:
@@ -117,18 +118,22 @@ export function SiteNav({ variant, active }: SiteNavProps) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <Link
-          href="/login"
-          className={`hidden sm:inline-flex items-center h-7 px-2.5 rounded-[min(var(--radius-md),12px)] font-medium text-xs sm:text-sm transition-colors ${t.signInBtn}`}
-        >
-          Entrar
-        </Link>
-        <Button
-          size="sm"
-          className={`hidden sm:inline-flex font-bold rounded-full px-4 sm:px-6 text-xs sm:text-sm ${t.signUpBtn}`}
-        >
-          Cadastrar
-        </Button>
+        {!COMING_SOON && (
+          <>
+            <Link
+              href="/login"
+              className={`hidden sm:inline-flex items-center h-7 px-2.5 rounded-[min(var(--radius-md),12px)] font-medium text-xs sm:text-sm transition-colors ${t.signInBtn}`}
+            >
+              Entrar
+            </Link>
+            <Button
+              size="sm"
+              className={`hidden sm:inline-flex font-bold rounded-full px-4 sm:px-6 text-xs sm:text-sm ${t.signUpBtn}`}
+            >
+              Cadastrar
+            </Button>
+          </>
+        )}
         <MobileNav variant={t.mobile} />
       </div>
     </nav>
