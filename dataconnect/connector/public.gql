@@ -1,24 +1,32 @@
-# Leituras públicas (sem login): perfil /atleta/[slug] e vitrine /atletas.
-# As flags de visibilidade são aplicadas aqui, no banco, e não só na tela.
+# Leituras públicas: perfil /atleta/[slug] e vitrine /atletas.
+#
+# Todas são @auth(level: NO_ACCESS): só o servidor as executa, pelo Admin SDK.
+# Uma operação PUBLIC vira um endpoint que qualquer um chama direto com a API
+# key (que é pública), e estas devolvem campos que a página só mostra conforme
+# as flags granulares (contato, data de nascimento, cidade...). O banco aplica
+# as chaves de linha (publicProfileEnabled, discoverable, showMatchStats,
+# showAssessmentStats); as flags granulares de cada seção ficam na página.
+#
+# Nenhuma devolve pendingVisibility, education, bodyFatPct ou physicalNotes: o
+# perfil público não usa.
 
-query PublicAthleteBySlug($tenantId: UUID!, $slug: String!) @auth(level: PUBLIC) {
+query PublicAthleteBySlug($slug: String!) @auth(level: NO_ACCESS) {
   athletes(
-    where: {
-      tenantId: { eq: $tenantId }
-      slug: { eq: $slug }
-      publicProfileEnabled: { eq: true }
-    }
+    where: { slug: { eq: $slug }, publicProfileEnabled: { eq: true } }
     limit: 1
   ) {
     id
+    tenantId
     slug
     firstName
     lastName
     preferredName
     birthDate
+    gender
     country
     state
     city
+    nationality
     photoUrl
     bio
     contactEmail
@@ -35,6 +43,9 @@ query PublicAthleteBySlug($tenantId: UUID!, $slug: String!) @auth(level: PUBLIC)
     category
     career
     media
+    status
+    publicProfileEnabled
+    discoverable
     showPhoto
     showAge
     showCity
@@ -45,10 +56,25 @@ query PublicAthleteBySlug($tenantId: UUID!, $slug: String!) @auth(level: PUBLIC)
     showContact
     showMatchStats
     showAssessmentStats
+    tags
+    createdAt
+    updatedAt
   }
 }
 
-query DiscoverableAthletes($position: String, $category: String) @auth(level: PUBLIC) {
+# Slugs com perfil publicado (generateStaticParams do /atleta/[slug]).
+query PublicAthleteSlugs @auth(level: NO_ACCESS) {
+  athletes(
+    where: { publicProfileEnabled: { eq: true }, slug: { isNull: false } }
+  ) {
+    slug
+  }
+}
+
+# Vitrine. A busca textual fica na camada de dados (lib/data), sobre este
+# conjunto já filtrado por posição e categoria.
+query DiscoverableAthletes($position: String, $category: String)
+@auth(level: NO_ACCESS) {
   athletes(
     where: {
       publicProfileEnabled: { eq: true }
@@ -56,18 +82,67 @@ query DiscoverableAthletes($position: String, $category: String) @auth(level: PU
       primaryPosition: { eq: $position }
       category: { eq: $category }
     }
-    orderBy: [{ firstName: ASC }]
+    orderBy: [{ firstName: ASC }, { lastName: ASC }]
   ) {
     id
+    tenantId
     slug
     firstName
     lastName
     preferredName
+    birthDate
+    gender
+    country
+    discipline
     primaryPosition
     category
     photoUrl
+    career
+    status
+    publicProfileEnabled
+    discoverable
     showPhoto
     showCurrentClub
-    career
+    createdAt
+    updatedAt
+  }
+}
+
+# Eventos que o perfil público pode mostrar: só de perfil publicado, e só os
+# tipos que o atleta liberou (partidas e/ou avaliações).
+query PublicPerformanceEvents($athleteId: UUID!) @auth(level: NO_ACCESS) {
+  performanceEvents(
+    where: {
+      _and: [
+        { athleteId: { eq: $athleteId } }
+        { athlete: { publicProfileEnabled: { eq: true } } }
+        {
+          _or: [
+            {
+              sourceType: { eq: match }
+              athlete: { showMatchStats: { eq: true } }
+            }
+            {
+              sourceType: { eq: assessment }
+              athlete: { showAssessmentStats: { eq: true } }
+            }
+          ]
+        }
+      ]
+    }
+    orderBy: [{ startedAt: DESC }]
+  ) {
+    id
+    tenantId
+    athleteId
+    sport
+    sourceType
+    context
+    startedAt
+    endedAt
+    season
+    cycle
+    metrics
+    createdAt
   }
 }

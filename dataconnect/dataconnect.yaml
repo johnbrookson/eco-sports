@@ -1,6 +1,9 @@
 specVersion: "v1"
 serviceId: "basketball-net"
-location: "southamerica-east1"
+# Mesma região do backend do App Hosting: quem consulta o banco é sempre o
+# servidor, então os dois ficam juntos (decisão de 2026-11-02, ver
+# docs/migracao-firebase.md).
+location: "us-east4"
 schema:
   source: "./schema"
   datasource:

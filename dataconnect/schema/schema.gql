@@ -229,12 +229,14 @@ type OrganizationMembership @table @unique(fields: ["tenant", "user"]) {
 # O bloco `consents` do JSON Schema não vira coluna: o estado de consentimento
 # vem da tabela Consent (versionada). `guardians[]` também não: vem de
 # GuardianRelationship.
-type Athlete @table @unique(fields: ["tenant", "slug"]) {
+type Athlete @table {
   id: UUID! @default(expr: "uuidV4()")
   tenant: Tenant!
   # Conta do próprio atleta, quando ele tem login (menores podem não ter).
   user: User
-  slug: String
+  # Único na base toda, e não por tenant: a URL pública /atleta/[slug] não
+  # carrega o tenant, então dois tenants com o mesmo slug seriam ambíguos.
+  slug: String @unique
 
   # profile
   firstName: String!
