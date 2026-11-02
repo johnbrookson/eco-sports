@@ -7,11 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "emulators": "npx -y firebase-tools@15 emulators:start --only auth --project demo-basketball-net",
-    "seed:auth": "node scripts/seed-demo-users.mjs"
+    "test": "npx -y firebase-tools@15 emulators:exec --only dataconnect --project demo-basketball-net \"npm run seed:data && vitest run\"",
+    "emulators": "npx -y firebase-tools@15 emulators:start --only auth,dataconnect --project demo-basketball-net",
+    "seed:auth": "node scripts/seed-demo-users.mjs",
+    "seed:data": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-data.mjs",
+    "dataconnect:generate": "npx -y firebase-tools@15 dataconnect:sdk:generate"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
+    "@basketball-net/dataconnect": "file:src/dataconnect-generated",
     "@phosphor-icons/react": "^2.1.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -36,6 +40,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.12"
   }
 }

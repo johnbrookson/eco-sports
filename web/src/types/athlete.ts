@@ -126,7 +126,10 @@ export interface Athlete {
   career?: AthleteCareer;
   media?: AthleteMedia;
   status: AthleteStatus;
-  consents: AthleteConsents;
+  // Obrigatório no JSON Schema, mas o banco não guarda este bloco: o estado de
+  // consentimento virá da tabela Consent (consent flow LGPD). Leituras do banco
+  // não o preenchem, e nenhuma tela o lê.
+  consents?: AthleteConsents;
   visibility: AthleteVisibility;
   pendingVisibility?: PendingVisibilityChange;
   tags?: string[];

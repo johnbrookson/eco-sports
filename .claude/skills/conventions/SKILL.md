@@ -3,7 +3,7 @@ name: conventions
 description: Use when starting any non-trivial work in the Eco-Sports codebase. Establishes the cross-cutting patterns (in-memory mutation, revalidatePath, React cache, Zod discriminated unions, DAL-authoritative authz, semantic tokens, commit format, Next.js 16 breaking changes) that every module follows. Invoke at the start of a session before touching any feature-specific skill.
 ---
 
-> **Manutenção desta skill**: última revisão refletindo o estado até a implementação da persona `parent_guardian` (guardian dashboard, approval flow, cookie de persona, `requireGuardianOf`). Se você está lendo isto e acabou de fazer mudanças estruturais nas convenções do projeto (novo padrão cross-cutting, nova dependência de infra, nova regra de commits), atualize esta skill **no mesmo commit** ou commit imediatamente adjacente. Ver `git log -- .claude/skills/conventions/` para histórico.
+> **Manutenção desta skill**: última revisão refletindo o estado até a implementação da persona `parent_guardian` (guardian dashboard, approval flow, cookie de persona, `requireGuardianOf`) mais a fundação do banco da Fase 3 (`lib/data/`, Data Connect, Vitest, 2026-11-02). Se você está lendo isto e acabou de fazer mudanças estruturais nas convenções do projeto (novo padrão cross-cutting, nova dependência de infra, nova regra de commits), atualize esta skill **no mesmo commit** ou commit imediatamente adjacente. Ver `git log -- .claude/skills/conventions/` para histórico.
 
 # Convenções cross-cutting do Eco-Sports
 
@@ -11,7 +11,8 @@ Este é o baseline comum que atravessa todos os módulos. Skills específicas de
 
 ## Imperativo (30 segundos)
 
-- **Mutação in-memory é intencional e deliberada.** Todos os Server Actions mutam fixtures mock em-processo. **Nunca** escreva em `/tmp`, arquivo JSON, ou banco enquanto estamos na fase stub. Sobrevive até o restart do dev server, reseta depois — e está certo assim.
+- **Mutação in-memory é intencional e deliberada — até a Fase 3 terminar.** Todos os Server Actions mutam fixtures mock em-processo. **Nunca** escreva em `/tmp` ou arquivo JSON. O banco (Data Connect) já existe em `lib/data/`, mas as telas e Server Actions só passam a usá-lo no PR 2 da Fase 3, de uma vez por domínio (ver `docs/migracao-firebase.md` e a seção "Camada de dados" abaixo). Não ligue uma tela ao banco isoladamente.
+- **Banco só pelo servidor, operações `NO_ACCESS`.** Toda operação em `dataconnect/connector/*.gql` é `@auth(level: NO_ACCESS)` e roda pelo Admin SDK em `lib/data/`. Nunca `PUBLIC` nem `USER`: vira endpoint aberto na internet. Sem `auth.uid` nas operações: a DAL passa o uid como variável.
 - **Sempre `revalidatePath` após mutação.** Toda Server Action que muta estado deve invalidar as páginas que leem esse estado. Exemplos: `saveProfile` invalida `/atleta/[slug]` (antigo e novo slug), `/atletas` e `/app/perfil`; `addPerformanceEvent` invalida `/app/performance`.
 - **Sempre `React cache()` em fetchers.** Todo helper em `lib/*/get-*.ts` deve ser memoizado via `cache()`. Isso garante que `generateMetadata`, Server Components e Server Actions na mesma request não dupliquem trabalho.
 - **DAL autoritativa em tudo que toca `(app)/*`.** O `proxy.ts` é só a primeira camada. **Toda** Server Component e **toda** Server Action que lê/muta dado sensível deve chamar `getCurrentUser()`, `getCurrentAthlete()` ou `verifySession()` do `lib/auth/dal.ts` antes de tocar o dado.
@@ -23,6 +24,27 @@ Este é o baseline comum que atravessa todos os módulos. Skills específicas de
 - **Commits conventional + granulares.** Um commit por mudança lógica, com HEREDOC no message e Co-Authored-By no final (ver seção "Commits" abaixo). Evite "commit everything".
 
 ## Padrões narrativos
+
+### Camada de dados (Data Connect) — Fase 3
+
+O banco é Postgres (Cloud SQL) acessado pelo Firebase Data Connect, em `us-east4`, junto do App Hosting. Peças:
+
+- `dataconnect/schema/schema.gql` — tabelas; `dataconnect/connector/*.gql` — operações do app; `dataconnect/seed/seed.gql` — carga dos dados demo (fora do conector).
+- `web/src/dataconnect-generated/` — SDK gerado para o Admin SDK (`npm run dataconnect:generate` depois de mudar um `.gql`; commite o resultado). Fora do lint.
+- `web/src/lib/data/` — camada de dados. Os arquivos espelham `lib/mock/` (`get-athlete.ts`, `search-athletes.ts`, `get-performance.ts`) com as **mesmas assinaturas**, para a troca ser só o caminho do import. `client.ts` cria o cliente sobre o app do Admin SDK compartilhado com o Auth (`lib/firebase-admin.ts`, `getAdminApp()`); `mappers.ts` converte as linhas "achatadas" do banco nos tipos aninhados de `types/*`.
+
+Regras aprendidas medindo no emulador:
+
+- **Operações `NO_ACCESS`.** Cada operação do conector vira endpoint público; `PUBLIC` deixaria qualquer um ler direto campos que a página filtra pelas flags. O servidor é o único cliente, então a autorização fica na DAL e o filtro de linhas na operação. Chamar uma operação gerada **sem** `impersonate` = executar como admin (é o que queremos). Como não há usuário na execução, `auth.uid` não serve: a operação recebe o uid ou o id do atleta como variável (`AthleteByUser($userId)`), e a DAL só passa o id de quem pode ver. O teste `connector.test.ts` garante a recusa para visitante e usuário logado em todas as operações e falha quando uma operação nova do SDK gerado fica fora da lista dele: ao criar uma, acrescente uma chamada de exemplo lá.
+- **UUID sem hífens.** O Data Connect devolve `a7b4c5d81e2f...`; tudo que sai do banco passa por `canonicalUuid()` (`lib/data/uuid.ts`). Na entrada ele aceita o formato canônico.
+- **`null` em variável filtra por nulo.** `primaryPosition: { eq: $position }` com `$position = null` devolve só quem não tem posição. Para "sem filtro", **omita** a variável.
+- **`_or`/`_and` não se misturam com campos no mesmo nível** do `where`: envolva tudo num `_and`.
+- **Variáveis grandes são recusadas** (limite de ~100 elementos por variável); cargas vão em lotes.
+- **`cache()` com argumentos posicionais**, não objeto, quando duas funções devem reaproveitar a mesma consulta na request (ver `loadDiscoverable` em `search-athletes.ts`).
+
+Testes: `npm test` em `web/` sobe um emulador do Data Connect, roda `seed:data` e chama o Vitest. Os testes gravam e apagam fixtures num tenant próprio e abortam sem `DATA_CONNECT_EMULATOR_HOST` (nunca tocam o projeto real). Variáveis: o Admin SDK lê `DATA_CONNECT_EMULATOR_HOST`; a CLI, `FIREBASE_DATA_CONNECT_EMULATOR_HOST`.
+
+**Anti-pattern:** importar o SDK gerado direto numa página ou Server Action. Sempre por `lib/data/`.
 
 ### Mutação in-memory — por que e como
 

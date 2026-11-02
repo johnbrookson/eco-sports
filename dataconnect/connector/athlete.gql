@@ -1,7 +1,13 @@
-# Operações do atleta logado. `auth.uid` é o uid do Firebase Authentication.
+# Leituras da área logada: o atleta, os eventos dele e os atletas de um
+# responsável.
+#
+# Como as de public.gql, são @auth(level: NO_ACCESS): só o servidor as executa,
+# pelo Admin SDK, como administrador. Por isso não usam `auth.uid` (não há
+# usuário na execução): a DAL confere a sessão e passa o uid ou o id do atleta
+# como variável. Quem chama é responsável por só passar o id de quem pode ver.
 
-query MyAthlete @auth(level: USER) {
-  athletes(where: { user: { id: { eq_expr: "auth.uid" } } }, limit: 1) {
+query AthleteByUser($userId: String!) @auth(level: NO_ACCESS) {
+  athletes(where: { user: { id: { eq: $userId } } }, limit: 1) {
     id
     slug
     firstName
@@ -11,12 +17,10 @@ query MyAthlete @auth(level: USER) {
   }
 }
 
-query MyPerformanceEvents($athleteId: UUID!) @auth(level: USER) {
+# Todos os eventos do atleta, inclusive os que o perfil público esconde.
+query PerformanceEventsByAthlete($athleteId: UUID!) @auth(level: NO_ACCESS) {
   performanceEvents(
-    where: {
-      athleteId: { eq: $athleteId }
-      athlete: { user: { id: { eq_expr: "auth.uid" } } }
-    }
+    where: { athleteId: { eq: $athleteId } }
     orderBy: [{ startedAt: DESC }]
   ) {
     id
@@ -29,13 +33,10 @@ query MyPerformanceEvents($athleteId: UUID!) @auth(level: USER) {
   }
 }
 
-# Atletas que o responsável logado supervisiona (persona parent_guardian).
-query MyManagedAthletes @auth(level: USER) {
+# Atletas que o responsável supervisiona (persona parent_guardian).
+query ManagedAthletesByGuardian($guardianId: String!) @auth(level: NO_ACCESS) {
   guardianRelationships(
-    where: {
-      guardian: { id: { eq_expr: "auth.uid" } }
-      status: { eq: active }
-    }
+    where: { guardian: { id: { eq: $guardianId } }, status: { eq: active } }
   ) {
     legallyResponsible
     relationshipType

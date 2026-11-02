@@ -1,0 +1,24 @@
+# Carga dos dados demo (atletas, usuários, vínculos e eventos de performance).
+# Fica fora de connectorDirs: não é operação do app, roda como admin pela CLI
+# (`firebase dataconnect:execute`), chamada por web/scripts/seed-data.mjs. Ver
+# `npm run seed:data` em web/README.md.
+#
+# Upsert pela chave primária: rodar de novo redefine os dados demo sem
+# duplicar linhas. Os eventos vão em lotes porque o Data Connect limita o
+# tamanho de cada variável.
+
+mutation SeedBase(
+  $tenant: Tenant_Data!
+  $users: [User_Data!]!
+  $athletes: [Athlete_Data!]!
+  $relationships: [GuardianRelationship_Data!]!
+) @transaction {
+  tenant_upsert(data: $tenant)
+  user_upsertMany(data: $users)
+  athlete_upsertMany(data: $athletes)
+  guardianRelationship_upsertMany(data: $relationships)
+}
+
+mutation SeedEvents($events: [PerformanceEvent_Data!]!) @transaction {
+  performanceEvent_upsertMany(data: $events)
+}

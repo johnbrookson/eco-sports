@@ -2,7 +2,7 @@
 
 Plano para tirar o basketball.net da Vercel, rodá-lo no Google Cloud via Firebase e trocar os mocks em memória por backend de verdade. Decidido com o John em 2026-10-29.
 
-> Status em 2026-10-29: **Fase 1 concluída** (app no ar no App Hosting, `us-east4`, deploy automático da `main`). **Fase 2 em PR** (login pelo Firebase Authentication). Fases 3 a 5 pendentes.
+> Status em 2026-11-02: **Fases 1 e 2 concluídas** (app no App Hosting em `us-east4`, deploy automático da `main`, login pelo Firebase Authentication em produção). **Fase 3 em andamento**: fundação do banco em PR (ver a Fase 3). Fases 4 e 5 pendentes.
 
 ---
 
@@ -19,9 +19,9 @@ Plano para tirar o basketball.net da Vercel, rodá-lo no Google Cloud via Fireba
 
 **Por que App Hosting e não Firebase Hosting:** o site do EC é estático e cabe no Firebase Hosting clássico. O basketball.net tem Server Actions, `proxy.ts`, páginas dinâmicas e login, então precisa de servidor Node. É isso que o App Hosting faz para Next.js.
 
-**Por que Postgres (Data Connect) e não Firestore:** o domínio é relacional (tenants, vínculo responsável → atleta, papéis por organização, consentimentos versionados) e a LGPD pede integridade referencial e trilha de auditoria. Data Connect mantém o Postgres gerenciado pelo Firebase, gera um SDK tipado e aplica regras `@auth` nas próprias operações.
+**Por que Postgres (Data Connect) e não Firestore:** o domínio é relacional (tenants, vínculo responsável → atleta, papéis por organização, consentimentos versionados) e a LGPD pede integridade referencial e trilha de auditoria. Data Connect mantém o Postgres gerenciado pelo Firebase e gera um SDK tipado.
 
-**Região:** preferência por `southamerica-east1` (São Paulo), por latência e LGPD. Antes de criar os recursos, confirmar no console se App Hosting e Data Connect estão disponíveis nessa região. Se algum não estiver, usar `us-east4` só para ele, mantendo o Cloud SQL em São Paulo sempre que possível.
+**Região: tudo em `us-east4` (Virgínia).** A preferência inicial era São Paulo, mas o backend do App Hosting ficou em `us-east4`. Quem consulta o banco é sempre o servidor, nunca o navegador: com o banco em São Paulo, cada consulta atravessaria o continente na ida e na volta, e uma página com várias consultas em sequência somaria essas viagens. Decidido pelo John em 2026-11-02: banco e servidor juntos na Virgínia. Os dados ficam fora do Brasil, o que a LGPD permite com base legal para a transferência internacional (art. 33). A região da instância do Cloud SQL não muda depois de criada.
 
 ---
 
@@ -32,12 +32,15 @@ firebase.json                    App Hosting (rootDir web/), Data Connect e emul
 web/apphosting.yaml              Recursos do Cloud Run
 dataconnect/dataconnect.yaml     Serviço "basketball-net", Cloud SQL "basketball-net-pg"
 dataconnect/schema/schema.gql    Tabelas traduzidas dos JSON Schemas de schemas/
-dataconnect/connector/*.gql      Primeiras operações: perfil público, vitrine, atleta logado, responsável
+dataconnect/connector/*.gql      Operações do app: perfil público, vitrine, atleta logado, responsável
+dataconnect/seed/seed.gql        Carga dos dados demo (fora do conector; roda pela CLI)
+web/src/dataconnect-generated/   SDK gerado para o Admin SDK (`npm run dataconnect:generate`)
+web/src/lib/data/                Camada de dados sobre o SDK gerado
 ```
 
 Tabelas: `Tenant`, `User` (id = uid do Firebase Auth), `OrganizationMembership`, `Athlete`, `GuardianRelationship`, `Consent` e `PerformanceEvent`. Ficaram de fora por enquanto `service-contract` e `servicos-taxonomia`, que não têm tela ainda.
 
-Para rodar localmente sem nuvem: `firebase emulators:start --only dataconnect,auth --project demo-basketball-net`.
+Para rodar localmente sem nuvem: `npm run emulators` e `npm run seed:data` em `web/` (ver `web/README.md`).
 
 ---
 
@@ -60,7 +63,7 @@ Objetivo: o mesmo app de hoje, ainda com mocks, rodando no App Hosting.
 
 **Risco a validar aqui:** suporte ao Next.js 16 (com `proxy.ts`) no adaptador do App Hosting. Se algo quebrar, esta fase existe justamente para descobrir isso antes de mexer em dados.
 
-### Fase 2 — Firebase Authentication
+### Fase 2 — Firebase Authentication (em produção desde 2026-10-29)
 
 Feito no código:
 
@@ -81,10 +84,21 @@ Limitação até a Fase 3: o mapping de contas criadas pelo cadastro é in-memor
 
 ### Fase 3 — Banco (Data Connect + Cloud SQL)
 
-- `firebase deploy --only dataconnect` cria a instância do Cloud SQL e aplica o esquema. Novas instâncias do Data Connect têm período gratuito inicial.
-- Script de seed com os atletas, usuários e eventos de performance dos mocks atuais.
-- Trocar `lib/mock/*` por chamadas ao SDK gerado, mantendo as mesmas assinaturas (`getPublicAthleteBySlug`, `searchDiscoverableAthletes`, `updateAthleteById`...). As Server Actions rodam no servidor com o Admin SDK, executando as operações em nome do usuário logado (impersonation com o `uid`), para que as regras `@auth` valham também ali.
-- `isSlugAvailableForAthlete` vira a restrição única `(tenant, slug)` do banco.
+Três PRs. Cada merge na `main` vai direto para produção, então o app precisa ficar consistente entre um PR e o seguinte: se as telas públicas lessem do banco enquanto o editor ainda gravasse na memória, a edição de um atleta não apareceria no perfil dele.
+
+1. **Fundação, sem mudança de comportamento.** Região, SDK para o Admin SDK, carga dos dados demo, emuladores, Vitest e a camada `lib/data/` com as leituras públicas, testada contra o emulador mas ainda não ligada às telas. Depois do merge: `firebase deploy --only dataconnect` (cria a instância do Cloud SQL e aplica o esquema; novas instâncias têm período gratuito) e `npm run seed:data -- --project basketball-net` (o seed exige o projeto explícito fora do emulador).
+2. **Atletas, performance e vínculos.** Todas as leituras e escritas desses dados passam para o banco (perfil público, vitrine, área logada, editor, eventos, aprovações), mantendo as assinaturas de `lib/mock/*`. O cadastro grava o atleta no banco.
+3. **Usuários.** DAL e cadastro trocam o `mock-users.ts` por `User`/`OrganizationMembership`. O `maxInstances` volta para 4.
+
+Decisões, medidas no emulador em 2026-11-02:
+
+- **Só o servidor executa as operações.** Cada operação do conector vira um endpoint na internet, e uma operação `@auth(level: PUBLIC)` pode ser chamada por qualquer um com a API key do app, que é pública. As leituras do perfil devolvem campos que a página só mostra conforme as flags granulares (contato, nascimento, cidade), então chamá-las direto vazaria esses dados. Como o navegador nunca fala com o banco, as operações são `@auth(level: NO_ACCESS)` e o Admin SDK as executa como administrador. Isso vale também para as leituras da área logada (o atleta, os eventos dele, os atletas de um responsável): como não há usuário na execução, elas recebem o uid ou o id do atleta como variável, em vez de ler `auth.uid`. A autorização de quem vê o quê fica na DAL; os filtros de linha (perfil publicado, descobrível, estatísticas liberadas) ficam na operação. Um teste garante que visitante e usuário logado são recusados em todas as operações, e falha quando uma operação nova fica fora dele. Isso substitui a ideia de executar em nome do usuário (impersonation).
+- **SDK gerado para o Admin SDK** (`adminNodeSdk` no `connector.yaml`), e não o SDK de cliente, que pressupõe login no navegador.
+- **Slug único na base toda**, e não por tenant: a URL `/atleta/[slug]` não carrega o tenant.
+- **Ids.** O Data Connect devolve UUID sem hífens; a camada de dados põe no formato canônico, o mesmo dos mocks. Os ids dos mocks que não eram UUID (tenant, eventos, vínculo) viram UUID v5 do id antigo na carga, então rodar de novo atualiza em vez de duplicar.
+- **Filtro opcional.** No Data Connect uma variável `null` vira `IS NULL`; a camada de dados omite o filtro vazio.
+- **Carga em lotes.** O Data Connect limita o tamanho de cada variável: os 39 eventos de uma vez foram recusados, então vão em lotes de 20.
+- **Fora do banco por ora:** o bloco `consents` do atleta (virá da tabela `Consent`, no consent flow LGPD) e `guardians[]` (contatos de responsáveis sem conta; nenhuma tela lê).
 
 ### Fase 4 — Storage
 

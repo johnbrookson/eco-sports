@@ -130,7 +130,7 @@ Quando for adicionar personas futuras (`professional`, `org_admin`, `sponsor`, `
 
 **Ambientes:**
 
-- **App Hosting:** `initializeApp()` sem argumentos usa a conta de serviço do backend e o `FIREBASE_CONFIG` injetado. A conta de serviço precisa de permissão no Firebase Auth (criar usuário, emitir session cookie). Se o signup ou o login falharem com erro de permissão no log, conceder o papel "Firebase Authentication Admin" a `firebase-app-hosting-compute@<projeto>.iam.gserviceaccount.com`.
+- **App Hosting:** `initializeApp()` sem argumentos (em `lib/firebase-admin.ts`, `getAdminApp()`, o mesmo app do Data Connect) usa a conta de serviço do backend e o `FIREBASE_CONFIG` injetado. A conta de serviço precisa de permissão no Firebase Auth (criar usuário, emitir session cookie). Se o signup ou o login falharem com erro de permissão no log, conceder o papel "Firebase Authentication Admin" a `firebase-app-hosting-compute@<projeto>.iam.gserviceaccount.com`.
 - **Local:** emulador do Auth. O emulador aceita qualquer API key e emite tokens sem assinatura; não use os testes locais para validar adulteração de cookie.
 - **Provedor Email/Password** precisa estar ativo em Authentication → Método de login no console.
 

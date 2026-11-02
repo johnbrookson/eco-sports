@@ -1,7 +1,10 @@
 connectorId: "web"
-# SDK gerado para o Next.js (usado só no servidor: Server Components e Server Actions).
+# SDK gerado para o Admin SDK (firebase-admin), usado só no servidor, por
+# web/src/lib/data/. Todas as operações são @auth(level: NO_ACCESS) e o Admin SDK
+# as executa como administrador, sem impersonation: quem decide o que cada
+# pessoa vê é a DAL (web/src/lib/auth/dal.ts).
 generate:
-  javascriptSdk:
+  adminNodeSdk:
     outputDir: "../../web/src/dataconnect-generated"
     package: "@basketball-net/dataconnect"
     packageJsonDir: "../../web"
