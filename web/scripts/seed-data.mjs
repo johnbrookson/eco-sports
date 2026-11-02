@@ -3,8 +3,11 @@
 // Quem grava é a CLI do Firebase (`dataconnect:execute`), com as credenciais
 // do `firebase login`.
 //
-// Emulador local:  FIREBASE_DATA_CONNECT_EMULATOR_HOST=127.0.0.1:9399 npm run seed:data
-// Projeto real:    npm run seed:data
+// Emulador local:  DATA_CONNECT_EMULATOR_HOST=127.0.0.1:9399 npm run seed:data
+// Projeto real:    npm run seed:data -- --project basketball-net
+//
+// Sem a variável do emulador no shell, o --project é obrigatório (ver
+// seed-target.mjs): o seed sobrescreve os atletas demo.
 //
 // Os ids que já são UUID (atletas) passam direto. Os demais (tenant, eventos
 // de performance, vínculos) viram UUID v5 do id antigo: o mesmo id gera sempre
@@ -17,6 +20,17 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { registerHooks } from "node:module";
 import { fileURLToPath } from "node:url";
+
+import { resolveSeedTarget } from "./seed-target.mjs";
+
+let target;
+try {
+  target = resolveSeedTarget(process.argv.slice(2), process.env);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
+const { projectId, emulator } = target;
 
 // mock-users.ts importa "server-only", que só existe dentro do Next. Aqui ele
 // vira um módulo vazio; por isso os mocks entram por import dinâmico, depois
@@ -179,15 +193,8 @@ const events = mockPerformanceEvents.map((e) => {
   };
 });
 
-// A CLI lê FIREBASE_DATA_CONNECT_EMULATOR_HOST; o Admin SDK (o app), a
-// DATA_CONNECT_EMULATOR_HOST. Qualquer uma das duas aponta o seed para o
-// emulador. O `emulators:exec` exporta o endereço com "http://", que o
-// `dataconnect:execute` não aceita: fica só host:porta.
-const emulator = (
-  process.env.FIREBASE_DATA_CONNECT_EMULATOR_HOST ?? process.env.DATA_CONNECT_EMULATOR_HOST
-)?.replace(/^https?:\/\//, "");
-const projectId =
-  process.env.GCLOUD_PROJECT ?? (emulator ? "demo-basketball-net" : "basketball-net");
+// A CLI só enxerga o emulador pela FIREBASE_DATA_CONNECT_EMULATOR_HOST, sem
+// "http://" (ver seed-target.mjs).
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 const env = emulator
   ? { ...process.env, FIREBASE_DATA_CONNECT_EMULATOR_HOST: emulator }

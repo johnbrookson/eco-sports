@@ -30,7 +30,7 @@ O login usa o Firebase Authentication e os dados vão para o Firebase Data Conne
 
 O emulador do Auth não guarda dados entre execuções: rode o `seed:auth` sempre que subir o emulador de novo. O do Data Connect guarda (em `dataconnect/.dataconnect/`, gitignored); o `seed:data` pode rodar quantas vezes quiser e redefine os dados demo sem duplicar linhas. A interface dos emuladores fica em http://127.0.0.1:4000.
 
-Atenção ao nome da variável: o app (Admin SDK) lê `DATA_CONNECT_EMULATOR_HOST`; a CLI do Firebase lê `FIREBASE_DATA_CONNECT_EMULATOR_HOST`. O `seed:data` aceita qualquer uma das duas.
+Atenção ao nome da variável: o app (Admin SDK) lê `DATA_CONNECT_EMULATOR_HOST`; a CLI do Firebase lê `FIREBASE_DATA_CONNECT_EMULATOR_HOST`. O `seed:data` aceita qualquer uma das duas, mas só do shell: ele não lê o `.env.local`. Sem nenhuma delas, ele se recusa a rodar, a menos que receba o projeto real em `--project`.
 
 ## Banco (Data Connect)
 
@@ -59,7 +59,7 @@ Sobe um emulador do Data Connect só para a execução, carrega os dados demo e 
 | `enrico@demo.basketball.net` | `enrico123` | atleta |
 | `rodrigo@demo.basketball.net` | `rodrigo123` | responsável pelo Enrico |
 
-No projeto real eles são criados uma vez com `gcloud auth application-default login` seguido de `npm run seed:auth`. Os dados demo do banco vão com `npm run seed:data`, que usa as credenciais do `firebase login`.
+No projeto real eles são criados uma vez com `gcloud auth application-default login` seguido de `npm run seed:auth`. Os dados demo do banco vão com `npm run seed:data -- --project basketball-net`, que usa as credenciais do `firebase login` e sobrescreve os atletas demo com os mocks.
 
 ## Comandos
 

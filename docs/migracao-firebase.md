@@ -86,7 +86,7 @@ Limitação até a Fase 3: o mapping de contas criadas pelo cadastro é in-memor
 
 Três PRs. Cada merge na `main` vai direto para produção, então o app precisa ficar consistente entre um PR e o seguinte: se as telas públicas lessem do banco enquanto o editor ainda gravasse na memória, a edição de um atleta não apareceria no perfil dele.
 
-1. **Fundação, sem mudança de comportamento.** Região, SDK para o Admin SDK, carga dos dados demo, emuladores, Vitest e a camada `lib/data/` com as leituras públicas, testada contra o emulador mas ainda não ligada às telas. Depois do merge: `firebase deploy --only dataconnect` (cria a instância do Cloud SQL e aplica o esquema; novas instâncias têm período gratuito) e `npm run seed:data` no projeto real.
+1. **Fundação, sem mudança de comportamento.** Região, SDK para o Admin SDK, carga dos dados demo, emuladores, Vitest e a camada `lib/data/` com as leituras públicas, testada contra o emulador mas ainda não ligada às telas. Depois do merge: `firebase deploy --only dataconnect` (cria a instância do Cloud SQL e aplica o esquema; novas instâncias têm período gratuito) e `npm run seed:data -- --project basketball-net` (o seed exige o projeto explícito fora do emulador).
 2. **Atletas, performance e vínculos.** Todas as leituras e escritas desses dados passam para o banco (perfil público, vitrine, área logada, editor, eventos, aprovações), mantendo as assinaturas de `lib/mock/*`. O cadastro grava o atleta no banco.
 3. **Usuários.** DAL e cadastro trocam o `mock-users.ts` por `User`/`OrganizationMembership`. O `maxInstances` volta para 4.
 
