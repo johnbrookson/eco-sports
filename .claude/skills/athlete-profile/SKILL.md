@@ -74,7 +74,8 @@ Flags granulares (aplicam só no perfil individual, **não** no card da vitrine)
 - [web/src/lib/mock/get-athlete.ts](../../../web/src/lib/mock/get-athlete.ts) — helpers:
   - `getPublicAthleteBySlug(slug)` — respeita `publicProfileEnabled`, retorna `null` se desabilitado (dispara 404)
   - `getAthleteById(id)` — busca interna, não filtra visibility
-  - `isSlugAvailableForAthlete(slug, tenantId, currentAthleteId)` — check de unicidade escopado por tenant, exclui o próprio atleta. Memoizado via `cache()`. Quando o backend real existir, vira query com UNIQUE constraint no banco — assinatura mantida.
+  - `isSlugAvailableForAthlete(slug, tenantId, currentAthleteId)` — check de unicidade escopado por tenant, exclui o próprio atleta. Memoizado via `cache()`. No banco o slug é único na base toda (ver "Slug — regex, validação e unicidade").
+- [web/src/lib/data/](../../../web/src/lib/data/) — mesmas leituras públicas no banco (Data Connect), ainda não ligadas às telas: `getPublicAthleteBySlug`, `listPublicAthleteSlugs`, `searchDiscoverableAthletes`, `listDirectoryFacets` e `getPublicPerformanceEventsForAthlete` (o banco só devolve eventos dos tipos que o atleta liberou). As chaves de linha (`publicProfileEnabled`, `discoverable`, `showMatchStats`, `showAssessmentStats`) são aplicadas na operação; as flags granulares continuam na página. Ver skill `conventions`, seção "Camada de dados".
   - `listPublicAthleteSlugs()` — usado em `generateStaticParams`
   - `updateAthleteById(id, updater)` — mutação in-place, atualiza `updatedAt`
 - [web/src/lib/mock/search-athletes.ts](../../../web/src/lib/mock/search-athletes.ts) — vitrine:
@@ -114,7 +115,7 @@ Pattern canônico no schema e no Zod: `^[a-z0-9][a-z0-9-]{2,59}$`
 
 Letras minúsculas, dígitos e hífens. Min 3, max 60, começa com alfanumérico. Decisão: bloqueia acentos e maiúsculas intencionalmente (URLs limpas e portáveis). O editor hoje aceita o usuário digitar diretamente — **futuro**: transliteração automática do nome ("João Silva 2008" → "joao-silva-2008") como helper.
 
-**Unicidade** é escopada por `tenantId` (por convenção do schema). O check vive em `isSlugAvailableForAthlete(slug, tenantId, currentAthleteId)` em `lib/mock/get-athlete.ts`, memoizado via `cache()`. Quando o backend real existir, a função vira uma query com UNIQUE constraint composto `(tenantId, slug)` no banco — a assinatura em código permanece igual.
+**Unicidade** no mock é escopada por `tenantId`. O check vive em `isSlugAvailableForAthlete(slug, tenantId, currentAthleteId)` em `lib/mock/get-athlete.ts`, memoizado via `cache()`. **No banco o slug é único na base toda** (`slug: String @unique` em `dataconnect/schema/schema.gql`, desde 2026-11-02), e não por tenant: a URL `/atleta/[slug]` não carrega o tenant, então dois tenants com o mesmo slug seriam ambíguos. Ao ligar o editor ao banco (PR 2 da Fase 3), a função deixa de filtrar por tenant; a assinatura pode ficar igual.
 
 O check é feito no `saveProfile` **depois** do Zod parse (que valida formato) e **antes** da mutação (que grava). A ordem importa: Zod garante que o slug é sintaticamente válido; a unicidade é semântica e depende do estado global do tenant. `excludeAthleteId = current.id` garante que manter o slug atual não dispara erro — decisão importante porque senão o atleta editaria outros campos e seria bloqueado por colidir consigo mesmo.
 
