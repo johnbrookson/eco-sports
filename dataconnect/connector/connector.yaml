@@ -1,7 +1,8 @@
 connectorId: "web"
-# SDK gerado para o Admin SDK (firebase-admin), usado só no servidor: Server
-# Components e Server Actions executam as operações em nome do usuário logado
-# (impersonation pelo uid) ou como visitante, e as regras @auth valem nos dois.
+# SDK gerado para o Admin SDK (firebase-admin), usado só no servidor, por
+# web/src/lib/data/. Todas as operações são @auth(level: NO_ACCESS) e o Admin SDK
+# as executa como administrador, sem impersonation: quem decide o que cada
+# pessoa vê é a DAL (web/src/lib/auth/dal.ts).
 generate:
   adminNodeSdk:
     outputDir: "../../web/src/dataconnect-generated"

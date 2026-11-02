@@ -55,26 +55,26 @@ const connectorConfig = {
 };
 exports.connectorConfig = connectorConfig;
 
-function myAthlete(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('MyAthlete', undefined, inputOpts);
-}
-exports.myAthlete = myAthlete;
-
-function myPerformanceEvents(dcOrVarsOrOptions, varsOrOptions, options) {
+function athleteByUser(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('MyPerformanceEvents', inputVars, inputOpts);
+  return dcInstance.executeQuery('AthleteByUser', inputVars, inputOpts);
 }
-exports.myPerformanceEvents = myPerformanceEvents;
+exports.athleteByUser = athleteByUser;
 
-function myManagedAthletes(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+function performanceEventsByAthlete(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('MyManagedAthletes', undefined, inputOpts);
+  return dcInstance.executeQuery('PerformanceEventsByAthlete', inputVars, inputOpts);
 }
-exports.myManagedAthletes = myManagedAthletes;
+exports.performanceEventsByAthlete = performanceEventsByAthlete;
+
+function managedAthletesByGuardian(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ManagedAthletesByGuardian', inputVars, inputOpts);
+}
+exports.managedAthletesByGuardian = managedAthletesByGuardian;
 
 function publicAthleteBySlug(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);

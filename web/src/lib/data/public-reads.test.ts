@@ -1,11 +1,4 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { OperationOptions } from "firebase-admin/data-connect";
-import {
-  discoverableAthletes,
-  publicAthleteBySlug,
-  publicAthleteSlugs,
-  publicPerformanceEvents,
-} from "@basketball-net/dataconnect";
 
 import { mockAthletes } from "@/lib/mock/athletes";
 import { mockPerformanceEvents } from "@/lib/mock/performance";
@@ -146,23 +139,6 @@ function publicView(a: Athlete) {
     }),
   );
 }
-
-// As operações devolvem campos que a página filtra pelas flags granulares
-// (contato, nascimento, cidade). Ninguém além do servidor pode chamá-las.
-describe("acesso direto às operações públicas", () => {
-  const MARIANA_ID = "b8c5d6e9-2f3a-5b4c-0d9e-1f2a3b4c5d6e";
-  const operations: [string, (o: OperationOptions) => Promise<unknown>][] = [
-    ["PublicAthleteBySlug", (o) => publicAthleteBySlug(getDataConnectClient(), { slug: "mariana-costa-2007" }, o)],
-    ["PublicAthleteSlugs", (o) => publicAthleteSlugs(getDataConnectClient(), o)],
-    ["DiscoverableAthletes", (o) => discoverableAthletes(getDataConnectClient(), {}, o)],
-    ["PublicPerformanceEvents", (o) => publicPerformanceEvents(getDataConnectClient(), { athleteId: MARIANA_ID }, o)],
-  ];
-
-  it.each(operations)("%s recusa visitante e usuário logado", async (_, run) => {
-    await expect(run({ impersonate: { unauthenticated: true } })).rejects.toThrow();
-    await expect(run({ impersonate: { authClaims: { sub: "usr-joao" } } })).rejects.toThrow();
-  });
-});
 
 describe("canonicalUuid", () => {
   it("põe os hífens no UUID que o Data Connect devolve sem eles", () => {

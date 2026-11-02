@@ -46,6 +46,21 @@ export enum PerformanceSourceType {
   combined = "combined",
 }
 
+export interface AthleteByUserData {
+  athletes: ({
+    id: UUIDString;
+    slug?: string | null;
+    firstName: string;
+    lastName: string;
+    category: string;
+    pendingVisibility?: unknown | null;
+  } & Athlete_Key)[];
+}
+
+export interface AthleteByUserVariables {
+  userId: string;
+}
+
 export interface Athlete_Key {
   id: UUIDString;
   __typename?: 'Athlete_Key';
@@ -92,18 +107,7 @@ export interface GuardianRelationship_Key {
   __typename?: 'GuardianRelationship_Key';
 }
 
-export interface MyAthleteData {
-  athletes: ({
-    id: UUIDString;
-    slug?: string | null;
-    firstName: string;
-    lastName: string;
-    category: string;
-    pendingVisibility?: unknown | null;
-  } & Athlete_Key)[];
-}
-
-export interface MyManagedAthletesData {
+export interface ManagedAthletesByGuardianData {
   guardianRelationships: ({
     legallyResponsible: boolean;
     relationshipType: GuardianRelationshipType;
@@ -118,7 +122,21 @@ export interface MyManagedAthletesData {
   })[];
 }
 
-export interface MyPerformanceEventsData {
+export interface ManagedAthletesByGuardianVariables {
+  guardianId: string;
+}
+
+export interface OrganizationMembership_Key {
+  id: UUIDString;
+  __typename?: 'OrganizationMembership_Key';
+}
+
+export interface PerformanceEvent_Key {
+  id: UUIDString;
+  __typename?: 'PerformanceEvent_Key';
+}
+
+export interface PerformanceEventsByAthleteData {
   performanceEvents: ({
     id: UUIDString;
     sourceType: PerformanceSourceType;
@@ -130,18 +148,8 @@ export interface MyPerformanceEventsData {
   } & PerformanceEvent_Key)[];
 }
 
-export interface MyPerformanceEventsVariables {
+export interface PerformanceEventsByAthleteVariables {
   athleteId: UUIDString;
-}
-
-export interface OrganizationMembership_Key {
-  id: UUIDString;
-  __typename?: 'OrganizationMembership_Key';
-}
-
-export interface PerformanceEvent_Key {
-  id: UUIDString;
-  __typename?: 'PerformanceEvent_Key';
 }
 
 export interface PublicAthleteBySlugData {
@@ -234,20 +242,20 @@ export interface User_Key {
   __typename?: 'User_Key';
 }
 
-/** Generated Node Admin SDK operation action function for the 'MyAthlete' Query. Allow users to execute without passing in DataConnect. */
-export function myAthlete(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<MyAthleteData>>;
-/** Generated Node Admin SDK operation action function for the 'MyAthlete' Query. Allow users to pass in custom DataConnect instances. */
-export function myAthlete(options?: OperationOptions): Promise<ExecuteOperationResponse<MyAthleteData>>;
+/** Generated Node Admin SDK operation action function for the 'AthleteByUser' Query. Allow users to execute without passing in DataConnect. */
+export function athleteByUser(dc: DataConnect, vars: AthleteByUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AthleteByUserData>>;
+/** Generated Node Admin SDK operation action function for the 'AthleteByUser' Query. Allow users to pass in custom DataConnect instances. */
+export function athleteByUser(vars: AthleteByUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<AthleteByUserData>>;
 
-/** Generated Node Admin SDK operation action function for the 'MyPerformanceEvents' Query. Allow users to execute without passing in DataConnect. */
-export function myPerformanceEvents(dc: DataConnect, vars: MyPerformanceEventsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MyPerformanceEventsData>>;
-/** Generated Node Admin SDK operation action function for the 'MyPerformanceEvents' Query. Allow users to pass in custom DataConnect instances. */
-export function myPerformanceEvents(vars: MyPerformanceEventsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MyPerformanceEventsData>>;
+/** Generated Node Admin SDK operation action function for the 'PerformanceEventsByAthlete' Query. Allow users to execute without passing in DataConnect. */
+export function performanceEventsByAthlete(dc: DataConnect, vars: PerformanceEventsByAthleteVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<PerformanceEventsByAthleteData>>;
+/** Generated Node Admin SDK operation action function for the 'PerformanceEventsByAthlete' Query. Allow users to pass in custom DataConnect instances. */
+export function performanceEventsByAthlete(vars: PerformanceEventsByAthleteVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<PerformanceEventsByAthleteData>>;
 
-/** Generated Node Admin SDK operation action function for the 'MyManagedAthletes' Query. Allow users to execute without passing in DataConnect. */
-export function myManagedAthletes(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<MyManagedAthletesData>>;
-/** Generated Node Admin SDK operation action function for the 'MyManagedAthletes' Query. Allow users to pass in custom DataConnect instances. */
-export function myManagedAthletes(options?: OperationOptions): Promise<ExecuteOperationResponse<MyManagedAthletesData>>;
+/** Generated Node Admin SDK operation action function for the 'ManagedAthletesByGuardian' Query. Allow users to execute without passing in DataConnect. */
+export function managedAthletesByGuardian(dc: DataConnect, vars: ManagedAthletesByGuardianVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ManagedAthletesByGuardianData>>;
+/** Generated Node Admin SDK operation action function for the 'ManagedAthletesByGuardian' Query. Allow users to pass in custom DataConnect instances. */
+export function managedAthletesByGuardian(vars: ManagedAthletesByGuardianVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ManagedAthletesByGuardianData>>;
 
 /** Generated Node Admin SDK operation action function for the 'PublicAthleteBySlug' Query. Allow users to execute without passing in DataConnect. */
 export function publicAthleteBySlug(dc: DataConnect, vars: PublicAthleteBySlugVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<PublicAthleteBySlugData>>;

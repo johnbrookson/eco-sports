@@ -49,22 +49,22 @@ export const connectorConfig = {
   location: 'us-east4'
 };
 
-export function myAthlete(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('MyAthlete', undefined, inputOpts);
-}
-
-export function myPerformanceEvents(dcOrVarsOrOptions, varsOrOptions, options) {
+export function athleteByUser(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('MyPerformanceEvents', inputVars, inputOpts);
+  return dcInstance.executeQuery('AthleteByUser', inputVars, inputOpts);
 }
 
-export function myManagedAthletes(dcOrOptions, options) {
-  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+export function performanceEventsByAthlete(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
-  return dcInstance.executeQuery('MyManagedAthletes', undefined, inputOpts);
+  return dcInstance.executeQuery('PerformanceEventsByAthlete', inputVars, inputOpts);
+}
+
+export function managedAthletesByGuardian(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ManagedAthletesByGuardian', inputVars, inputOpts);
 }
 
 export function publicAthleteBySlug(dcOrVarsOrOptions, varsOrOptions, options) {
