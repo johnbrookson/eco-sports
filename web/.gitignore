@@ -42,3 +42,5 @@ next-env.d.ts
 
 # firebase emulators
 firebase-debug.log
+dataconnect-debug.log
+pglite-debug.log
