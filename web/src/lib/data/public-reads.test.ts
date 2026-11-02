@@ -10,8 +10,10 @@ import { listDirectoryFacets, searchDiscoverableAthletes } from "./search-athlet
 import { canonicalUuid } from "./uuid";
 
 // Leituras públicas contra o emulador, com os dados demo do `npm run seed:data`.
-// Além deles, o teste grava num tenant próprio dois atletas que nunca podem
-// aparecer onde não devem: um com perfil privado e outro só com link direto.
+// Além deles, o teste grava num tenant próprio atletas que nunca podem aparecer
+// onde não devem: um com perfil privado, um só com link direto e dois que
+// liberaram só um tipo de estatística (partidas ou avaliações), cada um com um
+// evento de cada tipo.
 
 const TEST_TENANT = "0e5f3c1a-7b2d-4c8e-9f61-3a2b1c0d9e8f";
 const PRIVATE = {
@@ -24,10 +26,25 @@ const LINK_ONLY = {
   slug: "teste-so-link-direto",
   position: "test_link_only_position",
 };
+const MATCH_ONLY = {
+  id: "0e5f3c1a-0000-4000-8000-000000000003",
+  slug: "teste-so-partidas",
+  position: "test_match_only_position",
+};
+const ASSESSMENT_ONLY = {
+  id: "0e5f3c1a-0000-4000-8000-000000000004",
+  slug: "teste-so-avaliacoes",
+  position: "test_assessment_only_position",
+};
 
 function fixtureAthlete(
   f: typeof PRIVATE,
-  visibility: { publicProfileEnabled: boolean; discoverable: boolean },
+  visibility: {
+    publicProfileEnabled: boolean;
+    discoverable: boolean;
+    showMatchStats?: boolean;
+    showAssessmentStats?: boolean;
+  },
 ) {
   return {
     id: f.id,
@@ -45,6 +62,19 @@ function fixtureAthlete(
     showMatchStats: true,
     showAssessmentStats: true,
     ...visibility,
+  };
+}
+
+function fixtureEvent(n: number, athleteId: string, sourceType: "match" | "assessment") {
+  return {
+    id: `0e5f3c1a-0000-4000-8000-0000000000e${n}`,
+    tenantId: TEST_TENANT,
+    athleteId,
+    sport: "basketball",
+    sourceType,
+    startedAt: `2026-01-0${n}T10:00:00Z`,
+    endedAt: `2026-01-0${n}T11:00:00Z`,
+    metrics: sourceType === "match" ? { points: 10 } : { verticalJumpCm: 50 },
   };
 }
 
@@ -81,18 +111,25 @@ beforeAll(async () => {
         athletes: [
           fixtureAthlete(PRIVATE, { publicProfileEnabled: false, discoverable: true }),
           fixtureAthlete(LINK_ONLY, { publicProfileEnabled: true, discoverable: false }),
+          fixtureAthlete(MATCH_ONLY, {
+            publicProfileEnabled: true,
+            discoverable: false,
+            showMatchStats: true,
+            showAssessmentStats: false,
+          }),
+          fixtureAthlete(ASSESSMENT_ONLY, {
+            publicProfileEnabled: true,
+            discoverable: false,
+            showMatchStats: false,
+            showAssessmentStats: true,
+          }),
         ],
         events: [
-          {
-            id: "0e5f3c1a-0000-4000-8000-0000000000e1",
-            tenantId: TEST_TENANT,
-            athleteId: PRIVATE.id,
-            sport: "basketball",
-            sourceType: "match",
-            startedAt: "2026-01-01T10:00:00Z",
-            endedAt: "2026-01-01T11:00:00Z",
-            metrics: { points: 10 },
-          },
+          fixtureEvent(1, PRIVATE.id, "match"),
+          fixtureEvent(2, MATCH_ONLY.id, "match"),
+          fixtureEvent(3, MATCH_ONLY.id, "assessment"),
+          fixtureEvent(4, ASSESSMENT_ONLY.id, "match"),
+          fixtureEvent(5, ASSESSMENT_ONLY.id, "assessment"),
         ],
       },
     },
@@ -277,5 +314,15 @@ describe("getPublicPerformanceEventsForAthlete", () => {
 
   it("não devolve eventos de perfil privado, mesmo com as estatísticas liberadas", async () => {
     expect(await getPublicPerformanceEventsForAthlete(PRIVATE.id)).toEqual([]);
+  });
+
+  // Os atletas demo liberaram os dois tipos ou nenhum: só estes distinguem um
+  // filtro por tipo de um filtro que olha as duas flags juntas.
+  it.each([
+    ["partidas", MATCH_ONLY, "match"],
+    ["avaliações", ASSESSMENT_ONLY, "assessment"],
+  ] as const)("com só %s liberadas, não devolve o outro tipo", async (_, fixture, sourceType) => {
+    const events = await getPublicPerformanceEventsForAthlete(fixture.id);
+    expect(events.map((e) => e.context.sourceType)).toEqual([sourceType]);
   });
 });
