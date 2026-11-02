@@ -1,21 +1,20 @@
 import "server-only";
 
-import { getApps, initializeApp } from "firebase-admin/app";
 import { getAuth, type Auth } from "firebase-admin/auth";
+
+import { getAdminApp } from "@/lib/firebase-admin";
 
 // Acesso ao Firebase Authentication pelo servidor.
 //
-// - Admin SDK: cria usuários, emite e verifica o session cookie. No App
-//   Hosting (Cloud Run) usa as credenciais padrão do serviço e o FIREBASE_CONFIG
-//   injetado pelo Firebase. Localmente usa o emulador do Auth quando
-//   FIREBASE_AUTH_EMULATOR_HOST está definido (ver web/README.md).
+// - Admin SDK: cria usuários, emite e verifica o session cookie, com o app
+//   compartilhado de lib/firebase-admin.ts. Localmente usa o emulador do Auth
+//   quando FIREBASE_AUTH_EMULATOR_HOST está definido (ver web/README.md).
 // - REST do Identity Toolkit: confere e-mail + senha e devolve o ID token que
 //   o Admin SDK troca por session cookie. Assim o login continua sendo uma
 //   Server Action com useActionState, sem SDK do Firebase no cliente.
 
 export function getAdminAuth(): Auth {
-  const app = getApps()[0] ?? initializeApp();
-  return getAuth(app);
+  return getAuth(getAdminApp());
 }
 
 // A API key do app da Web é pública (vai em qualquer cliente Firebase). O

@@ -31,7 +31,7 @@ O banco é Postgres (Cloud SQL) acessado pelo Firebase Data Connect, em `us-east
 
 - `dataconnect/schema/schema.gql` — tabelas; `dataconnect/connector/*.gql` — operações do app; `dataconnect/seed/seed.gql` — carga dos dados demo (fora do conector).
 - `web/src/dataconnect-generated/` — SDK gerado para o Admin SDK (`npm run dataconnect:generate` depois de mudar um `.gql`; commite o resultado). Fora do lint.
-- `web/src/lib/data/` — camada de dados. Os arquivos espelham `lib/mock/` (`get-athlete.ts`, `search-athletes.ts`, `get-performance.ts`) com as **mesmas assinaturas**, para a troca ser só o caminho do import. `client.ts` cria o cliente; `mappers.ts` converte as linhas "achatadas" do banco nos tipos aninhados de `types/*`.
+- `web/src/lib/data/` — camada de dados. Os arquivos espelham `lib/mock/` (`get-athlete.ts`, `search-athletes.ts`, `get-performance.ts`) com as **mesmas assinaturas**, para a troca ser só o caminho do import. `client.ts` cria o cliente sobre o app do Admin SDK compartilhado com o Auth (`lib/firebase-admin.ts`, `getAdminApp()`); `mappers.ts` converte as linhas "achatadas" do banco nos tipos aninhados de `types/*`.
 
 Regras aprendidas medindo no emulador:
 
