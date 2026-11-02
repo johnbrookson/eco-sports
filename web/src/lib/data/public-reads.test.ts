@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { mockAthletes } from "@/lib/mock/athletes";
 import { mockPerformanceEvents } from "@/lib/mock/performance";
 import type { Athlete } from "@/types/athlete";
+import type { PerformanceEvent } from "@/types/performance";
 import { getDataConnectClient } from "./client";
 import { getPublicAthleteBySlug, listPublicAthleteSlugs } from "./get-athlete";
 import { getPublicPerformanceEventsForAthlete } from "./get-performance";
@@ -177,6 +178,26 @@ function publicView(a: Athlete) {
   );
 }
 
+// Evento no formato do mock, sem os ids que a carga converte (tenant e evento
+// viram UUID v5 do id antigo; o do atleta é conferido à parte). Datas
+// comparadas como instante.
+function eventView(e: PerformanceEvent) {
+  return JSON.parse(
+    JSON.stringify({
+      ...e,
+      id: undefined,
+      tenantId: undefined,
+      athleteId: undefined,
+      period: {
+        ...e.period,
+        startedAt: Date.parse(e.period.startedAt),
+        endedAt: Date.parse(e.period.endedAt),
+      },
+      createdAt: Date.parse(e.createdAt),
+    }),
+  );
+}
+
 describe("canonicalUuid", () => {
   it("põe os hífens no UUID que o Data Connect devolve sem eles", () => {
     expect(canonicalUuid("A7B4C5D81E2F4A3B9C8D0E1F2A3B4C5D")).toBe(
@@ -291,19 +312,11 @@ describe("getPublicPerformanceEventsForAthlete", () => {
     expect(mariana.visibility.showAssessmentStats).toBe(true);
 
     const events = await getPublicPerformanceEventsForAthlete(mariana.id);
-    const expected = mockPerformanceEvents.filter((e) => e.athleteId === mariana.id);
-    expect(events).toHaveLength(expected.length);
-
-    const byInstant = new Map(expected.map((e) => [Date.parse(e.period.startedAt), e]));
-    for (const e of events) {
-      const mock = byInstant.get(Date.parse(e.period.startedAt));
-      expect(e.athleteId).toBe(mariana.id);
-      expect(e.context).toEqual(mock?.context);
-      expect(e.metrics).toEqual(mock?.metrics);
-    }
-
-    const instants = events.map((e) => Date.parse(e.period.startedAt));
-    expect(instants).toEqual([...instants].sort((a, b) => b - a));
+    const expected = mockPerformanceEvents
+      .filter((e) => e.athleteId === mariana.id)
+      .sort((a, b) => Date.parse(b.period.startedAt) - Date.parse(a.period.startedAt));
+    expect(events.map(eventView)).toEqual(expected.map(eventView));
+    expect(events.every((e) => e.athleteId === mariana.id)).toBe(true);
   });
 
   it("não devolve eventos de quem não liberou as estatísticas", async () => {
